@@ -1,0 +1,39 @@
+﻿Canonical SHA-256 (before): F520060CB753EC8EC96B44BCBD193BDAB69CA68D4CC27198663665D5FE63F884
+CHECK PASS: M1 same governed resource -> identical deterministic mutex identity
+CHECK PASS: M2 unrelated resource -> different mutex name (no unnecessary collision)
+CHECK PASS: M3 mutex name is a normalized deterministic token (no machine-specific absolute path)
+CHECK PASS: M4 named mutex acquire -> lock held
+CHECK PASS: M5 same-process DIFFERENT-THREAD contention while the lock is held -> bounded Timeout (~408ms), never bypassed
+CHECK PASS: M6 release -> lock no longer held
+CHECK PASS: M6b parent re-acquires and holds the named mutex for the cross-process test
+CHECK PASS: M7 a second PROCESS times out while the parent holds the named mutex (cross-process contention)
+CHECK PASS: M8 child process acquires the named mutex after the parent releases (real cross-process)
+CHECK PASS: M9 child process deliberately abandoned the named mutex (exited without release)
+CHECK PASS: M10 abandoned mutex recovered by this process (kernel handed ownership safely; workbook never permanently locked)
+CHECK PASS: M11 CreateNodeAsync through the guard -> RowVersion 1
+CHECK PASS: M12 writer A expects N, acquires lock, re-reads N, commits N+1
+CHECK PASS: M13 writer B acquires the lock, re-reads persisted state, observes N+1 -> controlled CONCURRENCY_CONFLICT carrying the current node
+CHECK PASS: M14 writer B did NOT overwrite writer A (no lost update; final state is A's)
+CHECK PASS: M15 concurrent two-writer race: exactly one succeeds, one conflicts
+CHECK PASS: M16 concurrent race advanced persisted RowVersion exactly once (no double apply)
+CHECK PASS: M17 two-operation work unit commits atomically -> SUCCESS, persisted RowVersion advanced by exactly 2
+CHECK PASS: M18 multi-op unit appended exactly 2 Version History records + 2 Activity Log rows (evidence committed together)
+CHECK PASS: M19 after the successful multi-op commit the workbook directory holds exactly ONE file (one save, fully cleaned)
+CHECK PASS: M20 op1 succeeds in memory, op2 fails -> whole unit controlled CONCURRENCY_CONFLICT
+CHECK PASS: M21 failure atomicity: canonical temp workbook byte-identical (no partial op1 persisted, no final replace)
+CHECK PASS: M22 failed unit appended ZERO Version History / Activity Log rows (in-memory evidence discarded)
+CHECK PASS: M23 op2 fails adapter validation -> whole unit ValidationFailure (controlled, not an exception)
+CHECK PASS: M24 validation failure inside a unit -> no canonical promotion (temp not saved, canonical untouched)
+CHECK PASS: M25 schema gate rejects a temp workbook missing a required sheet (throws)
+CHECK PASS: M26 adapter Open rejects a structurally-invalid workbook (no promotion path for an invalid temp)
+CHECK PASS: M27 single-operation guard update -> SUCCESS, RowVersion +1 (22-op contract intact)
+CHECK PASS: M28 GetControlState read passes through (read path intact)
+CHECK PASS: M29 GetActivityLog read returns records (append-only Activity Log readable)
+CHECK PASS: M30 SearchNodes finds the governed node by name (search path intact)
+CHECK PASS: M31 no temp-save artifacts remain after all commits (temp-write -> validate -> replace -> cleanup)
+CHECK PASS: M32 append-only probe update succeeds
+CHECK PASS: M33 Activity Log strictly append-only: every prior row byte-identical, exactly one new row appended (ADR-003)
+CHECK PASS: M34 Version History append-only: prior records preserved byte-identical except the documented predecessor Is-Current flip Yes->No, exactly one row appended (ADR-003)
+Canonical SHA-256 (after):  F520060CB753EC8EC96B44BCBD193BDAB69CA68D4CC27198663665D5FE63F884
+CHECK PASS: Z1 authoritative workbook byte-identical before/after all verification (SHA-256)
+RESULT: PASS

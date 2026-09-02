@@ -1,0 +1,120 @@
+{
+  "Milestone": "DB-M20",
+  "Title": "Retry + Automatic Escalation DECISION Engine",
+  "Lane": "B",
+  "DateUtc": "2026-08-30T20:03:15Z",
+  "Implementation": "PASS",
+  "Summary": "Decision-engine-only retry + automatic escalation planner. Every outcome is a RECOMMENDATION (Status + Action + ReasonCodes); AUTO_EXECUTION_ENABLED = FALSE, ExecutionMode=AUTO refused (AUTO_EXECUTION_PROHIBITED), 0 paid API calls, 0 network calls, no live AI/provider invocation, no autonomous Nexus changes. Pipeline: AUTO -> chain assembly -> human intervention -> verified success -> verification-authoritative classification -> governance/auth/budget -> attempt limit -> category action table -> finalize (loop protection + request-ceiling re-check). EscalationPolicy v1 bounds every budget/gate/tie-break; no budget is hard-coded in engine logic. EscalationChain v1 preserves every attempt append-only (DB-M17 read-only). Human Git gates and Claude review gates are never bypassed; non-AI failures (scope/governance/git/PR/merge/architecture) stop or go to a human, never to a stronger model. Verification is authoritative: model says PASS / DB-M06 says FAIL => FAILURE (VERIFICATION_FAILURE, CORRECT_CURRENT_ATTEMPT, focused FIX over rebuild). Reasoning escalation is one step LOW->MEDIUM->HIGH->MAX only when the model supports it and policy permits; never an automatic jump to MAX. Model escalation considers only DB-M19 ELIGIBLE candidates; hard capability filters are never bypassed. No infinite retry loops (MaxAttemptsPerTask + MaxSameModelRetries + MaxReasoningEscalations + MaxModelEscalations + chain LoopFree + exact-combination loop check -> LOOP_PREVENTED). Cost is via the DB-M16 engine through the DB-M19 STEP 3 estimator (math never duplicated); request-level MaxAllowedCost ceiling only, no daily/monthly/org/retry-pool/team budgets (DB-M21 territory); incremental + cumulative costs always present. DB-M24 evidence influences ranking only when ConfidenceSufficient; INSUFFICIENT confidence never produces overconfident escalation. Mandatory governance context never removed. Deterministic pure function of (input, policy, preserved chain); ADR-005 (no provider/model name branching). Exports confined to DB-M20-owned state; Nexus paths, outside-root paths and live handoff artifacts refused.",
+  "EscalationInputV1": "PASS",
+  "EscalationDecisionV1": "PASS",
+  "EscalationChainV1": "PASS",
+  "EscalationPolicyV1": "PASS",
+  "FailureCategoryVocabulary20": "PASS",
+  "FailureClasses7": "PASS",
+  "Actions16": "PASS",
+  "ContextActions5": "PASS",
+  "HumanActionTypes8": "PASS",
+  "DecisionStatuses10": "PASS",
+  "ReasonCodes40": "PASS",
+  "AutoExecutionEnabled": "FALSE",
+  "AutoExecutionRefused": "PASS",
+  "ManualModePreserved": "PASS",
+  "AssistedRecommendation": "PASS",
+  "VerificationAuthoritative": "PASS",
+  "HumanGitGatesNeverBypassed": "PASS",
+  "ClaudeReviewGatesNeverBypassed": "PASS",
+  "NonAiFailuresNeverEscalateToModel": "PASS",
+  "NoQualityEscalationForNonAi": "PASS",
+  "HardCapabilityFiltersNeverBypassed": "PASS",
+  "NoInfiniteRetryLoops": "PASS",
+  "OneStepReasoningEscalation": "PASS",
+  "NoAutomaticJumpToMax": "PASS",
+  "FocusedFixOverRebuild": "PASS",
+  "CorrectionPreservesVerifiedWork": "PASS",
+  "RequestCeilingOnly": "PASS",
+  "NoDailyMonthlyOrgBudgets": "PASS",
+  "EvidenceNoOverconfidence": "PASS",
+  "MandatoryGovernanceRetained": "PASS",
+  "LoopPrevention": "PASS",
+  "Deterministic": "PASS",
+  "FrozenContractsReadOnly": "PASS",
+  "TemporaryDevBridgeBoundary": "PASS",
+  "Tests": {
+    "Passed": 149,
+    "Failed": 0,
+    "Total": 149,
+    "Scenarios": 26,
+    "ScenarioCount": "26/26",
+    "PaidApiCalls": 0,
+    "NetworkCalls": 0,
+    "Note": "26 sections: S1 AUTO mode refused (AUTO_EXECUTION_PROHIBITED, no execution property exposed); S2 verified success (STOP_SUCCESS); S3 self-reported PASS with FAILED verification -> VERIFICATION_FAILURE -> focused correction; S4 Claude FIX_REQUIRED -> CLAUDE_REVIEW_FIX (AI-side correction, never skips the review); S5 governance block (STOP_GOVERNANCE, never escalates to a model); S6 scope change (HUMAN_GOVERNANCE_REQUIRED); S7 human Git gates HUMAN_GIT_GATE/PR_PENDING/MERGE_PENDING (HUMAN_GIT_ACTION_REQUIRED, never bypassed); S8 architecture conflict (STOP_GOVERNANCE); S9 recorded budget failure (STOP_BUDGET_LIMIT, BudgetStop); S10 request ceiling (BUDGET_CEILING_REACHED, cumulative never hidden); S11 attempt limit (ATTEMPT_LIMIT_REACHED); S12 transient same-route retry (RETRY_SAME_ROUTE); S13 same-model retry bound (SWITCH_PROVIDER_ROUTE, no infinite loop); S14 reasoning escalation one step (LOW->MEDIUM); S15 no jump to MAX (LOW->MEDIUM even when MAX supported; HIGH->MAX one step; budget/support blocked); S16 model escalation to an eligible candidate; S17 hard filters never bypassed (rejected candidate never re-admitted; stronger-but-ineligible never selected); S18 no eligible model (STOP_NO_ELIGIBLE_ESCALATION); S19 provider route switch (RATE_LIMIT / PROVIDER_AVAILABILITY); S20 loop prevention (exact combo revisit -> LOOP_PREVENTED, reachable via a downgrade chain); S21 chain loop-free validation (strictly increasing retry, duplicate AttemptId, self-escalation, deterministic re-order); S22 cost-aware escalation via DB-M16 engine (next-attempt estimate never invented, unknown price labeled not fabricated, cumulative actual+estimated, INR via DB-M16 FX); S23 failure classification precedence (verification authoritative, governance/auth protected, unknown recorded category throws); S24 retry gates (governance/unknown never blindly retried, attempt bound, non-loop-free chain refused); S25 reasoning level rules (one-step, unsupported-skip, policy-disabled block); S26 export + Temporary DevBridge boundary (Nexus paths refused, outside-root refused, live handoff refused, result file refused, DB-M20-owned path allowed, -Force re-export, no Nexus assembly coupling, no execution lever)."
+  },
+  "Regressions": {
+    "DBM14": "51/51 PASS, exit 0",
+    "DBM15": "71/71 PASS, exit 0",
+    "DBM16": "167/167 PASS, exit 0",
+    "DBM17": "99/99 PASS, exit 0",
+    "DBM18": "203/203 PASS, exit 0",
+    "DBM19": "136/136 PASS, exit 0",
+    "DBM24": "128/128 PASS, 34/34 scenarios (exit 0)"
+  },
+  "FilesCreated": [
+    "scripts/ai-routing/escalation/EscalationPolicy.ps1",
+    "scripts/ai-routing/escalation/EscalationContracts.ps1",
+    "scripts/ai-routing/escalation/EscalationEngine.ps1",
+    "scripts/ai-routing/escalation/EscalationRetry.ps1",
+    "scripts/ai-routing/escalation/FailureClassification.ps1",
+    "scripts/ai-routing/escalation/EscalationCandidates.ps1",
+    "scripts/ai-routing/escalation/EscalationCost.ps1",
+    "scripts/ai-routing/escalation/EscalationExport.ps1",
+    "scripts/ai-routing/escalation/Test-DbM20Escalation.ps1",
+    "design/ai-routing/DB-M20_RETRY_ESCALATION.md",
+    "design/ai-routing/DB-M20_ESCALATION_POLICY.md",
+    "state/db-m20-result.json"
+  ],
+  "FilesModified": [],
+  "AutomaticExecutionEnabled": "FALSE",
+  "AI_APICalls": 0,
+  "NetworkCalls": 0,
+  "DBM14Overlap": {
+    "Overlap": "NONE",
+    "Details": "AiRoutingContracts.ps1 consumed READ-ONLY (vocabularies via Get-ContractProperty); SHA-256 CAF41E6E52B5B98904326C7E5CD8A7BF361B8C8CDFC395AAD2B4C53F357A4408 verified MATCH; byte-identical, untouched."
+  },
+  "DBM15Overlap": {
+    "Overlap": "NONE",
+    "Details": "Pricing catalogue files untouched; prices consumed read-only through the DB-M16 engine. An unknown price is surfaced as NextCostUnknown, never invented."
+  },
+  "DBM16Overlap": {
+    "Overlap": "NONE",
+    "Details": "Cost/FX files untouched; Get-AiEscalationCost delegates entirely to Get-AiCandidateCostEstimate -> Calculate-AiAttemptCost (DB-M16). No duplicate cost math."
+  },
+  "DBM17Overlap": {
+    "Overlap": "NONE",
+    "Details": "AttemptStore.ps1 untouched; attempt records consumed read-only as the preserved EscalationChain. DB-M17 recorded categories are a strict subset; DB-M20-only categories arrive via the explicit escalation signal and are never recorded onto an attempt."
+  },
+  "DBM18Overlap": {
+    "Overlap": "NONE",
+    "Details": "TaskClassification.ps1 / ContextPackage.ps1 untouched; DB-M20 consumes classification/context read-only via the escalation input. No Lane C interference."
+  },
+  "DBM19Overlap": {
+    "Overlap": "NONE",
+    "Details": "router/* untouched; RoutingCandidate/RoutingDecisionEvidence consumed read-only (Status ELIGIBLE is the hard capability filter; REJECTED never re-admitted). DB-M19 STEP 3 estimator reused for cost, never duplicated."
+  },
+  "DBM24Overlap": {
+    "Overlap": "NONE",
+    "Details": "performance/* untouched; PerformanceEvidenceReference carried through and used only when ConfidenceSufficient. INSUFFICIENT confidence never produces overconfident escalation (NON-BINDING)."
+  },
+  "DBM12Overlap": {
+    "Overlap": "NONE",
+    "Details": "src/DevBridge.* (DB-M12-owned) untouched."
+  },
+  "LaneCOverlap": {
+    "Overlap": "NONE",
+    "Details": "Lane C WI-07-0.2.4 (state/current-task.json, workbook backups, logs) untouched; the DB-M20 fixture task is self-contained and never reads live Lane C state."
+  },
+  "WorkbookModified": "NO",
+  "NexusRepositoriesModified": "NO",
+  "DBM21Ready": "YES",
+  "DBM22Ready": "YES",
+  "NotesForNextMilestones": "DB-M21 (budget/fingerprints) owns the daily/monthly/org/retry-pool/team budgets that DB-M20 deliberately keeps out (request-level MaxAllowedCost only) and the failure-fingerprint taxonomy; DB-M22 (health/failover) builds on the transient route-switch and same-route retry semantics already emitted here. DB-M20 EscalationDecision carries NextProviderId/NextModelId/NextReasoningLevel/ContextAction and Evidence references wired for these consumers."
+}

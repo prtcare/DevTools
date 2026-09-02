@@ -1,0 +1,181 @@
+﻿SCENARIO|A1|RESERVATION_STARTED_BUT_UNVERIFIED detected
+TEST|A1|PASS|tokens=RESERVATION_STARTED_BUT_UNVERIFIED
+TEST|A1-class|PASS|class=READBACK_RECONCILIATION_REQUIRED
+SCENARIO|A2|WORKBOOK_WRITE_STARTED_BUT_READBACK_MISSING detected
+TEST|A2|PASS|tokens=WORKBOOK_WRITE_STARTED_BUT_READBACK_MISSING
+TEST|A2-verdict|PASS|verdict=WRITE_STATE_AMBIGUOUS
+TEST|A2-class|PASS|class=READBACK_RECONCILIATION_REQUIRED
+TEST|A2-unchanged|PASS|workbook file not modified
+SCENARIO|A3|VERIFICATION_STARTED_BUT_RESULT_MISSING detected
+TEST|A3|PASS|tokens=VERIFICATION_STARTED_BUT_RESULT_MISSING
+TEST|A3-class|PASS|class=SAFE_TO_RETRY
+TEST|A3-action|PASS|action=RE-RUN VERIFICATION
+SCENARIO|A4|CLAUDE_RESULT_RECORDING_INTERRUPTED detected
+TEST|A4|PASS|tokens=CLAUDE_RESULT_RECORDING_INTERRUPTED
+TEST|A4-class|PASS|class=HUMAN_REVIEW_REQUIRED
+TEST|A4-action|PASS|action=RECORD CLAUDE RESULT AGAIN
+SCENARIO|A5|TRIAL_CLOSURE_STARTED_BUT_UNVERIFIED detected
+TEST|A5|PASS|tokens=TRIAL_CLOSURE_STARTED_BUT_UNVERIFIED
+TEST|A5-class|PASS|class=DO_NOT_RETRY
+SCENARIO|A6|COMPLETION_STARTED_BUT_UNVERIFIED detected
+TEST|A6|PASS|tokens=COMPLETION_STARTED_BUT_UNVERIFIED
+TEST|A6-class|PASS|class=DO_NOT_RETRY
+SCENARIO|B1|SAFE_TO_RESUME on consistent state
+TEST|B1|PASS|class=SAFE_TO_RESUME
+TEST|B1-status|PASS|status=OK
+TEST|B1-tokens|PASS|tokens=0
+SCENARIO|B2|SAFE_TO_RETRY classification
+TEST|B2|PASS|class=SAFE_TO_RETRY
+SCENARIO|B3|REFRESH_REQUIRED classification
+TEST|B3|PASS|class=REFRESH_REQUIRED
+SCENARIO|B4|READBACK_RECONCILIATION_REQUIRED classification
+TEST|B4|PASS|class=READBACK_RECONCILIATION_REQUIRED
+SCENARIO|B5|HUMAN_REVIEW_REQUIRED classification
+TEST|B5|PASS|class=HUMAN_REVIEW_REQUIRED
+SCENARIO|B6|GOVERNANCE_REVIEW_REQUIRED classification
+TEST|B6|PASS|class=GOVERNANCE_REVIEW_REQUIRED
+TEST|B6-action|PASS|action=HUMAN GOVERNANCE REVIEW
+SCENARIO|B7|DO_NOT_RETRY classification
+TEST|B7|PASS|class=DO_NOT_RETRY
+SCENARIO|B8|classification vocabulary = exactly 7 values
+TEST|B8|PASS|count=7
+TEST|B8-vocab|PASS|missing=
+SCENARIO|C1|same-op-retried identity
+TEST|C1|PASS|identity=same-op-retried
+TEST|C1-class|PASS|class=SAFE_TO_RESUME
+TEST|C1-verdict|PASS|verdict=WRITE_CONFIRMED
+SCENARIO|C2|new identity when no evidence exists
+TEST|C2|PASS|identity=new
+SCENARIO|C3|stale identity when recorded SHA disagrees with task
+TEST|C3|PASS|identity=stale
+TEST|C3-class|PASS|class=REFRESH_REQUIRED
+SCENARIO|C4|wrong-task identity when evidence changeId differs
+TEST|C4|PASS|identity=wrong-task
+SCENARIO|C5|completed identity for terminal op that reached end state
+TEST|C5|PASS|identity=completed
+TEST|C5-verdict|PASS|verdict=WRITE_CONFIRMED
+SCENARIO|D1|WRITE_CONFIRMED verdict
+TEST|D1|PASS|verdict=WRITE_CONFIRMED
+SCENARIO|D2|WRITE_NOT_APPLIED verdict
+TEST|D2|PASS|verdict=WRITE_NOT_APPLIED
+SCENARIO|D3|WRITE_STATE_AMBIGUOUS verdict -> no auto overwrite
+TEST|D3|PASS|verdict=WRITE_STATE_AMBIGUOUS
+TEST|D3-class|PASS|class=HUMAN_REVIEW_REQUIRED
+TEST|D3-unchanged|PASS|ambiguous workbook file not modified
+SCENARIO|E1|NO_WRITER when no lock file
+TEST|E1|PASS|lock=NO_WRITER
+SCENARIO|E2|STALE_WRITER_RECORD for dead pid, lock never deleted
+TEST|E2|PASS|lock=STALE_WRITER_RECORD
+TEST|E2-class|PASS|class=HUMAN_REVIEW_REQUIRED
+TEST|E2-action|PASS|action=RECLAIM STALE WRITER LOCK
+TEST|E2-notdeleted|PASS|lock file still present after run
+SCENARIO|E3|ACTIVE_WRITER for live pid, lock never deleted
+TEST|E3|PASS|lock=ACTIVE_WRITER
+TEST|E3-action|PASS|action=NONE REQUIRED
+TEST|E3-notdeleted|PASS|lock file still present after run
+SCENARIO|F1|git HEAD drift -> REVIEW GIT STATE, remote never inferred
+TEST|F1|PASS|head=519b0ae174d45d6a2bf14a831683723853adcfc6
+TEST|F1-class|PASS|class=REFRESH_REQUIRED
+TEST|F1-action|PASS|action=REVIEW GIT STATE
+TEST|F1-pr|PASS|pr=UNKNOWN (remote never inferred)
+SCENARIO|F2|git consistent -> SAFE_TO_RESUME
+TEST|F2|PASS|head=5962f724b99be28f0ad362ed8dc7a0ec2c9c7e45
+TEST|F2-class|PASS|class=SAFE_TO_RESUME
+SCENARIO|G1|safe command offered RETRY
+TEST|G1|PASS|class=SAFE_TO_RETRY
+TEST|G1-action|PASS|action=RE-RUN VERIFICATION
+SCENARIO|G2|non-catalog command is NOT offered RETRY
+TEST|G2|PASS|last=GET_CURRENT_LIFECYCLE_STATE
+TEST|G2-notretry|PASS|class=SAFE_TO_RESUME
+TEST|G2-incatalog|PASS|inCatalog=False
+SCENARIO|G3|unsafe command is NOT offered RETRY
+TEST|G3|PASS|class=DO_NOT_RETRY
+TEST|G3-retryhidden|PASS|retryShown=False
+SCENARIO|G4|safe-retry catalog = exactly 12 governed commands
+TEST|G4|PASS|count=12
+TEST|G4-complete|PASS|missing=
+SCENARIO|H1|panel renders all six recovery fields
+TEST|H1|PASS|missing=
+TEST|H1-render|PASS|render=PASS
+TEST|H1-notgeneric|PASS|no generic failure text
+SCENARIO|H2|recommended action is specific, never generic
+TEST|H2|PASS|action=REVIEW WORKBOOK READ-BACK
+SCENARIO|H3|example actions vocabulary present
+TEST|H3|PASS|missing=
+SCENARIO|I1|backend-state mismatch preserved -> REFRESH STATE
+TEST|I1|PASS|class=REFRESH_REQUIRED
+TEST|I1-action|PASS|action=REFRESH STATE
+SCENARIO|I2|BACKEND_STATE_MISMATCH token reported verbatim
+TEST|I2|PASS|mismatch present
+TEST|I2-token|PASS|token=BACKEND_STATE_MISMATCH
+TEST|I2-fields|PASS|expected=VERIFIED actual=PREFLIGHTED
+SCENARIO|J1|STALE_GOVERNANCE_STATE preserved, no silent overwrite
+TEST|J1|PASS|class=GOVERNANCE_REVIEW_REQUIRED
+TEST|J1-action|PASS|action=HUMAN GOVERNANCE REVIEW
+TEST|J1-unchanged|PASS|workbook file not overwritten
+SCENARIO|K1|essential diagnostics written with 12 fields, no secret
+TEST|K1-write|PASS|write=PASS
+TEST|K1-count|PASS|lines=12
+TEST|K1-field|PASS|missing=TimestampUtc=
+TEST|K1-field|PASS|missing=OperationId=
+TEST|K1-field|PASS|missing=Task=
+TEST|K1-field|PASS|missing=Change=
+TEST|K1-field|PASS|missing=Mode=
+TEST|K1-field|PASS|missing=ExpectedLifecycle=
+TEST|K1-field|PASS|missing=ObservedLifecycle=
+TEST|K1-field|PASS|missing=Result=
+TEST|K1-field|PASS|missing=FailureCategory=
+TEST|K1-field|PASS|missing=RecoveryClassification=
+TEST|K1-field|PASS|missing=WorkbookSha=
+TEST|K1-field|PASS|missing=GitHead=
+TEST|K1-nosecret|PASS|diagnostics contain no secret-like value
+SCENARIO|L1|provider secrets never rendered or logged
+TEST|L1-secretscan|PASS|secret_scan=PASS
+TEST|L1-stdout|PASS|no secret in stdout
+TEST|L1-html|PASS|no secret in HTML
+TEST|L1-configured|PASS|provider shown as NOT_CONFIGURED
+TEST|L1-noprop|PASS|config rows expose no SecretReference property
+SCENARIO|L2|secret-like value in state -> SECRET_SCAN FAIL, still exit 0
+TEST|L2|PASS|secret_scan=FAIL
+TEST|L2-result|PASS|result_pass=False
+TEST|L2-exit|PASS|exit=0
+SCENARIO|L3|hex SHA / recorded values exempt from secret scan
+TEST|L3|PASS|leak=False
+TEST|L3-catch|PASS|high-entropy value in a free-text field IS caught
+SCENARIO|M1|restart with stale writer lock -> guidance only, no deletion
+TEST|M1|PASS|lock=STALE_WRITER_RECORD
+TEST|M1-action|PASS|action=RECLAIM STALE WRITER LOCK
+TEST|M1-notdeleted|PASS|lock file still present after run
+SCENARIO|M2|externally-changed workbook -> readback reconciliation, file untouched
+TEST|M2|PASS|tokens=WORKBOOK_WRITE_STARTED_BUT_READBACK_MISSING
+TEST|M2-class|PASS|class=READBACK_RECONCILIATION_REQUIRED
+TEST|M2-unchanged|PASS|externally-changed workbook left as-is
+SCENARIO|M3|restart with changed git HEAD -> drift reported, git untouched
+TEST|M3|PASS|class=REFRESH_REQUIRED
+TEST|M3-gitmodified|PASS|git_modified=False
+SCENARIO|M4|clean restart twice -> stable OK/SAFE_TO_RESUME
+TEST|M4-1|PASS|run1 status=OK class=SAFE_TO_RESUME
+TEST|M4-2|PASS|run2 status=OK class=SAFE_TO_RESUME
+SCENARIO|N1|no destructive-rollback capability in DB-M32 code or CLI
+TEST|N1-catches|PASS|destructive commands are caught by the guard
+TEST|N1-benign|PASS|benign commands pass the guard
+TEST|N1-scan|PASS|RecoveryEngine.ps1 contains no forbidden invocation
+TEST|N1-scan|PASS|RecoveryRender.ps1 contains no forbidden invocation
+TEST|N1-scan|PASS|Show-DbM32EssentialSafety.ps1 contains no forbidden invocation
+TEST|N1-cli|PASS|forbidden=FAIL
+TEST|N1-cli-exit|PASS|exit=0
+SCENARIO|N2|pre-DevBridge baseline stays read-only
+TEST|N2|PASS|baseline_restore=NO
+TEST|N2-unchanged|PASS|baseline file byte-identical after run
+SCENARIO|N3|no autonomy expansion (all NO markers)
+TEST|N3|PASS|non-NO markers=
+TEST|N3-guard|PASS|auto_exec=False
+SCENARIO|N4|CLI always exits 0 (pass, secret-fail, forbidden)
+TEST|N4-clean|PASS|exit=0
+TEST|N4-secret|PASS|exit=0
+TEST|N4-forbidden|PASS|exit=0
+DB32_TEST_SCENARIOS_RUN: 49
+DB32_TEST_SCENARIOS_TOTAL: 49
+DB32_TEST_ASSERTIONS_PASSED: 127
+DB32_TEST_ASSERTIONS_FAILED: 0
+DB32_TEST_OUTCOME: PASS

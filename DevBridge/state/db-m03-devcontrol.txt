@@ -1,0 +1,65 @@
+=== F-07-0 / M-07-0.2 subtree ===
+  F-07-0             Feature    P0   Development Control Baseline                       status=In Progress prio=Critical prog=85 row=313
+      nextAction: Finish DevTools migration and close the temporary baseline.
+      evidence: Development control and bootstrap exist; DevTools source is now available for migration.
+  M-07-0.1           Milestone  P0   Versioned roadmap and simultaneous-development control status=Completed prio=Critical prog=100 row=314
+      nextAction: Closed. Ongoing obligation, not a next action: keep following AGENTS.md's Session Protocol for every future change.
+      evidence: All three child work items are complete: WI-07-0.1.1 (baseline), WI-07-0.1.2 (preflight/ledger), WI-07-0.1.3 (bootstrap + DevTools migration, closed today). The governed, append-only development-control system this milestone describes is now operating exactly as designed - this very update followed its own Session Protocol.
+  M-07-0.2           Milestone  P0   Development Control Service (Excel-backed, Azure-SQL-ready) status=In Progress prio=Critical prog= row=324
+      deps: M-07-0.1
+      nextAction: Build after its declared dependency.
+  WI-07-0.2.1        WorkItem   P0   Domain model and control contracts                 status=Complete prio=Critical prog= row=325
+      nextAction: None -- complete. Unblocks WI-07-0.2.2.
+      evidence: Implemented and independently verified file-by-file on 2026-08-30: all 18 DTO/enum files under Nexus.Developer.Core/DevelopmentControl/ (Node, NodeId as a validated string not a Guid, ActiveChange 30-field/AuditFinding 13-field shapes sourced by direct workbook inspection, ActivityLogEntry with the full 34 fields, ActorRef/ActorType, MutationEnvelope/MutationResult<T>, ControlState/NodeSearchCriteria/PreflightDeclaration/PreflightResult/ValidationResult), IDevelopmentControlStore with all 22 named operations (every mutating operation takes a MutationEnvelope and returns MutationResult<T>), and two new test files -- one proving zero I/O via an assembly-reference check (no Excel/OpenXML/EF/SQL assembly referenced), one locking DTO field counts, enum membership, and interface shape by reflection. Zero deviations. No implementation, nothing wired into DI or any existing handler/endpoint -- confirmed via git diff showing only new files, no existing file touched.
+  WI-07-0.2.2        WorkItem   P0   Canonical workbook migration and Activity Log schema status=Complete prio=Critical prog= row=326
+      deps: WI-07-0.2.1
+      nextAction: None -- complete. Unblocks WI-07-0.2.3 (Excel persistence adapter).
+      evidence: Implemented and independently verified 2026-08-30: WorkbookSchemaValidator (reflection-based, compares live sheet headers against the WI-07-0.2.1 contract types, informational report not pass/fail) and ActivityLogMigration (widens Activity Log 11->34 columns in place, dry-run by default, idempotent, self-verifying byte-exact after write) added under Nexus.Developer.Infrastructure/DevelopmentControl/, with ClosedXML added to Infrastructure only. Thorough test coverage (dry-run leaves file untouched, commit mode widens and maps every field exactly, idempotent re-run, blank rows survive, actor-type inference, unknown-schema and missing-sheet error paths). Migration actually run in commit mode against the live workbook: Activity Log widened 11->34 columns, all 47 existing rows preserved with zero data loss (Version/ADR and Notes folded into Reason rather than dropped), verified against the live file directly. Schema validator confirmed Active Changes (30/30) and Audit Findings (13/13) map cleanly; Master Roadmap has the expected, now-documented gap (Simple Goal/Current Evidence/Next Action/Column1-3 present-but-unmapped; RowVersion/IsDeleted/CreatedAt/UpdatedAt are store-managed, not sheet columns) -- reported, not closed, per this work item's scope. Zero deviations.
+  WI-07-0.2.3        WorkItem   P0   Excel persistence adapter                          status=Complete prio=Critical prog= row=327
+      deps: WI-07-0.2.2
+      nextAction: None -- complete. Unblocks WI-07-0.2.4.
+      evidence: Implemented and governed-verified 2026-08-30: ExcelWorkbookColumnMap (workbook column map; Required() throws on a missing required column), DevelopmentControlCellCodec (record-version parse/next, status/actor-type text codecs, sort-key compare, activity-id generator, node summarizer) and ExcelDevelopmentControlStore (ClosedXML-backed IDevelopmentControlStore; full 22-op contract; every mutating op takes a MutationEnvelope and returns MutationResult<T>; read + one safe mutation end-to-end, atomically; temp-file write + atomic replace; append-only Version History and 34-column Activity Log; idempotency via Activity Log scan; structural validation). DB-M06 verification: VERIFICATION_PASSED 22/22 parts; 8/8 acceptance criteria; 4 src projects build 0 warnings/0 errors; 199/199 tests + 32/32 harness checks; canonical workbook hash unchanged. DB-M08 Claude focused review: PASS, 0 blocking issues, 1 residual non-blocking observation (MutationEnvelope validation on no-op AddDependencyAsync/RemoveDependencyAsync paths) carried forward per Claude classification (MINOR, NON-BLOCKING, DOES NOT WARRANT FIX REQUIRED). No git commit (reviewed delta is untracked; the governed workbook write is the completion record). Zero deviations.
+  WI-07-0.2.4        WorkItem   P0   Concurrency, locking and atomic writes             status=Planned prio=Critical prog= row=328
+      deps: WI-07-0.2.3
+      nextAction: Build after its declared dependency.
+  WI-07-0.2.5        WorkItem   P0   Development Control application operations         status=Planned prio=Critical prog= row=329
+      deps: WI-07-0.2.4
+      nextAction: Build after its declared dependency.
+  WI-07-0.2.6        WorkItem   P1   Local HTTP API                                     status=Planned prio=Critical prog= row=330
+      deps: WI-07-0.2.5
+      nextAction: Build after its declared dependency.
+  WI-07-0.2.7        WorkItem   P1   CLI client                                         status=Planned prio=Critical prog= row=331
+      deps: WI-07-0.2.5
+      nextAction: Build after its declared dependency.
+  WI-07-0.2.8        WorkItem   P1   DevTools/WPF Development Control page              status=Planned prio=Medium prog= row=332
+      deps: WI-07-0.2.6
+      nextAction: Build after its declared dependency.
+  WI-07-0.2.9        WorkItem   P1   Claude Code integration                            status=Planned prio=Critical prog= row=333
+      deps: WI-07-0.2.6 | WI-07-0.2.7
+      nextAction: Build after its declared dependency.
+  WI-07-0.2.10       WorkItem   P1   MCP/remote-agent integration                       status=Planned prio=Critical prog= row=334
+      deps: WI-07-0.2.9
+      nextAction: Build after its declared dependency.
+
+=== Open reservations by row (freshest first) ===
+  row=78 CHG-20260830-015 node=WI-07-0.2.2 | M-07-0.2 worker=Claude (Cowork) -- verification and roadmap governance, no product code written
+  row=77 CHG-20260830-014 node=WI-07-0.2.1 | M-07-0.2 worker=Claude (Cowork) -- verification and roadmap governance, no product code written
+  row=76 CHG-20260830-013 node=WI-07-2.1.1 | M-07-2.1 | WI-07-6.1.1 | M-07-6.1 | M-07-10.3 worker=Claude (Cowork) -- verification, git catch-up, roadmap governance, no product code written
+  row=75 CHG-20260830-012 node=M-04-3.3 | WI-07-6.1.1 | WI-07-2.1.1 worker=Claude (Cowork) -- verification and roadmap governance, no code changes
+  row=74 CHG-20260830-011 node=M-04-3.3 worker=Claude (Cowork) -- prompt generation and independent verification; DeepCode (Claude Code CLI, device-local) -- implementation
+  row=73 CHG-20260830-010 node=WI-07-10.3.1 worker=Claude (Cowork) -- prompt generation and independent verification; DeepCode (Claude Code CLI, device-local) -- implementation
+  row=72 CHG-20260830-009 node=WI-07-3.2.4 | M-07-2.1 | WI-07-2.2.2 | M-07-3.1 | WI-07-3.2.1 | WI-07-3.2.3 | M-07-5.1 worker=Claude (Cowork) -- roadmap governance, no code changes
+  row=71 CHG-20260830-008 node=M-04-3.3 | WI-07-6.2.1 | WI-07-3.2.4 worker=Claude (Cowork) -- roadmap governance, no code changes
+  row=70 CHG-20260830-007 node=WI-07-3.2.4 | DEC-002 worker=Claude (Cowork) -- roadmap governance, no code changes
+  row=69 CHG-20260830-006 node=M-07-0.2 | WI-07-0.2.1..10 | T-07-6.2.1.2 worker=Claude (Cowork) -- roadmap governance, no code changes
+  row=68 CHG-20260830-005 node=M-07-10.3 | WI-07-3.2.3 worker=Claude (Cowork) -- roadmap governance, no code changes
+  row=67 CHG-20260830-004 node=F-07-6 | M-07-6.1 | M-07-6.2 | M-07-6.3 | M-07-3.1 | M-07-3.2 | M-07-4.1 | M-07-5.1 | M-07-5.3 | M-07-10.3 | DEC-002 worker=Claude (Cowork) -- roadmap governance, no code changes
+  row=66 CHG-20260830-003 node=M-12-0.4 worker=DeepSeek (via Claude Code CLI) -- supervised/verified by Claude (Cowork)
+  row=65 CHG-20260830-002 node=M-12-0.4 worker=DeepSeek (via Claude Code CLI) -- supervised/verified by Claude (Cowork)
+  row=64 CHG-20260830-001 node=M-12-0.4 worker=DeepSeek (via Claude Code CLI) -- supervised/verified by Claude (Cowork)
+  row=62 CHG-20260829-006 node=M-12-0.1 worker=DeepSeek (via Claude Code CLI) -- supervised/verified by Claude (Cowork)
+  row=61 CHG-20260829-005 node=M-12-0.1 worker=DeepSeek (via Claude Code CLI) -- supervised/verified by Claude (Cowork)
+  row=58 CHG-20260829-002 node=M-12-0.1 worker=DeepSeek (via Claude Code CLI) -- supervised/verified by Claude (Cowork)
+
+=== Any WI-07-0.2.3 row? ===
+  WI-07-0.2.3: row=327 status=Complete name=Excel persistence adapter parent=M-07-0.2

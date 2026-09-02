@@ -1,0 +1,110 @@
+SCENARIO|A|Happy-path supervised trial cycle
+TEST|A|m03-verdict-CLEAR|PASS|verdict=CLEAR
+TEST|A|m03-selects-impl-leaf|PASS|node=WI-07-0.2.5 impl=IMPLEMENTABLE_LEAF
+TEST|A|m03-next-action-reserve|PASS|status=PREFLIGHTED next=RESERVE
+TEST|A|m03-writes-task-files|PASS|NEXT_TASK.md + PREFLIGHT_REPORT.md
+TEST|A|m04-reserved|PASS|outcome=RESERVED
+TEST|A|m04-state-reserved|PASS|status=RESERVED
+TEST|A|m04-changeid|PASS|changeId=CHG-20260901-001
+TEST|A|m04-reservation-file|PASS|state/reservation.json
+TEST|A|m05-handoff-generated|PASS|outcome=HANDOFF_GENERATED
+TEST|A|m05-awaits-human-chatgpt|PASS|status=AWAITING_CHATGPT_PROMPT
+TEST|A|m05-handoff-file|PASS|handoff document present
+TEST|A|impl-artifact-registered|PASS|human implementation result registered
+TEST|A|m06-pass|PASS|outcome=VERIFICATION_PASSED
+TEST|A|m06-verified-state|PASS|status=VERIFIED
+TEST|A|m06-verification-file|PASS|verification.json primaryResult
+TEST|A|m07-package-created|PASS|outcome=CLAUDE_REVIEW_PACKAGE_CREATED
+TEST|A|m07-package-files|PASS|CLAUDE_REVIEW_PACKAGE.md + REVIEW_PACKET.md
+TEST|A|m08-pass-recorded|PASS|outcome=CLAUDE_RESULT_RECORDED
+TEST|A|m08-safe-stop-state|PASS|status=CLAUDE_REVIEW_PASSED_TRIAL next=TRIAL_CYCLE_SAFE_STOP
+TEST|A|m08-trial-only-unmerged|PASS|claude-review.json decision=PASS trialMode=true
+TEST|A|m10-trial-not-applicable|PASS|token=TRIAL_COMPLETION_NOT_APPLICABLE
+TEST|A|m10-eligibility-false|PASS|eligible=False
+TEST|A|m12-closed|PASS|outcome=TRIAL_CYCLE_CLOSED
+TEST|A|m12-closed-state|PASS|status=TRIAL_CYCLE_CLOSED
+TEST|A|m12-history-entry|PASS|trial-proving-history.json has WI-07-0.2.5 TRIAL_CYCLE_CLOSED
+TEST|A|m12-closure-file|PASS|trial-closure.json
+TEST|A|m12-closure-idempotent|PASS|outcome=TRIAL_CYCLE_ALREADY_CLOSED
+SCENARIO|B|Verification failure + correction cycle
+TEST|B|m06-fail|PASS|outcome=VERIFICATION_FAILED
+TEST|B|m06-fail-no-transition|PASS|status=AWAITING_CHATGPT_PROMPT
+TEST|B|m06-fail-evidence|PASS|verification.json VERIFICATION_FAILED recorded
+TEST|B|m06-corrected-pass|PASS|M06 rerun PASS after correction
+TEST|B|m06-verified-after-correction|PASS|status=VERIFIED
+TEST|B|m08-fix-decision|PASS|claude-review.json decision=FIX
+TEST|B|m08-fix-routes-m09|PASS|status=DB_M09_FIX_REQUIRED
+TEST|B|m09-context-created|PASS|outcome=FIX_CONTEXT_CREATED
+TEST|B|m09-context-file|PASS|tasks/FIX_CONTEXT.md
+TEST|B|m09-retains-dependency|PASS|correction context retains task/dependency identity
+TEST|B|m06-post-fix-pass|PASS|M06 rerun PASS after M09
+TEST|B|m07-reused|PASS|outcome=REUSED
+TEST|B|m08-pass-after-fix|PASS|status=CLAUDE_REVIEW_PASSED_TRIAL
+SCENARIO|C|Scope change protection
+TEST|C|scope-change-required|PASS|outcome=STOP_SCOPE_CHANGE_REQUIRED
+TEST|C|no-silent-expansion|PASS|status=PREFLIGHTED
+SCENARIO|D|Dependency lineage in the ChatGPT handoff
+TEST|D|dependency-identified|PASS|dependency WI-07-0.2.4 present in preflight/handoff
+TEST|D|trial-vs-real-distinction|PASS|dependency state carries Trial/Real distinction
+TEST|D|provenance-in-context|PASS|overlay provenance (change id) present
+SCENARIO|E|Trial dependency overlay (TRIAL vs REAL)
+TEST|E|overlay-satisfied-trial|PASS|node=WI-07-0.2.5
+TEST|E|real-overlay-ignored|PASS|next=RESOLVE_GOVERNANCE_BLOCK
+TEST|E|real-no-false-complete|PASS|real preflight verdict=NO_IMPLEMENTABLE_DESCENDANT
+TEST|E|real-dep-stays-planned|PASS|status=Planned
+SCENARIO|F|Restart / recovery
+TEST|F|recovery-suite-pass|PASS|DB32_TEST_OUTCOME=PASS
+TEST|F|restart-no-state-write|PASS|current-task.json untouched by recovery observation
+TEST|F|restart-no-workbook-write|PASS|workbook untouched by recovery observation
+TEST|F|restart-guidance|PASS|recovery guidance rendered
+TEST|F|restart-no-invented-pass|PASS|status=AWAITING_CHATGPT_PROMPT
+SCENARIO|G|Human Git gates (REAL fixture)
+TEST|G|m06-real-verified|PASS|outcome=VERIFICATION_PASSED status=VERIFIED
+TEST|G|m07-real-package|PASS|outcome=CLAUDE_REVIEW_PACKAGE_CREATED
+TEST|G|m08-real-awaits-pr|PASS|status=CLAUDE_REVIEW_PASSED_REAL
+TEST|G|git-merge-never-inferred|PASS|prState=UNKNOWN
+TEST|G|git-merge-explicit-only|PASS|merge confirmed only with explicit evidence
+TEST|G|m31-suite-pass|PASS|exit=0 passed=191 failed=0
+TEST|G|git-gate-human-only|PASS|human git gate suite ran clean (0 failed, no gate FAIL lines)
+SCENARIO|H|REAL M10 prerequisites + M11 validation
+TEST|H|m10-blocked-no-merge|PASS|token=BLOCKED_HUMAN_GIT_MERGE_GATE_PENDING
+TEST|H|m10-blocked-no-verif|PASS|token=BLOCKED_NO_DB_M06_VERIFICATION_PASS
+TEST|H|m10-blocked-no-claude|PASS|token=BLOCKED_NO_CLAUDE_PASS
+TEST|H|m10-eligible-all-prereq|PASS|eligible=True token=READY_FOR_GOVERNED_COMPLETION
+TEST|H|m10-blocked-fp-changed|PASS|token=ROADMAP_STRUCTURE_WRITE_PROHIBITED
+TEST|H|m11-validation-pass|PASS|pass=True
+SCENARIO|I|Operator experience
+TEST|I|task-history-suite|PASS|exit=0 passed=391 failed=0
+TEST|I|cost-history-suite|PASS|exit=0 passed=266 failed=0
+TEST|I|failure-fingerprint-suite|PASS|exit=0
+TEST|I|operator-panel-surfaces|PASS|stage=True deps=True model=True cost=True history=True human=True
+SCENARIO|J|No autonomy
+TEST|J|no-autonomy-tokens|PASS|found=
+TEST|J|m30-suite-pass|PASS|exit=0 passed=317 failed=0
+TEST|J|auto-execution-disabled|PASS|Show-DbM30 CLI asserts AUTO_EXECUTION_ENABLED=FALSE
+SCENARIO|K|Governance protection
+TEST|K|roadmap-fingerprint-unchanged|PASS|protected roadmap fingerprint identical across full trial cycle
+TEST|K|m06-no-workbook-write|PASS|DB06_WORKBOOK_MODIFIED=False
+TEST|K|m07-no-workbook-write|PASS|DB07_WORKBOOK_MODIFIED=False
+TEST|K|m08-no-workbook-write|PASS|DB08_WORKBOOK_MODIFIED=False
+SCENARIO|L|Known failure conditions
+TEST|L|stale-governance-blocked|PASS|outcome=STOP_PREFLIGHT_STALE
+TEST|L|dep-context-stale|PASS|verdict=NO_IMPLEMENTABLE_DESCENDANT
+TEST|L|human-governance-block|PASS|container -> NO_IMPLEMENTABLE_DESCENDANT / governance block, honest
+TEST|L|merge-state-unknown|PASS|prState=UNKNOWN
+TEST|L|mismatch-lock-recovery|PASS|DB32 filtered outcome=PASS
+SCENARIO|BUILD|Parse check of all backend scripts
+TEST|BUILD|parse-zero-errors|PASS|errors=0 files=0
+SCENARIO|LIVE|Live state safety
+TEST|LIVE|live-workbook-unchanged|PASS|canonical workbook SHA unchanged
+TEST|LIVE|live-state-unchanged-state-current-task.json|PASS|state\current-task.json
+TEST|LIVE|live-state-unchanged-state-current-lifecycle-state.json|PASS|state\current-lifecycle-state.json
+TEST|LIVE|live-state-unchanged-state-trial-proving-history.json|PASS|state\trial-proving-history.json
+TEST|LIVE|live-state-unchanged-state-trial-closure.json|PASS|state\trial-closure.json
+TEST|LIVE|live-state-unchanged-state-preflight.json|PASS|state\preflight.json
+
+DB33_TEST_SCENARIOS_RUN: 14
+DB33_TEST_ASSERTIONS_PASSED: 90
+DB33_TEST_ASSERTIONS_FAILED: 0
+DB33_TEST_ASSERTIONS_TOTAL: 90
+DB33_TEST_OUTCOME: PASS

@@ -1,0 +1,88 @@
+{
+    "taskId":  null,
+    "nodeId":  "M-07-0.2",
+    "name":  "Development Control Service (Excel-backed, Azure-SQL-ready)",
+    "nodeType":  "Milestone",
+    "phase":  "P0",
+    "layer":  "07",
+    "parentNodeId":  "07",
+    "currentWorkNodeId":  "M-07-0.2",
+    "featureNodeId":  null,
+    "status":  "PREFLIGHTED",
+    "selectedAt":  "2026-08-31T18:36:43Z",
+    "selectionReason":  "M-07-0.2 (Development Control Service (Excel-backed, Azure-SQL-ready)) is a governed NON_IMPLEMENTABLE_CONTAINER and no dependency-satisfied, non-trial-proven IMPLEMENTABLE_LEAF descendant exists to continue its work; a human governance decision is required to identify an implementation target. | CURRENT WORK FIRST: M-07-0.2 (Development Control Service (Excel-backed, Azure-SQL-ready)) has Status \u0027In Progress\u0027 and is named by 3 open reservation(s) in the Active Changes ledger; its freshest open reservation is CHG-20260830-015 (row 78) — the workbook\u0027s most recent governed activity. Per the rule it is NOT skipped for higher-priority Planned work.",
+    "repositories":  [
+
+                     ],
+    "projects":  [
+
+                 ],
+    "filesGlobs":  [
+
+                   ],
+    "schemaContexts":  [
+
+                       ],
+    "contractsApis":  [
+
+                      ],
+    "affectedNodes":  [
+
+                      ],
+    "scopeSource":  "n/a",
+    "scopeEvidence":  [
+
+                      ],
+    "dependencies":  [
+
+                     ],
+    "activeChangeConflicts":  [
+
+                              ],
+    "architectureDecisions":  [
+
+                              ],
+    "openDecisions":  [
+
+                      ],
+    "auditFindings":  [
+
+                      ],
+    "existingAssets":  [
+
+                       ],
+    "toolIntegration":  {
+                            "newToolApprovalRequested":  false,
+                            "observations":  [
+                                                 "Blocked selection — preflight did not reach tool/integration review."
+                                             ],
+                            "phase1RequiredTools":  [
+
+                                                    ]
+                        },
+    "risk":  "Unknown",
+    "parallelSafe":  null,
+    "repositoryGovernance":  {
+                                 "source":  "n/a",
+                                 "repositoriesIdentified":  [
+
+                                                            ],
+                                 "limitation":  "Blocked selection — no repository scope was derived."
+                             },
+    "leafValidation":  [
+
+                       ],
+    "verdict":  "NO_IMPLEMENTABLE_DESCENDANT",
+    "blockingReasons":  [
+                            "M-07-0.2 (Development Control Service (Excel-backed, Azure-SQL-ready)) is a governed NON_IMPLEMENTABLE_CONTAINER and no dependency-satisfied, non-trial-proven IMPLEMENTABLE_LEAF descendant exists to continue its work; a human governance decision is required to identify an implementation target."
+                        ],
+    "candidates":  [
+                       "M-07-0.2",
+                       "M-07-10.3",
+                       "M-12-0.4"
+                   ],
+    "workbookSha256":  "6D42C3BF6D3307B4B1A45870CE12F41E403DFED412E59F33D7B487E93A83E4F5",
+    "sourceReferences":  [
+                             "Development Control workbook (read-only) SHA256 6D42C3BF6D3307B4B1A45870CE12F41E403DFED412E59F33D7B487E93A83E4F5"
+                         ]
+}

@@ -1,0 +1,318 @@
+{
+    "schemaVersion": "1.0",
+    "generatedAtUtc": "2026-08-30T11:42:02.8713690Z",
+    "generator": "DevBridge DB-M02 Canonical Nexus Development Control Mapping",
+    "summary": "Per-sheet governance contract: read obligations, relevance rules, write triggers, append/update behavior and validation rules. Backed by config/development-control-map.json. The Session Protocol sheet governs all other sheets and must never be overridden.",
+    "mutationEnum": [
+        "NONE",
+        "UPDATE_EXISTING",
+        "APPEND_ONLY",
+        "UPDATE_AND_APPEND_HISTORY"
+    ],
+    "sheets": [
+        {
+            "sheet": "Control Center",
+            "role": "DERIVED_SUMMARY",
+            "alwaysRead": true,
+            "readWhen": [
+                "Every task start (changelog narrative for current workbook version and recent governed changes)",
+                "Before any write to any other sheet (confirm version and current summary)",
+                "When assessing current control state or release decision"
+            ],
+            "writeWhen": [
+                "Workbook version increments after approved changes (update changelog narrative and Workbook version value)",
+                "Roadmap summary, control state, or release decision assessment materially changes",
+                "Only manual cells; formula cells are NEVER written"
+            ],
+            "mutation": "UPDATE_EXISTING",
+            "requiresHistory": true,
+            "requiresActivity": true,
+            "validation": [
+                "Recompute manual counts from source sheets before writing",
+                "Prepend changelog entries, newest first; never delete narrative history",
+                "Never write formula cells (Current nodes, Milestones, Work items, Blocked nodes, per-phase counts)"
+            ]
+        },
+        {
+            "sheet": "Master Roadmap",
+            "role": "CURRENT_STATE",
+            "alwaysRead": true,
+            "readWhen": [
+                "Every task (target node, ancestry, dependencies, status, acceptance criteria, evidence, next action)",
+                "Before any eligibility or preflight computation",
+                "Before any write that mirrors state elsewhere (Development Guide, Control Center)"
+            ],
+            "writeWhen": [
+                "Approved completion (Status, Current Evidence, Next Action, progress fields)",
+                "Governed fact/concept/status/ownership change (update current row AND append Version History record)",
+                "New node creation (append new row in the governed data range, below the last governed record; the formal Excel table boundary is not the governance boundary - DB-M02.1)",
+                "Node supersession (mark Status=Superseded; successor recorded)"
+            ],
+            "mutation": "UPDATE_EXISTING",
+            "requiresHistory": true,
+            "requiresActivity": true,
+            "validation": [
+                "Node ID unique and RoadmapNode-formatted",
+                "Parent ID and Hierarchy Path consistent",
+                "Status from current-state vocabulary",
+                "No open Active Changes reservation on the node before writing",
+                "Progress honesty (blank rather than fabricated)"
+            ]
+        },
+        {
+            "sheet": "Active Changes",
+            "role": "GOVERNANCE",
+            "alwaysRead": true,
+            "readWhen": [
+                "Every preflight and task selection (all rows not Completed/Cancelled)",
+                "Before and during any implementation (reservation scope, branch/worktree, conflicts)",
+                "Before appending completion to a reservation row"
+            ],
+            "writeWhen": [
+                "Step 7: reserve change before editing (append new row with Change ID, Node ID, Worker, scope, timestamps, branch, worktree)",
+                "Step 8: scope change (update reservation BEFORE further editing)",
+                "Step 12/13: completion (update Status, Completed At, Result / Evidence; never delete row)",
+                "ADR / decision resolution (set ADR ID, Change Type, Validation Result)"
+            ],
+            "mutation": "APPEND_ONLY",
+            "requiresHistory": false,
+            "requiresActivity": true,
+            "validation": [
+                "Change ID unique CHG-YYYYMMDD-NNN",
+                "Node ID / Affected Nodes resolve to RoadmapNode",
+                "Open reservation required before editing any node",
+                "Completed records remain; never delete history"
+            ]
+        },
+        {
+            "sheet": "Audit Findings",
+            "role": "GOVERNANCE",
+            "alwaysRead": true,
+            "readWhen": [
+                "Selecting or verifying work (findings linked to target node or overlapping area/repository)",
+                "Preflight (a finding in scope is a constraint; resolution may be required)"
+            ],
+            "writeWhen": [
+                "Approved completion resolves a finding (Status, Verification, Owner)",
+                "New finding discovered (append after governance approval)",
+                "Due Gate or required action changes"
+            ],
+            "mutation": "UPDATE_AND_APPEND_HISTORY",
+            "requiresHistory": true,
+            "requiresActivity": true,
+            "validation": [
+                "Finding ID unique AF-NNN",
+                "Roadmap Link resolves to RoadmapNode",
+                "Severity Critical/High/Medium; status transitions recorded"
+            ]
+        },
+        {
+            "sheet": "Session Protocol",
+            "role": "PROTOCOL",
+            "alwaysRead": true,
+            "readWhen": [
+                "Always. Before every task, preflight, execution, and completion."
+            ],
+            "writeWhen": [],
+            "mutation": "NONE",
+            "requiresHistory": false,
+            "requiresActivity": false,
+            "validation": [
+                "DevBridge must never modify the protocol",
+                "Every hard stop condition must halt DevBridge immediately"
+            ]
+        },
+        {
+            "sheet": "Version History",
+            "role": "APPEND_ONLY",
+            "alwaysRead": true,
+            "readWhen": [
+                "Verifying current state (Is Current=Yes record matches Master Roadmap)",
+                "Tracing governed changes (Change ID, Record Version chains)",
+                "Before writing Master Roadmap (confirm no history would be overwritten)"
+            ],
+            "writeWhen": [
+                "Any governed fact/concept/status/ownership change (append newer Record Version with Change ID, reason, ADR/Decision link)",
+                "Concept changes even without code changes (Session Protocol rule)",
+                "End of chat (append records for everything governed)"
+            ],
+            "mutation": "APPEND_ONLY",
+            "requiresHistory": true,
+            "requiresActivity": true,
+            "validation": [
+                "Node ID + Record Version unique",
+                "Exactly one Is Current=Yes per Node ID",
+                "Change ID / ADR link resolve when populated",
+                "Never update or delete existing rows"
+            ]
+        },
+        {
+            "sheet": "Phase Plan",
+            "role": "GOVERNANCE",
+            "alwaysRead": true,
+            "readWhen": [
+                "Determining permitted execution sequence (current/non-superseded rows, Depends On chains, Exit Evidence)"
+            ],
+            "writeWhen": [
+                "Approved phase completion (Status=Completed, Exit Evidence)",
+                "New/revised phase approved (append or update; mark superseded rows Status=Superseded, never delete)"
+            ],
+            "mutation": "UPDATE_AND_APPEND_HISTORY",
+            "requiresHistory": true,
+            "requiresActivity": true,
+            "validation": [
+                "Phase Step unique P<phase>-<step>",
+                "Depends On references existing Phase Step",
+                "Roadmap Link resolves to RoadmapNode",
+                "Only current/non-superseded rows are executable"
+            ]
+        },
+        {
+            "sheet": "Architecture Decisions",
+            "role": "GOVERNANCE",
+            "alwaysRead": true,
+            "readWhen": [
+                "Every preflight where scope touches contracts/schema/layer ownership/architecture",
+                "Implementation planning (approved ADRs are authoritative constraints)"
+            ],
+            "writeWhen": [
+                "New architectural decision approved (append new ADR row with Change ID, Roadmap Links)",
+                "ADR superseded (mark old row Status=Superseded, link new ADR in Supersedes / Related)"
+            ],
+            "mutation": "APPEND_ONLY",
+            "requiresHistory": true,
+            "requiresActivity": true,
+            "validation": [
+                "ADR ID unique ADR-NNN",
+                "Roadmap Links resolve to RoadmapNode",
+                "Contradiction with an approved ADR -> preflight verdict ARCHITECTURE CONFLICT"
+            ]
+        },
+        {
+            "sheet": "Open Decisions",
+            "role": "GOVERNANCE",
+            "alwaysRead": true,
+            "readWhen": [
+                "Every task that touches a node referenced by an open decision",
+                "Preflight (unresolved decision that prevents safe implementation -> stop)"
+            ],
+            "writeWhen": [
+                "Task/discussion resolves a decision (Status=Decided, Resolution / ADR)",
+                "New unresolved decision discovered (append new DEC- row)",
+                "Corresponding ADR relationship recorded when a new ADR is created"
+            ],
+            "mutation": "UPDATE_AND_APPEND_HISTORY",
+            "requiresHistory": true,
+            "requiresActivity": true,
+            "validation": [
+                "Decision ID unique DEC-NNN",
+                "Roadmap Links resolve to RoadmapNode",
+                "Decided rows reference their resolution ADR when applicable"
+            ]
+        },
+        {
+            "sheet": "Dependencies & Blockers",
+            "role": "GOVERNANCE",
+            "alwaysRead": true,
+            "readWhen": [
+                "Every task eligibility and preflight computation (explicit graph is authoritative over textual Dependencies)",
+                "Resolving transitive closure of Open/Blocking relations"
+            ],
+            "writeWhen": [
+                "New dependency/blocker discovered during planning (append REL- row)",
+                "Dependency satisfied/resolved (Status=Satisfied/Resolved, Source Change noted)"
+            ],
+            "mutation": "UPDATE_AND_APPEND_HISTORY",
+            "requiresHistory": false,
+            "requiresActivity": true,
+            "validation": [
+                "Relation ID unique REL-NNN",
+                "From Node / Depends On or Blocks resolve to RoadmapNode",
+                "Relation Type and Status from vocabulary",
+                "Graph is authoritative for eligibility"
+            ]
+        },
+        {
+            "sheet": "Tool & Integration Registry",
+            "role": "GOVERNANCE",
+            "alwaysRead": true,
+            "readWhen": [
+                "Whenever a task involves external tools/services or integrations",
+                "Preflight for tool authorization (approval/safety requirements)"
+            ],
+            "writeWhen": [
+                "Tool/service approved or state changes (Current State, Approval / Safety, Notes)",
+                "Genuinely new tool/integration approved (append after governance approval)"
+            ],
+            "mutation": "UPDATE_AND_APPEND_HISTORY",
+            "requiresHistory": false,
+            "requiresActivity": true,
+            "validation": [
+                "Tool / Service names unique",
+                "Never authorize an unlisted tool or one with unmet Approval / Safety requirements"
+            ]
+        },
+        {
+            "sheet": "Activity Log",
+            "role": "APPEND_ONLY",
+            "alwaysRead": true,
+            "readWhen": [
+                "Verifying what actually happened (recent rows, Change ID / Session correlation)",
+                "Before accepting a completion (Human Review Status, Result, Evidence)"
+            ],
+            "writeWhen": [
+                "Every governed operation DevBridge performs (append Activity ID row with operation, entity, before/after, preflight verdict, result, evidence, duration, actor)",
+                "End of chat (Session Protocol rule)"
+            ],
+            "mutation": "APPEND_ONLY",
+            "requiresHistory": false,
+            "requiresActivity": true,
+            "validation": [
+                "Activity ID unique ACT-YYYYMMDD-NNN",
+                "Timestamp UTC recorded",
+                "Change ID resolves when populated",
+                "New RowVersion recorded for governed writes",
+                "Never delete or update existing activity records"
+            ]
+        },
+        {
+            "sheet": "Development Guide",
+            "role": "REFERENCE",
+            "alwaysRead": true,
+            "readWhen": [
+                "Preparing task context (plain-English milestone planning)",
+                "Keeping milestone status/evidence/next step aligned with Master Roadmap"
+            ],
+            "writeWhen": [
+                "Milestone status/evidence/next step changes on Master Roadmap (mirror Status, Progress %, What Exists Now, Next Step)",
+                "New milestone created (append row)"
+            ],
+            "mutation": "UPDATE_EXISTING",
+            "requiresHistory": false,
+            "requiresActivity": true,
+            "validation": [
+                "Milestone ID references an existing Milestone Node ID on Master Roadmap",
+                "Status/Progress/Next Step must not contradict Master Roadmap"
+            ]
+        },
+        {
+            "sheet": "Existing Assets",
+            "role": "REFERENCE",
+            "alwaysRead": true,
+            "readWhen": [
+                "Generating task context (must instruct reuse of working assets rather than rebuild)"
+            ],
+            "writeWhen": [
+                "Implementation materially creates, replaces, or invalidates an existing-asset record (update row or append new Area after governance approval)"
+            ],
+            "mutation": "UPDATE_AND_APPEND_HISTORY",
+            "requiresHistory": false,
+            "requiresActivity": true,
+            "validation": [
+                "Area unique",
+                "State from observed vocabulary",
+                "Task-context generation MUST include relevant Existing Assets rows"
+            ]
+        }
+    ]
+}

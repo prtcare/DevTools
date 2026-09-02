@@ -1,0 +1,98 @@
+{
+  "Milestone": "DB-M19",
+  "Title": "Capability-Based Model Router",
+  "Lane": "B",
+  "DateUtc": "2026-08-31T00:50:00Z",
+  "Implementation": "PASS",
+  "Summary": "Recommendation-only capability-based model router. Chains STEP 1 hard eligibility (17-member rejection vocabulary, health from configured state only) -> STEP 2 context fit (usable context minus output/reasoning reserve; mandatory never truncated) -> STEP 3 cost via the DB-M16 engine (no duplicate math; unknown price labeled COST_UNKNOWN) -> STEP 4 historical evidence via DB-M24 (VERIFIED_PREFERRED; self-reported PASS with failed verification never counts; NON-BINDING; INSUFFICIENT confidence has little/no ranking power) -> STEP 5 policy-weighted ranking (RoutingPolicy v1; default CHEAPEST_RELIABLE; no hard-coded weights; explained component scores, never opaque 'Score=83.7'). RoutingDecision stays DB-M14 v1; DB-M19 owns RoutingRequest v1, RoutingPolicy v1, RoutingCandidate v1, RoutingDecisionEvidence v1. MANUAL mode presents choices without selecting; ASSISTED recommends and never executes; AUTO refused (AUTO_EXECUTION_PROHIBITED). Manual override must still pass hard constraints; ineligible override rejected with explanation. Request-level MaxAllowedCost budget gate only. Recommendation exported as ROUTING_RECOMMENDATION.md; live tasks/ handoff files (CHATGPT_HANDOFF.md / DEEPSEEK_PROMPT.md / CLAUDE_REVIEW_PROMPT.md) never written. 0 paid API calls, 0 network calls, no model execution.",
+  "RoutingRequestV1": "PASS",
+  "RoutingPolicyV1": "PASS",
+  "RoutingCandidateV1": "PASS",
+  "RoutingDecisionEvidenceV1": "PASS",
+  "RoutingDecision": "DB-M14 v1 (unchanged)",
+  "CapabilityBasedRouting": "PASS",
+  "AutoExecutionRefused": "PASS",
+  "ManualModePreserved": "PASS",
+  "AssistedRecommendation": "PASS",
+  "Step1Eligibility17Reasons": "PASS",
+  "HealthFromConfiguredStateOnly": "PASS",
+  "ContextFit": "PASS",
+  "CostViaDbm16Engine": "PASS",
+  "PerformanceNonBinding": "PASS",
+  "PolicyRanking": "PASS",
+  "ExplainableScores": "PASS",
+  "ReasoningMinimumNeverMax": "PASS",
+  "ManualOverride": "PASS",
+  "RequestBudgetOnly": "PASS",
+  "RecommendationExport": "PASS",
+  "DeterministicRanking": "PASS",
+  "Tests": {
+    "Passed": 136,
+    "Failed": 0,
+    "Total": 136,
+    "Scenarios": 19,
+    "ScenarioCount": "19/19",
+    "PaidApiCalls": 0,
+    "NetworkCalls": 0,
+    "Note": "19 sections: S1 policy contracts; S2 cold start (cheapest eligible under CHEAPEST_RELIABLE, evidence INSUFFICIENT); S3 history-aware CHEAPEST_RELIABLE (cheap-but-failure-prone ranks below slightly-more-expensive high-success via retry chains); S4 BEST_COST_PER_SUCCESS; S5 cost-only (cheapest regardless of history); S6 HIGHEST_SUCCESS (self-reported PASS with FAILED verification does NOT count); S7 gateway (direct + gateway = two candidates for one underlying); S8 reasoning LOW/MEDIUM/HIGH + REASONING_LEVEL_INSUFFICIENT; S9 context fit (fits cheapest, excludes cheapest, mandatory exceeds all -> NO_ELIGIBLE_MODEL_CONTEXT, output reserve -> NO_ELIGIBLE_MODEL); S10 budget (BUDGET_EXCEEDED); S11 catalogue (disabled model, disabled provider, unavailable provider, unknown price, missing provider reference); S12 deterministic routing (stable tie-breakers); S13 transparent recommendation reason; S14 manual override accept + reject; S15 AUTO refused; S16 MANUAL preserved; S17 recommendation export to DB-M19-owned temp path (live handoff untouched); S18 RoutingDecisionEvidence round-trip; S19 DB-M14 frozen contract byte-identical (SHA-256) + no provider/model name branching (ADR-005)."
+  },
+  "Regressions": {
+    "DBM14": "exit 0 (PASS)",
+    "DBM16": "exit 0 (PASS)",
+    "DBM18": "exit 0 (PASS)",
+    "DBM24": "128/128 PASS, 34/34 scenarios (exit 0)"
+  },
+  "FilesCreated": [
+    "scripts/ai-routing/router/Router.ps1",
+    "scripts/ai-routing/router/RoutingPolicy.ps1",
+    "scripts/ai-routing/router/RoutingCandidate.ps1",
+    "scripts/ai-routing/router/RoutingEligibility.ps1",
+    "scripts/ai-routing/router/RoutingCost.ps1",
+    "scripts/ai-routing/router/RoutingPerformance.ps1",
+    "scripts/ai-routing/router/RoutingRank.ps1",
+    "scripts/ai-routing/router/Test-DbM19Routing.ps1",
+    "scripts/ai-routing/router/_fixtures/Generate-RoutingRecommendation.ps1",
+    "scripts/ai-routing/router/_fixtures/ROUTING_RECOMMENDATION.md",
+    "scripts/ai-routing/router/_fixtures/routing-result.json",
+    "design/ai-routing/DB-M19_MODEL_ROUTER.md",
+    "design/ai-routing/DB-M19_ROUTING_POLICY.md",
+    "state/db-m19-result.json"
+  ],
+  "FilesModified": [],
+  "AutomaticRoutingChanges": "NO",
+  "AI_APICalls": 0,
+  "DBM15Overlap": {
+    "Overlap": "NONE",
+    "Details": "DB-M15 pricing catalogue files untouched; prices consumed read-only through the DB-M16 engine (PriceStatus informational label only)."
+  },
+  "DBM16Overlap": {
+    "Overlap": "NONE",
+    "Details": "Cost/FX files untouched; Get-AiCandidateCostEstimate delegates entirely to Calculate-AiAttemptCost (DB-M16). No duplicate pricing math."
+  },
+  "DBM17Overlap": {
+    "Overlap": "NONE",
+    "Details": "AttemptStore.ps1 untouched; attempt history consumed read-only via DB-M24. No synthetic attempts written into live history."
+  },
+  "DBM18Overlap": {
+    "Overlap": "NONE",
+    "Details": "TaskClassification.ps1 / ContextPackage.ps1 untouched; DB-M19 consumes classification/context-budget/context-package read-only. WI-07-0.2.4 used only as a read-only test fixture by the test suite; no Lane C interference."
+  },
+  "DBM24Overlap": {
+    "Overlap": "NONE",
+    "Details": "performance/* untouched; Get-AiCandidatePerformanceEvidence builds a DB-M24 PerformanceQuery and reads the summary (VERIFIED_PREFERRED). Confidence bands consumed; confidence is NON-BINDING (INSUFFICIENT zeroes historical ranking weight)."
+  },
+  "DBM12Overlap": {
+    "Overlap": "NONE",
+    "Details": "src/DevBridge.* (DB-M12-owned) untouched."
+  },
+  "LaneCOverlap": {
+    "Overlap": "NONE",
+    "Details": "Lane C WI-07-0.2.4 (state/current-task.json, workbook backups, logs) untouched; the DB-M19 fixture task is self-contained and never reads live Lane C state."
+  },
+  "WorkbookModified": "NO",
+  "NexusRepositoriesModified": "NO",
+  "DBM20Ready": "YES",
+  "DBM21Ready": "YES",
+  "DBM22Ready": "YES",
+  "NotesForNextMilestones": "DB-M20 (retry/escalation) consumes RoutingDecision + RoutingDecisionEvidence + attempt chains; DB-M21 (budget/fingerprints) owns daily/monthly budgets (DB-M19 deliberately keeps a request-level MaxAllowedCost only) and the failure-fingerprint taxonomy; DB-M22 (health/failover) builds on the health-state handling and gateway-as-candidate semantics the router already consumes. RoutingDecisionEvidenceReference/PricingRecordId/ContextPackageId fields are wired for these consumers."
+}

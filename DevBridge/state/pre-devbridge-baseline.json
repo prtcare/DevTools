@@ -1,0 +1,17 @@
+{
+    "workbook":  {
+                     "path":  "C:\\Personal\\Nexus.Developer\\NEXUS_DEVELOPMENT_CONTROL.xlsx",
+                     "sha256":  "F520060CB753EC8EC96B44BCBD193BDAB69CA68D4CC27198663665D5FE63F884",
+                     "capturedAtUtc":  "2026-08-31T05:17:06Z"
+                 },
+    "git":  {
+                "repository":  "C:\\Personal\\Nexus.Developer",
+                "branch":  "feature/m-08-1-2-ci-pipeline",
+                "headCommit":  "ea39db910a6e3b00bff880316996a696ae7460dc",
+                "capturedAtUtc":  "2026-08-31T05:17:06Z"
+            },
+    "errors":  [
+
+               ],
+    "representOnly":  "NO RESTORE FUNCTION EXISTS. Restoration of this baseline is a HUMAN action taken later; DevBridge never restores it automatically."
+}

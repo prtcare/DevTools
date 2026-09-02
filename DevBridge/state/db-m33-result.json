@@ -1,0 +1,269 @@
+{
+    "milestone":  "DB-M33",
+    "title":  "FINAL SUPERVISED DEVBRIDGE PROVING",
+    "dateUtc":  "2026-09-01T17:31:13Z",
+    "mode":  "TRIAL",
+    "outcome":  "PASS",
+    "tests":  {
+                  "scenarios":  14,
+                  "assertions":  90,
+                  "passed":  90,
+                  "failed":  0,
+                  "summary":  "DB-M33 TEST SUMMARY: 90 passed, 0 failed"
+              },
+    "scenarios":  {
+                      "A":  {
+                                "scenario":  "A",
+                                "name":  "Happy-path supervised trial (WI-07-0.2.5, full M03-\u003eM12.4)",
+                                "assertions":  27,
+                                "passed":  27,
+                                "failed":  0,
+                                "verdict":  "PASS",
+                                "results":  {
+                                                "m03-verdict-CLEAR":  "PASS",
+                                                "m03-selects-impl-leaf":  "PASS",
+                                                "m03-next-action-reserve":  "PASS",
+                                                "m03-writes-task-files":  "PASS",
+                                                "m04-reserved":  "PASS",
+                                                "m04-state-reserved":  "PASS",
+                                                "m04-changeid":  "PASS",
+                                                "m04-reservation-file":  "PASS",
+                                                "m05-handoff-generated":  "PASS",
+                                                "m05-awaits-human-chatgpt":  "PASS",
+                                                "m05-handoff-file":  "PASS",
+                                                "impl-artifact-registered":  "PASS",
+                                                "m06-pass":  "PASS",
+                                                "m06-verified-state":  "PASS",
+                                                "m06-verification-file":  "PASS",
+                                                "m07-package-created":  "PASS",
+                                                "m07-package-files":  "PASS",
+                                                "m08-pass-recorded":  "PASS",
+                                                "m08-safe-stop-state":  "PASS",
+                                                "m08-trial-only-unmerged":  "PASS",
+                                                "m10-trial-not-applicable":  "PASS",
+                                                "m10-eligibility-false":  "PASS",
+                                                "m12-closed":  "PASS",
+                                                "m12-closed-state":  "PASS",
+                                                "m12-history-entry":  "PASS",
+                                                "m12-closure-file":  "PASS",
+                                                "m12-closure-idempotent":  "PASS"
+                                            }
+                            },
+                      "B":  {
+                                "scenario":  "B",
+                                "name":  "Verification failure + M09 correction cycle",
+                                "assertions":  13,
+                                "passed":  13,
+                                "failed":  0,
+                                "verdict":  "PASS",
+                                "results":  {
+                                                "m06-fail":  "PASS",
+                                                "m06-fail-no-transition":  "PASS",
+                                                "m06-fail-evidence":  "PASS",
+                                                "m06-corrected-pass":  "PASS",
+                                                "m06-verified-after-correction":  "PASS",
+                                                "m08-fix-decision":  "PASS",
+                                                "m08-fix-routes-m09":  "PASS",
+                                                "m09-context-created":  "PASS",
+                                                "m09-context-file":  "PASS",
+                                                "m09-retains-dependency":  "PASS",
+                                                "m06-post-fix-pass":  "PASS",
+                                                "m07-reused":  "PASS",
+                                                "m08-pass-after-fix":  "PASS"
+                                            }
+                            },
+                      "C":  {
+                                "scenario":  "C",
+                                "name":  "Scope-change protection (SCOPE_CHANGE_REQUIRED, no silent expansion)",
+                                "assertions":  2,
+                                "passed":  2,
+                                "failed":  0,
+                                "verdict":  "PASS",
+                                "results":  {
+                                                "scope-change-required":  "PASS",
+                                                "no-silent-expansion":  "PASS"
+                                            }
+                            },
+                      "D":  {
+                                "scenario":  "D",
+                                "name":  "Dependency lineage in preflight + ChatGPT handoff",
+                                "assertions":  3,
+                                "passed":  3,
+                                "failed":  0,
+                                "verdict":  "PASS",
+                                "results":  {
+                                                "dependency-identified":  "PASS",
+                                                "trial-vs-real-distinction":  "PASS",
+                                                "provenance-in-context":  "PASS"
+                                            }
+                            },
+                      "E":  {
+                                "scenario":  "E",
+                                "name":  "Trial-proven dependency overlay (TRIAL vs REAL, Gate 1 fix)",
+                                "assertions":  4,
+                                "passed":  4,
+                                "failed":  0,
+                                "verdict":  "PASS",
+                                "results":  {
+                                                "overlay-satisfied-trial":  "PASS",
+                                                "real-overlay-ignored":  "PASS",
+                                                "real-no-false-complete":  "PASS",
+                                                "real-dep-stays-planned":  "PASS"
+                                            }
+                            },
+                      "F":  {
+                                "scenario":  "F",
+                                "name":  "Restart/recovery (DB-M32 engine)",
+                                "assertions":  5,
+                                "passed":  5,
+                                "failed":  0,
+                                "verdict":  "PASS",
+                                "results":  {
+                                                "recovery-suite-pass":  "PASS",
+                                                "restart-no-state-write":  "PASS",
+                                                "restart-no-workbook-write":  "PASS",
+                                                "restart-guidance":  "PASS",
+                                                "restart-no-invented-pass":  "PASS"
+                                            }
+                            },
+                      "G":  {
+                                "scenario":  "G",
+                                "name":  "Human Git gates (REAL fixture)",
+                                "assertions":  7,
+                                "passed":  7,
+                                "failed":  0,
+                                "verdict":  "PASS",
+                                "results":  {
+                                                "m06-real-verified":  "PASS",
+                                                "m07-real-package":  "PASS",
+                                                "m08-real-awaits-pr":  "PASS",
+                                                "git-merge-never-inferred":  "PASS",
+                                                "git-merge-explicit-only":  "PASS",
+                                                "m31-suite-pass":  "PASS",
+                                                "git-gate-human-only":  "PASS"
+                                            }
+                            },
+                      "H":  {
+                                "scenario":  "H",
+                                "name":  "REAL M10 prerequisites + M11 validation",
+                                "assertions":  6,
+                                "passed":  6,
+                                "failed":  0,
+                                "verdict":  "PASS",
+                                "results":  {
+                                                "m10-blocked-no-merge":  "PASS",
+                                                "m10-blocked-no-verif":  "PASS",
+                                                "m10-blocked-no-claude":  "PASS",
+                                                "m10-eligible-all-prereq":  "PASS",
+                                                "m10-blocked-fp-changed":  "PASS",
+                                                "m11-validation-pass":  "PASS"
+                                            }
+                            },
+                      "I":  {
+                                "scenario":  "I",
+                                "name":  "Operator experience (task/cost/fingerprint suites)",
+                                "assertions":  4,
+                                "passed":  4,
+                                "failed":  0,
+                                "verdict":  "PASS",
+                                "results":  {
+                                                "task-history-suite":  "PASS",
+                                                "cost-history-suite":  "PASS",
+                                                "failure-fingerprint-suite":  "PASS",
+                                                "operator-panel-surfaces":  "PASS"
+                                            }
+                            },
+                      "J":  {
+                                "scenario":  "J",
+                                "name":  "No autonomy (M30 suite + token scan)",
+                                "assertions":  3,
+                                "passed":  3,
+                                "failed":  0,
+                                "verdict":  "PASS",
+                                "results":  {
+                                                "no-autonomy-tokens":  "PASS",
+                                                "m30-suite-pass":  "PASS",
+                                                "auto-execution-disabled":  "PASS"
+                                            }
+                            },
+                      "K":  {
+                                "scenario":  "K",
+                                "name":  "Governance protection (roadmap fingerprint)",
+                                "assertions":  4,
+                                "passed":  4,
+                                "failed":  0,
+                                "verdict":  "PASS",
+                                "results":  {
+                                                "roadmap-fingerprint-unchanged":  "PASS",
+                                                "m06-no-workbook-write":  "PASS",
+                                                "m07-no-workbook-write":  "PASS",
+                                                "m08-no-workbook-write":  "PASS"
+                                            }
+                            },
+                      "L":  {
+                                "scenario":  "L",
+                                "name":  "Known failure conditions (honest blocks)",
+                                "assertions":  5,
+                                "passed":  5,
+                                "failed":  0,
+                                "verdict":  "PASS",
+                                "results":  {
+                                                "stale-governance-blocked":  "PASS",
+                                                "dep-context-stale":  "PASS",
+                                                "human-governance-block":  "PASS",
+                                                "merge-state-unknown":  "PASS",
+                                                "mismatch-lock-recovery":  "PASS"
+                                            }
+                            },
+                      "BUILD":  {
+                                    "scenario":  "BUILD",
+                                    "name":  "Parse check of all backend scripts",
+                                    "assertions":  1,
+                                    "passed":  1,
+                                    "failed":  0,
+                                    "verdict":  "PASS",
+                                    "results":  {
+                                                    "parse-zero-errors":  "PASS"
+                                                }
+                                },
+                      "LIVE":  {
+                                   "scenario":  "LIVE",
+                                   "name":  "Live canonical workbook + state safety",
+                                   "assertions":  6,
+                                   "passed":  6,
+                                   "failed":  0,
+                                   "verdict":  "PASS",
+                                   "results":  {
+                                                   "live-workbook-unchanged":  "PASS",
+                                                   "live-state-unchanged-state-current-task.json":  "PASS",
+                                                   "live-state-unchanged-state-current-lifecycle-state.json":  "PASS",
+                                                   "live-state-unchanged-state-trial-proving-history.json":  "PASS",
+                                                   "live-state-unchanged-state-trial-closure.json":  "PASS",
+                                                   "live-state-unchanged-state-preflight.json":  "PASS"
+                                               }
+                               }
+                  },
+    "assertionFailures":  [
+
+                          ],
+    "hardening":  {
+                      "overlayGate1":  "TrialDependencyOverlay.ps1 Gate 1: mode now resolved EVERY call via Get-DevBridgeMode (config + current-task), honoring REAL_NEXUS_DEVELOPMENT on fresh state; TRIAL default removed. TRIAL_TO_REAL_COMPLETION_CAPABILITY NO proven by scenario E."
+                  },
+    "liveSafety":  {
+                       "canonicalWorkbookSha":  "6D42C3BF (verified unchanged by LIVE scenario, byte-identical fixture copies used throughout)",
+                       "liveStateMutated":  false,
+                       "gitMutated":  false,
+                       "nexusSourceProgressMutated":  false,
+                       "preDevBridgeRestore":  false
+                   },
+    "externalDrifts":  {
+                           "dbM26S41":  "EXTERNAL_PRE_EXISTING_DRIFT (reported separately, not a DB-M33 failure)",
+                           "dbM181R45":  "EXTERNAL_PRE_EXISTING_DRIFT (reported separately, not a DB-M33 failure)"
+                       },
+    "outputs":  [
+                    "design\\DB-M33_FINAL_SUPERVISED_PROVING.md",
+                    "state\\db-m33-result.json",
+                    "state\\db-m33-test-run.log",
+                    "tasks\\DB-M33_IMPLEMENTATION_REPORT.md"
+                ]
+}

@@ -1,0 +1,79 @@
+<Window x:Class="DevBridge.UI.ClaudeResultEntryDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="RECORD CLAUDE RESULT — evidence entry"
+        Width="720" Height="640" WindowStartupLocation="CenterOwner"
+        ShowInTaskbar="False" ResizeMode="CanResize" Background="#F4F6F8">
+    <Grid Margin="16">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/>
+        </Grid.RowDefinitions>
+
+        <TextBlock Text="DB-M08 Claude verdict evidence entry" FontSize="14" FontWeight="Bold" Foreground="#1F2933"/>
+        <TextBlock Grid.Row="1" Margin="0,4,0,0" FontSize="11" Foreground="#5A6675" TextWrapping="Wrap"
+                   Text="This dialog is PURE INPUT CAPTURE. Paste Claude's exact review response verbatim and select the verdict you received. Recording itself goes through the DB-M12.2 backend command (Set-ClaudeReviewResult.ps1) — the UI never writes state or evidence directly, never interprets review semantics, and never routes the cycle on its own."/>
+
+        <StackPanel Grid.Row="2" Orientation="Horizontal" Margin="0,14,0,0">
+            <TextBlock Text="VERDICT" FontSize="11" FontWeight="SemiBold" Foreground="#5A6675" VerticalAlignment="Center"/>
+            <RadioButton x:Name="PassRadio" Content="PASS" GroupName="Verdict" IsChecked="True" Margin="14,0,0,0"
+                         Checked="Decision_Checked" FontWeight="SemiBold" VerticalAlignment="Center"/>
+            <RadioButton x:Name="FixRadio" Content="FIX" GroupName="Verdict" Margin="14,0,0,0"
+                         Checked="Decision_Checked" FontWeight="SemiBold" VerticalAlignment="Center"/>
+            <RadioButton x:Name="GovernanceRadio" Content="GOVERNANCE_ISSUE" GroupName="Verdict" Margin="14,0,0,0"
+                         Checked="Decision_Checked" FontWeight="SemiBold" VerticalAlignment="Center"/>
+            <RadioButton x:Name="HumanDecisionRadio" Content="HUMAN_DECISION_REQUIRED" GroupName="Verdict" Margin="14,0,0,0"
+                         Checked="Decision_Checked" FontWeight="SemiBold" VerticalAlignment="Center"/>
+        </StackPanel>
+
+        <!-- Read-only routing preview: mode- and decision-derived, exactly as the
+             backend script (Set-ClaudeReviewResult.ps1) routes the cycle. -->
+        <Border Grid.Row="3" Background="#EAF1F8" BorderBrush="#BBD3EA" BorderThickness="1" CornerRadius="4"
+                Padding="10,8" Margin="0,12,0,0">
+            <StackPanel>
+                <TextBlock Text="MODE-ROUTING PREVIEW (read-only — the backend decides, this only mirrors its switch)"
+                           FontSize="10" FontWeight="SemiBold" Foreground="#1565C0"/>
+                <TextBlock x:Name="RoutingPreviewText" FontSize="11" Foreground="#1F2933" Margin="0,4,0,0" TextWrapping="Wrap"/>
+            </StackPanel>
+        </Border>
+
+        <Grid Grid.Row="4" Margin="0,12,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*"/>
+                <ColumnDefinition Width="14"/>
+                <ColumnDefinition Width="*"/>
+            </Grid.ColumnDefinitions>
+            <StackPanel>
+                <TextBlock Text="Blocking findings (count)" FontSize="11" Foreground="#5A6675"/>
+                <TextBox x:Name="BlockingFindingsText" Text="0" FontSize="11" Padding="6" Margin="0,4,0,0"
+                         Background="White" BorderBrush="#D6DCE2"/>
+            </StackPanel>
+            <StackPanel Grid.Column="2">
+                <TextBlock Text="Non-blocking observations (count)" FontSize="11" Foreground="#5A6675"/>
+                <TextBox x:Name="NonBlockingObservationsText" Text="0" FontSize="11" Padding="6" Margin="0,4,0,0"
+                         Background="White" BorderBrush="#D6DCE2"/>
+            </StackPanel>
+        </Grid>
+
+        <TextBlock Grid.Row="5" Text="Paste the ORIGINAL review response text verbatim:" FontSize="11"
+                   Foreground="#5A6675" Margin="0,14,0,4"/>
+
+        <TextBox x:Name="ReviewTextBox" Grid.Row="6" AcceptsReturn="True" AcceptsTab="True"
+                 TextWrapping="Wrap" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Auto"
+                 FontFamily="Consolas" FontSize="11" Padding="8" Background="White"
+                 BorderBrush="#D6DCE2" VerticalContentAlignment="Top" Height="140"/>
+
+        <StackPanel Grid.Row="8" Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,14,0,0">
+            <Button Content="CANCEL" Width="90" Margin="0,0,8,0" Click="Cancel_Click"/>
+            <Button Content="RECORD EVIDENCE" Width="150" Background="#1565C0" Foreground="White"
+                    FontWeight="SemiBold" Click="Record_Click"/>
+        </StackPanel>
+    </Grid>
+</Window>

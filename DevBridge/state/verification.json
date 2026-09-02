@@ -1,0 +1,165 @@
+{
+  "milestone": "DB-M06",
+  "taskId": "WI-07-0.2.3",
+  "changeId": "CHG-20260830-016",
+  "nodeName": "Excel persistence adapter",
+  "nodeType": "WorkItem",
+  "reservationRow": 79,
+  "governanceStatus": "VALID",
+  "generatedAtUtc": "2026-08-30T00:00:00Z",
+  "primaryResult": "VERIFICATION_PASSED",
+  "parts": {
+    "part1GovernanceRevalidation": {
+      "result": "VALID",
+      "workbookSha256": "F52A1A8FE491B6C91809EAC92DB2F0DCCD43FF7C5C80BA2618E19B64D3FDD4F7",
+      "matchesReservation": true,
+      "changeIdOccurrences": 1,
+      "changeIdRow": 79,
+      "changeStatus": "Open -- reserved via DB-M04 governed reservation; implementation pending CHATGPT handoff",
+      "nodeRow": 327,
+      "nodeType": "WorkItem",
+      "nodeStatus": "Planned",
+      "nodeParent": "M-07-0.2",
+      "nodeGate": "GATE_A",
+      "scopeRepositories": "Nexus.Developer",
+      "scopeProjects": "Nexus.Developer.Infrastructure",
+      "scopeFilesGlobs": "src/Nexus.Developer.Infrastructure/DevelopmentControl/**",
+      "scopeContractsApis": "IDevelopmentControlStore",
+      "preflightVerdict": "CLEAR",
+      "conflictingChangesNamingNode": 0,
+      "dependencyWI07022Status": "Complete",
+      "blockingFindingsForNode": 0,
+      "stale": false
+    },
+    "part2BaselineComparison": {
+      "result": "PASS",
+      "baselineHead": "ea39db910a6e3b00bff880316996a696ae7460dc",
+      "currentHead": "ea39db910a6e3b00bff880316996a696ae7460dc",
+      "branch": "feature/m-08-1-2-ci-pipeline",
+      "commitsAdded": 0,
+      "governanceWorkbookChange": "M NEXUS_DEVELOPMENT_CONTROL.xlsx",
+      "implementationChanges": 3
+    },
+    "part3ChangedFileInventory": {
+      "result": "PASS",
+      "classification": {
+        "GOVERNANCE_WORKBOOK": [
+          "NEXUS_DEVELOPMENT_CONTROL.xlsx"
+        ],
+        "IMPLEMENTATION_CHANGE_IN_SCOPE": [
+          "src/Nexus.Developer.Infrastructure/DevelopmentControl/ExcelWorkbookColumnMap.cs",
+          "src/Nexus.Developer.Infrastructure/DevelopmentControl/DevelopmentControlCellCodec.cs",
+          "src/Nexus.Developer.Infrastructure/DevelopmentControl/ExcelDevelopmentControlStore.cs"
+        ],
+        "OUT_OF_SCOPE": [],
+        "UNKNOWN": []
+      },
+      "scopeViolation": false
+    },
+    "part4ReportedFilesVerified": {
+      "result": "CONFIRMED",
+      "reported": 3,
+      "found": 3,
+      "files": [
+        "ExcelWorkbookColumnMap.cs",
+        "DevelopmentControlCellCodec.cs",
+        "ExcelDevelopmentControlStore.cs"
+      ]
+    },
+    "part5ContractCompleteness": {
+      "result": "PASS",
+      "interfaceOpsCount": 22,
+      "readCheckOps": 9,
+      "mutatingOps": 13,
+      "adapterImplementsAll": true,
+      "allMutatingOpsTakeEnvelopeAndReturnMutationResult": true
+    },
+    "part6ReadBehavior": {
+      "result": "PASS",
+      "evidence": "Harness verified GetControlStateAsync, GetNodeAsync, GetSubtreeAsync, SearchNodesAsync, GetActiveChangesAsync, GetActivityLogAsync, ValidateControlStoreAsync, GetNextExecutableWorkItemAsync. Independent workbook count cross-check matches store exactly: live=636 milestones=166 workitems=138 blocked=0 activeChanges=19 openAudit=18."
+    },
+    "part7SafeMutationOnTempCopy": {
+      "result": "PASS",
+      "evidence": "Harness copies the canonical workbook to %TEMP% and every mutation lands on the copy only. Canonical SHA256 unchanged before/after all runs."
+    },
+    "part8AppendOnlyVersionHistory": {
+      "result": "PASS",
+      "evidence": "Append-only probe: all 956 canonical Version History rows byte-identical in the mutated copy (0 missing, 0 cell mismatches); 9 rows appended (958-966). AppendVersionHistory flips previous record Is Current to No and appends the new Record Version (ADR-003)."
+    },
+    "part9ActivityLogSchema": {
+      "result": "PASS",
+      "evidence": "Activity Log header = exactly 34 columns. All 52 canonical rows byte-identical in the copy; 12 rows appended (54-65). AppendActivityLog writes all 34 mapped fields."
+    },
+    "part10CanonicalHashBeforeAfter": {
+      "result": "UNCHANGED",
+      "sha256Before": "F52A1A8FE491B6C91809EAC92DB2F0DCCD43FF7C5C80BA2618E19B64D3FDD4F7",
+      "sha256After": "F52A1A8FE491B6C91809EAC92DB2F0DCCD43FF7C5C80BA2618E19B64D3FDD4F7",
+      "canonicalModified": false
+    },
+    "part11KnownLimitationClassification": {
+      "result": "CLASSIFIED",
+      "EXPECTED_NEXT_WORK": [
+        "Multi-node / subtree atomic writes (ReparentNodeAsync carries only the single node; children-carry is a multi-node atomic write) - explicitly deferred to WI-07-0.2.4 per acceptance criterion 3 and a code comment.",
+        "Concurrency / locking / multi-operation atomic writes - explicitly the next work item WI-07-0.2.4."
+      ],
+      "ACCEPTABLE_CURRENT_LIMITATION": [
+        "IdempotencyKey is not persisted as its own field (the 34-column Activity Log has no dedicated column); idempotency is achieved by scanning the Activity Log for operation + change id + entity id, which works because each mutation's activity row lands in the same atomic save (documented in code).",
+        "RunPreflightAsync uses documented first-pass heuristics (naive path-prefix glob overlap, no wildcard expansion)."
+      ],
+      "PRE_EXISTING_DATA_CONDITION": [
+        "Is Current marker is not maintained consistently in the live workbook (live Layer-08 nodes carry newest records marked No; planned nodes like M-07-0.2/WI-07-0.2.x have no Version History records). IsDeleted is therefore derived from terminal status, and validation enforces structural integrity only.",
+        "The Control Center narrative carries no 'roadmap vX.Y' marker, so ControlState.RoadmapVersion is empty (faithful reporting, not fabricated).",
+        "Dependencies may reference non-roadmap decision entities (e.g. DEC-002/DEC-003); validation deliberately does not require dependency resolution."
+      ],
+      "CONTRADICTS_ACCEPTANCE_CRITERIA": [],
+      "IMPLEMENTATION_DEFECT": []
+    },
+    "part12Build": {
+      "result": "PASS",
+      "projects": 4,
+      "warnings": 0,
+      "errors": 0
+    },
+    "part13Tests": {
+      "result": "PASS",
+      "testPassed": 199,
+      "testFailed": 0,
+      "testSkipped": 0,
+      "independentRun": true,
+      "harnessChecksPassed": 32,
+      "harnessChecksFailed": 0
+    },
+    "part14AdditionalTempVerification": {
+      "result": "PASS",
+      "evidence": "Independent control-state count cross-check (636/166/138/0/19/18 matches store). Append-only probe on a fresh post-mutation copy. All throwaway verification copies cleaned after use; harness source + run logs retained at %TEMP%\\WI07023-verify."
+    },
+    "part15ScopeHashFileEvidence": {
+      "result": "PASS",
+      "evidence": "3 implementation files hashed and confirmed inside the reserved glob; 3 pre-existing scope files (ActivityLogMigration/WorkbookSchemaReport/WorkbookSchemaValidator) byte-identical to the reservation baseline (D9051FCD/E8D05329/DC76E648)."
+    },
+    "part16DeepSeekReportCrossCheck": {
+      "result": "CONFIRMED",
+      "evidence": "The implementation report's claims (Result PASS advisory; 3 files created; scope compliance YES; build clean; tests 199/199; no commit; canonical workbook untouched; known limitations documented) were each re-verified independently against repository reality (git status, git log, dotnet build, dotnet test, workbook SHA256, harness). No claim contradicted by evidence."
+    },
+    "part17GitSafety": {
+      "result": "PASS",
+      "commitsMade": 0,
+      "stagedFiles": 0,
+      "outOfScopeSourceChanges": 0,
+      "branchUnchanged": true
+    },
+    "part18AcceptanceMatrix": {
+      "result": "PASS",
+      "criteriaPassed": 8,
+      "criteriaTotal": 8,
+      "allPassed": true
+    }
+  },
+  "stateTransition": {
+    "status": "VERIFIED",
+    "nextAllowedAction": "CLAUDE_REVIEW",
+    "workbookCompletionStateUpdated": false,
+    "roadmapNodeMarkedComplete": false,
+    "activeChangeClosed": false
+  }
+}

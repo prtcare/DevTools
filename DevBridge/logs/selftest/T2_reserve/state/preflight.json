@@ -1,0 +1,58 @@
+﻿{
+    "phase":  "P0",
+    "affectedNodes":  [
+                          "F-07-0",
+                          "M-07-0.2",
+                          "WI-07-0.2.1",
+                          "WI-07-0.2.2",
+                          "WI-07-0.2.3",
+                          "WI-07-0.2.4",
+                          "WI-07-0.2.5",
+                          "WI-07-0.2.6",
+                          "WI-07-0.2.7",
+                          "WI-07-0.2.8",
+                          "WI-07-0.2.9",
+                          "WI-07-0.2.10"
+                      ],
+    "name":  "Concurrency, locking and atomic writes",
+    "projects":  [
+                     "Nexus.Developer.Core"
+                 ],
+    "taskId":  "WI-07-0.2.4",
+    "dependencies":  [
+                         {
+                             "detail":  "Excel persistence adapter",
+                             "status":  "Complete",
+                             "dependencyId":  "WI-07-0.2.3",
+                             "type":  "Textual (node Dependencies)",
+                             "state":  "SATISFIED"
+                         },
+                         {
+                             "detail":  "No Dependencies \u0026 Blockers row references the target or its chain",
+                             "status":  null,
+                             "dependencyId":  "REL-001..011",
+                             "type":  "Explicit D\u0026B",
+                             "state":  "NOT_APPLICABLE"
+                         }
+                     ],
+    "repositories":  [
+                         "Nexus.Developer"
+                     ],
+    "currentWorkNodeId":  "M-07-0.2",
+    "parallelSafe":  true,
+    "workbookSha256":  "CCF9E2F153F06A016F744BA2A76E3FF48D56B5C90E9475BDAF396A1489BEF7F5",
+    "featureNodeId":  "F-07-0",
+    "contractsApis":  [
+                          "IDevelopmentControlStore"
+                      ],
+    "verdict":  "CLEAR",
+    "schemaContexts":  [
+
+                       ],
+    "parentNodeId":  "M-07-0.2",
+    "filesGlobs":  [
+                       "src/Nexus.Developer.Core/DevelopmentControl/**"
+                   ],
+    "risk":  "Low",
+    "nodeId":  "WI-07-0.2.4"
+}

@@ -1,0 +1,62 @@
+{
+  "milestone": "DB-M08",
+  "nodeId": "WI-07-0.2.4",
+  "changeId": "CHG-20260830-017",
+  "recordedAtUtc": "2026-08-31T01:45:00Z",
+  "trialMode": true,
+  "decision": "PASS",
+  "claudeOverallConclusion": "The implementation satisfies the governed intent, preserves the Infrastructure->Core boundary, and Claude found no concrete technical defect contradicting DB-M06 deterministic verification. Claude reviewed the actual source delta directly.",
+  "blockingFindings": [],
+  "nonBlockingObservations": [
+    {
+      "id": "NB-1",
+      "classification": "NONBLOCKING",
+      "title": "Redundant optimistic verification on the runner path",
+      "detail": "DevelopmentControlAtomicWriteCoordinator.cs performs generic RowVersion verification before delegating to a runner-capable store, and the adapter also performs verification in RunAtomicWorkUnitCore. Potential impact: extra workbook open / duplicated check. No correctness effect (both read the same persisted state under the same held lock). Not a blocking fix."
+    },
+    {
+      "id": "NB-2",
+      "classification": "NONBLOCKING",
+      "title": "_batchWorkbook mutable instance state guarded by contract",
+      "detail": "ExcelDevelopmentControlStore.cs _batchWorkbook is shared instance state whose safety depends on the documented contract that the runner is invoked while the named writer lock is held. Safe under all governed callers (coordinator, guard); could potentially be hardened further against future caller misuse (e.g. ThreadStatic/AsyncLocal). Not a blocking fix."
+    },
+    {
+      "id": "NB-3",
+      "classification": "NONBLOCKING",
+      "title": "Non-domain exceptions may propagate rather than map into AtomicWriteResult",
+      "detail": "Only AtomicWritePreconditionException and InvalidOperationException are mapped to a structured AtomicWriteResult; unexpected failures propagate. Failure remains safe (batch restored via finally, temp cleaned, canonical untouched) and matches the pre-existing single-op adapter behavior. Not a blocking fix."
+    },
+    {
+      "id": "NB-4",
+      "classification": "NONBLOCKING",
+      "title": "Mutex path-derived identity canonicalization boundary",
+      "detail": "DevelopmentControlMutexIdentity canonicalizes casing/separators, but the same physical file reached through mapped-drive vs UNC paths may theoretically produce a different identity. Inherent to identity-from-path; governed deployment uses one canonical path. Awareness only. Not a blocking fix."
+    },
+    {
+      "id": "NB-5",
+      "classification": "INFORMATIONAL / NONBLOCKING",
+      "title": "LockWait null for direct-runner calls",
+      "detail": "LockWait is stamped by the coordinator/guard (with { LockWait = attempt.Elapsed }); direct runner invocations return LockWait null. Informational only. Not a blocking fix."
+    }
+  ],
+  "reviewedAgainstDbM06": true,
+  "dbM06Result": "VERIFICATION_PASS",
+  "architectureAssessment": "PASS",
+  "acceptanceCriteriaAssessment": "PASS",
+  "verificationEvidenceAssessment": "PASS",
+  "gitGovernanceAssessment": "PASS",
+  "implementationState": "TRIAL_ONLY_UNMERGED",
+  "reviewTimestampUtc": "2026-08-31T01:40:00Z",
+  "reviewEvidenceReference": "logs/tasks/WI-07-0.2.4/CHG-20260830-017/CLAUDE_REVIEW_PACKAGE.md (review package); Claude's PASS decision rendered against the package and the actual source delta",
+  "observationPolicy": {
+    "noAutomaticNexusWorkItemsCreated": true,
+    "noAcceptanceCriteriaModified": true,
+    "noRoadmapStructureModified": true,
+    "observationsPreservedAsReviewEvidence": true,
+    "futureCorrectionPath": "CORRECT_CURRENT_ATTEMPT (if current work active) or NEW_FIX_TASK_REQUIRED (after governed completion) under the existing structure; DB-M08 creates no task."
+  },
+  "idempotency": {
+    "duplicateDecisionRecorded": false,
+    "runTwiceDetection": "Decision not previously recorded; first DB-M08 record for CHG-20260830-017."
+  }
+}

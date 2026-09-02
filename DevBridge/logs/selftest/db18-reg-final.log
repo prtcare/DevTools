@@ -1,0 +1,233 @@
+﻿================================================================
+DB-M18 classification + context package test suite
+Root: C:\Personal\DevTools\DevBridge
+================================================================
+--- S1 task-type classification (8 examples) ---
+PASS: S1 documentation -> RESEARCH
+PASS: S1 documentation -> RequiresCoding false
+PASS: S1 documentation -> RequiresReasoning false
+PASS: S1 documentation -> Complexity LOW
+PASS: S1 small UI -> IMPLEMENTATION
+PASS: S1 small UI -> Complexity LOW (small signal)
+PASS: S1 small UI -> RequiresVision true
+PASS: S1 normal coding -> IMPLEMENTATION
+PASS: S1 normal coding -> Complexity MEDIUM
+PASS: S1 normal coding -> RequiresCoding true
+PASS: S1 DB/schema -> IMPLEMENTATION
+PASS: S1 DB/schema -> Complexity HIGH (schema)
+PASS: S1 DB/schema -> RequiresStructuredOutput true
+PASS: S1 architecture -> PLANNING
+PASS: S1 architecture -> Complexity HIGH
+PASS: S1 architecture -> MinimumReasoningLevel HIGH
+PASS: S1 verification -> VERIFICATION
+PASS: S1 verification -> ExpectedOutputTokens 1024
+PASS: S1 high-risk governance -> GOVERNANCE
+PASS: S1 high-risk governance -> Risk preserved HIGH
+PASS: S1 high-risk governance -> MinimumReasoningLevel HIGH
+PASS: S1 high-risk governance -> ReasoningRuleApplied true
+PASS: S1 log summarization -> RESEARCH
+--- S2 complexity derivation ---
+PASS: S2 simple code change -> LOW
+PASS: S2 normal coding with contract -> MEDIUM
+PASS: S2 schema -> HIGH
+PASS: S2 multi-repository -> HIGH
+--- S3 risk preservation ---
+PASS: S3 governed Low preserved verbatim
+PASS: S3 governed Medium preserved verbatim
+PASS: S3 governed High preserved verbatim
+PASS: S3 absent risk + FAIL verdict -> HIGH
+PASS: S3 absent risk + blocker -> HIGH
+PASS: S3 no risk signal -> Risk stays UNKNOWN (null)
+--- S4 capability requirements ---
+PASS: S4 no code scope -> RequiresCoding null
+PASS: S4 no contract/schema -> RequiresStructuredOutput null
+PASS: S4 no UI signal -> RequiresVision null
+PASS: S4 MEDIUM coding -> RequiresReasoning true
+PASS: S4 code scope -> RequiresToolUse true
+PASS: S4 governed coding scope -> HumanReviewRequired true
+--- S5 reasoning rule ---
+PASS: S5 schema/HIGH complexity -> HIGH reasoning
+PASS: S5 schema -> ReasoningRuleApplied true
+PASS: S5 HIGH risk -> HIGH reasoning
+PASS: S5 HIGH risk -> ReasoningRuleApplied true
+PASS: S5 MEDIUM risk -> MEDIUM reasoning
+--- S6 mandatory context preservation ---
+PASS: S6 package Status OK
+PASS: S6 mandatory section 'task_identity' included
+PASS: S6 mandatory section 'goal' included
+PASS: S6 mandatory section 'acceptance_criteria' included
+PASS: S6 mandatory section 'reserved_scope' included
+PASS: S6 mandatory section 'mandatory_adrs' included
+PASS: S6 mandatory section 'blockers' included
+PASS: S6 mandatory section 'report_format' included
+PASS: S6 goal content preserved
+PASS: S6 governing ADR content preserved
+PASS: S6 blocker content preserved
+PASS: S6 report-format template embedded
+--- S7 optional context dropping ---
+PASS: S7 budget REDUCED when mandatory+optional exceed budget
+PASS: S7 both optional sections EXCLUDE
+PASS: S7 mandatory never EXCLUDE
+PASS: S7 built package contains no optional sections
+PASS: S7 built package keeps all mandatory sections
+--- S8 token budget ---
+PASS: S8 estimator chars/4 (4 chars -> 1)
+PASS: S8 estimator empty -> 0
+PASS: S8 estimator null -> 0
+PASS: S8 estimator 200 chars -> 50
+PASS: S8 estimator deterministic
+PASS: S8 everything fits at 1000 -> selected equals total
+--- S9 secret filtering ---
+PASS: S9 leaky section content replaced with redaction marker
+PASS: S9 redaction produced a warning
+PASS: S9 the secret value never reaches the package
+PASS: S9 redacted package passes Test-ContextPackage
+--- S10 history reduced first ---
+PASS: S10 budget REDUCED
+PASS: S10 history (LOW_VALUE) EXCLUDE first
+PASS: S10 optional kept when history alone frees budget
+PASS: S10 built package drops history
+PASS: S10 built package keeps optional
+--- S11 relevant file selection ---
+PASS: S11 only in-scope files selected
+PASS: S11 Store.cs selected
+PASS: S11 out-of-scope file excluded
+--- S12 binary/generated rejection ---
+PASS: S12 only the text source survives (bin/obj/generated/workbook/image rejected)
+PASS: S12 surviving file is Store.cs
+--- S13 stable package hash ---
+PASS: S13 hash identical when GeneratedAtUtc differs (excluded from hash)
+PASS: S13 hash changes when content changes
+PASS: S13 hash recomputation matches
+--- S14 schema v1 round-trip ---
+PASS: S14 classification round-trip passes Test-TaskClassification
+PASS: S14 classification SchemaVersion stays 1
+PASS: S14 classification values survive JSON
+PASS: S14 budget round-trip passes Test-ContextBudget
+PASS: S14 package round-trip passes Test-ContextPackage
+--- S15 unknown fields remain null ---
+PASS: S15 Risk null when unknown
+PASS: S15 ChangeId null when unknown
+PASS: S15 RequiresVision null when unknown
+PASS: S15 RequiresStructuredOutput null when unknown
+PASS: S15 nulls survive JSON round-trip (not coerced to "")
+PASS: S15 no SelectedModelId property ever present
+--- S16 provider-name independence ---
+PASS: S16 no provider name 'DeepSeek' in DB-M18 libraries
+PASS: S16 no provider name 'Claude' in DB-M18 libraries
+PASS: S16 no provider name 'OpenAI' in DB-M18 libraries
+PASS: S16 no provider name 'Gemini' in DB-M18 libraries
+PASS: S16 no provider name 'deepseek' in DB-M18 libraries
+PASS: S16 no provider name 'claude' in DB-M18 libraries
+PASS: S16 no provider name 'openai' in DB-M18 libraries
+PASS: S16 no provider name 'gemini' in DB-M18 libraries
+PASS: S16 TaskType is a DB-M14 vocabulary member (provider-independent)
+PASS: S16 no ProviderId usage in DB-M18 libraries
+--- S17 no model selection ---
+PASS: S17 classification has no SelectedModelId
+PASS: S17 classification has no SelectedProviderId
+PASS: S17 libraries never build a routing decision
+PASS: S17 libraries never call a model selector
+--- S18-25 context-budget scenarios ---
+PASS: S18 budget FITS when everything fits
+PASS: S18 no reduction required
+PASS: S18 all sections INCLUDE
+PASS: S18 selected equals total (400)
+PASS: S19 mandatory exceeds budget -> EXCEEDS
+PASS: S19 EXCEEDS carries an explicit Failure reason
+PASS: S19 all sections excluded (no silent truncation)
+PASS: S19 package Status FAILED
+PASS: S19 package carries FailureReason
+PASS: S19 explicit-failure package is structurally valid
+PASS: S20 budget REDUCED
+PASS: S20 strategy DROP_OPTIONAL_AND_LOW_VALUE
+PASS: S20 optional dropped
+PASS: S21 strategy DROP_LOW_VALUE (history reduced first)
+PASS: S21 history section excluded
+PASS: S21 optional untouched
+PASS: S22 budget REDUCED via excerpt
+PASS: S22 large mandatory file EXCERPT (not dropped)
+PASS: S22 selected tokens fit after excerpt
+PASS: S22 excerpted section still included
+PASS: S22 excerpted content is truncated
+PASS: S22 excerpt carries an explicit omission marker
+PASS: S23 AllowedInputTokens 0 rejected
+PASS: S23 AllowedInputTokens negative rejected
+PASS: S23 ReservedOutputTokens negative rejected
+PASS: S23 reserved equals allowed rejected
+PASS: S23 reserved above allowed rejected
+PASS: S24 available = allowed - reserved (500)
+PASS: S24 selected never exceeds the post-reserve budget
+PASS: S24 without reserve more context fits than with reserve
+PASS: S25 selected (400) never exceeds allowed (1000)
+PASS: S25 selected (300) never exceeds allowed (800)
+PASS: S25 selected (500) never exceeds allowed (700)
+PASS: S25 selected (3210) never exceeds allowed (4000)
+PASS: S25 selected (500) never exceeds allowed (1000)
+PASS: S25 EXCEEDS package selects zero <= allowed
+--- S26 CapabilityRequirement reuse ---
+PASS: S26 derived CapabilityRequirement passes Test-AiCapabilityRequirement
+PASS: S26 CapabilityRequirement SchemaVersion 1 (DB-M14 v1)
+PASS: S26 TaskType carried into requirement
+PASS: S26 Complexity carried into requirement
+PASS: S26 AllowedProviders empty (no provider selection)
+PASS: S26 AllowedModels empty (no model selection)
+PASS: S26 ExecutionMode MANUAL
+PASS: S26 MaxAllowedCost null (cost is DB-M16 territory)
+PASS: S26 PreferredLatency is a DB-M14 RelativeSpeeds member
+PASS: S26 UNKNOWN-heavy classification still produces a valid requirement
+PASS: S26 unknown Risk stays null in the requirement
+--- S27 WI-07-0.2.4 governed fixture ---
+PASS: S27 fixture classification structurally valid
+FAIL: S27 fixture TaskId correct
+FAIL: S27 fixture ChangeId from governed state
+PASS: S27 fixture -> IMPLEMENTATION
+PASS: S27 fixture -> Complexity MEDIUM (derived from governed scope)
+PASS: S27 fixture -> Risk LOW (governed field preserved verbatim)
+PASS: S27 fixture -> coding required
+PASS: S27 fixture -> reasoning required (nontrivial complexity)
+PASS: S27 fixture -> structured output required (contract in scope)
+PASS: S27 fixture -> tool use required (code scope)
+PASS: S27 fixture -> no vision requirement
+PASS: S27 fixture -> MinimumReasoningLevel MEDIUM
+PASS: S27 fixture -> ContextRequirement HIGH (contract+affected+scope+governing ADR)
+PASS: S27 fixture -> human review required (governed scope)
+PASS: S27 fixture -> LatencyPreference NORMAL (DB-M14 vocabulary)
+PASS: S27 fixture -> ExecutionMode MANUAL
+PASS: S27 fixture candidate section 'task_identity' present
+PASS: S27 fixture candidate section 'goal' present
+PASS: S27 fixture candidate section 'acceptance_criteria' present
+PASS: S27 fixture candidate section 'reserved_scope' present
+PASS: S27 fixture candidate section 'mandatory_adrs' present
+PASS: S27 fixture candidate section 'blockers' present
+PASS: S27 fixture candidate section 'report_format' present
+PASS: S27 fixture package Status OK
+PASS: S27 fixture package includes at least the mandatory sections
+PASS: S27 fixture acceptance criteria honestly report the governed gap
+PASS: S27 fixture governing ADR-003 packaged
+PASS: S27 fixture summary TaskId correct
+PASS: S27 fixture markdown summary renders
+--- S28 no AI / no routing / no pricing scan ---
+PASS: S28 library contains no 'Invoke-WebRequest' token
+PASS: S28 library contains no 'Invoke-RestMethod' token
+PASS: S28 library contains no 'System.Net.Http' token
+PASS: S28 library contains no 'System.Net.WebClient' token
+PASS: S28 library contains no 'New-AiRoutingDecision' token
+PASS: S28 library contains no 'New-AiAttemptRecord' token
+PASS: S28 library contains no 'Get-AiPricing' token
+PASS: S28 library contains no 'PricingRecord' token
+PASS: S28 library contains no 'Select-Model' token
+PASS: S28 library contains no 'Route-Task' token
+PASS: S28 library contains no 'api-key' token
+PASS: S28 library contains no 'api_key' token
+--- S29 context-package summary ---
+PASS: S29 summary SectionCount matches
+PASS: S29 fixture has no secret warnings
+PASS: S29 summary carries the package hash
+PASS: S29 summary is JSON-serializable (UI-discoverable)
+--- S30 DB-M14 frozen contract regression ---
+PASS: S30 AiRoutingContracts.ps1 hash unchanged by DB-M18 test run
+PASS: S30 DB-M14 regression suite exits 0 (all green)
+
+DB-M18 classification/context tests: 203 checks, 2 failures.
+EXIT=1

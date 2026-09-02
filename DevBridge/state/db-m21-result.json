@@ -1,0 +1,127 @@
+{
+  "Milestone": "DB-M21",
+  "Title": "Budget Control + Failure Fingerprints",
+  "Lane": "B",
+  "DateUtc": "2026-08-31T03:39:30Z",
+  "Implementation": "PASS",
+  "Summary": "CONTROL/DECISION FOUNDATION. Consumes cost evidence (DB-M17 attempt records, DB-M16 FX) and produces a structured BudgetEvaluation v1 -- never calculates model prices, never executes a provider/model. No paid API call, no network call, AUTO_EXECUTION_ENABLED = FALSE. Budget scopes TASK/CHANGE/SESSION/DAILY/MONTHLY/TEAM (generic scope keys, no Nexus coupling); nullable limits (null = scope not configured, never an infinite sentinel); actual-preferred spend with estimated-pending separated; warning thresholds with strictest-wins precedence; unknown-cost policy (never treat unknown as zero); explicit-only human override (Only explicit provided override evidence counts); human Git / governance gates consume ZERO AI budget; deterministic day/month windows from the INJECTED evaluation timestamp + AccountingUtcOffsetHours (never machine clock); DB-M16 currency conversion semantics (explicit ExchangeRate wins, else Get-AiExchangeRateAt; conversion unavailable -> controlled CURRENCY_UNAVAILABLE uncertainty, never an invented rate). FailureFingerprint v1: canonical identity = SHA-256 over fp<version>|<TaskType>|<FailureCategory>|<sorted codes>|<ToolCategory>; route/reasoning/context hashes retained as structured fields for recurrence typing (REPEATED_SAME_ROUTE / SAME_MODEL / AFTER_REASONING_ESCALATION / AFTER_MODEL_SWITCH / SAME_FAILURE / KNOWN_FAILURE_RESOLVED / FIRST_OCCURRENCE); normalized codes (timestamps/GUIDs/temp paths/user-dir/line-col/retry counters -> stable markers); secret protection (hashes/references only, raw prompts never inputs, secret-like stored value rejects the fingerprint); algorithm versioning (a v2 algorithm must not silently reinterpret v1 fingerprints); provider-vs-model failure separation (AUTHENTICATION/RATE_LIMIT/PROVIDER_UNAVAILABLE never poison model quality history); retry suppression (RETRY_SUPPRESSED_KNOWN_FAILURE only for identical route + known-same context above MaxRepeatsBeforeSuppress; context change / reasoning escalation / model switch -> RETRY_ALLOWED_*); repeated failures are evidence-only signals, never roadmap changes (PERSISTENT_IMPLEMENTATION_FAILURE evidence-only, NEW_FIX_TASK_REQUIRED represent-only). Combined Get-AiAttemptPermission: ALLOW_ATTEMPT / ALLOW_WITH_BUDGET_WARNING / BLOCK_BUDGET / BLOCK_KNOWN_FAILURE_REPEAT / REQUIRE_HUMAN_OVERRIDE / REQUIRE_ESCALATION_REPLAN. DB-M20 consumed read-only (failure categories, actions, statuses, AutoExecutionEnabled; Status != RECOMMENDED -> REQUIRE_ESCALATION_REPLAN, never a retry). Budget block -> DB-M20 STOP_BUDGET_LIMIT semantics; DB-M20 cannot bypass the block. Git human gates (HUMAN_GIT_ACTION_REQUIRED, AWAITING_HUMAN_PR, PR_OPEN, AWAITING_HUMAN_MERGE) are NOT AI failures and consume no retry/escalation budget; budget logic never bypasses them.",
+  "BudgetPolicyV1": "PASS",
+  "BudgetEvaluationV1": "PASS",
+  "BudgetScopes6": "PASS",
+  "BudgetDecisions6": "PASS",
+  "BudgetPurposes3": "PASS",
+  "BudgetReasonCodes25": "PASS",
+  "BudgetEvaluation": "PASS",
+  "TaskDailyMonthlyBudget": "PASS",
+  "WarningThresholds": "PASS",
+  "UnknownCostHandling": "PASS",
+  "CurrencyIntegration": "PASS",
+  "HumanOverride": "PASS",
+  "HumanGitGovernanceGatesZeroCost": "PASS",
+  "DeterministicWindows": "PASS",
+  "FailureFingerprintV1": "PASS",
+  "Normalization": "PASS",
+  "SecretProtection": "PASS",
+  "RepeatedFailureDetection": "PASS",
+  "RetrySuppression": "PASS",
+  "ProviderVsModelSeparation": "PASS",
+  "AlgorithmVersioning": "PASS",
+  "RecurrenceTypes7": "PASS",
+  "CombinedAttemptPermission6": "PASS",
+  "AutoExecutionEnabled": "FALSE",
+  "AutoExecutionRefused": "PASS",
+  "ManualModePreserved": "YES",
+  "AssistedRecommendation": "PASS",
+  "ProviderModelExecuted": "NO",
+  "RoadmapModificationCapability": "NO",
+  "GitPrMergeCapability": "NO",
+  "GitHumanGatesNeverBypassed": "PASS",
+  "DbM20CannotBypassBlock": "PASS",
+  "RepeatedFailureEvidenceOnly": "PASS",
+  "NoInfiniteRetryLoops": "PASS",
+  "Deterministic": "PASS",
+  "FrozenContractsReadOnly": "PASS",
+  "TemporaryDevBridgeBoundary": "PASS",
+  "Tests": {
+    "Passed": 151,
+    "Failed": 0,
+    "Total": 151,
+    "Scenarios": 50,
+    "ScenarioCount": "50/50",
+    "PaidApiCalls": 0,
+    "NetworkCalls": 0,
+    "Note": "Budget suite (Test-DbM21Budget.ps1) 77 assertions, 0 failed, exit 0; S1..S23 = 23 scenarios. Fingerprint+combined suite (Test-DbM21Fingerprints.ps1) 74 assertions, 0 failed, exit 0; S24..S50 = 27 scenarios. Total 151 assertions across the required 50 scenarios. S1 BudgetPolicy v1 nullable limits/defaults; S2 policy validation; S3 projected spend actual vs estimated-pending; S4 no applicable budget; S5 task limit under -> ALLOW; S6 task limit exceeded -> BLOCK; S7 change limit; S8 session limit explicit window; S9 daily limit deterministic day window; S10 monthly limit; S11 team/workspace limit; S12 warning threshold; S13/S14 unknown cost ALLOW vs BLOCK; S15 unknown cost WARN; S16 currency conversion with FX; S17 currency unavailable -> controlled uncertainty, no invented rate; S18 human override granted/refused; S19 override reason required; S20 override prohibited; S21 human Git/governance gate zero cost; S22 multi-scope strictest-wins; S23 deterministic windows (UTC, +5.5 IST boundary). S24 normalization pipeline fixed order; S25 SHA-256 house pattern; S26 New-AiFailureFingerprint canonical identity; S27 secret protection; S28 algorithm versioning v1/v2 never merged; S29 provider-vs-model separation; S30 FIRST_OCCURRENCE; S31 REPEATED_SAME_ROUTE; S32 REPEATED_SAME_MODEL; S33 REPEATED_AFTER_REASONING_ESCALATION; S34 REPEATED_AFTER_MODEL_SWITCH; S35 KNOWN_FAILURE_RESOLVED; S36 retry suppression identical repeat above threshold; S37 within threshold -> allowed; S38 context change -> allowed; S39 Get-AiKnownFailureEvidence full bundle; S40 recurrence types distinct + persistent failures evidence-only. S41 all clear -> ALLOW_ATTEMPT; S42 budget warning -> ALLOW_WITH_BUDGET_WARNING; S43 budget block -> BLOCK_BUDGET; S44 budget requires override -> REQUIRE_HUMAN_OVERRIDE; S45 known-failure suppression + DB-M20 identical route -> BLOCK_KNOWN_FAILURE_REPEAT (override does NOT permit identical repeat, S48); S46 DB-M20 terminal -> REQUIRE_ESCALATION_REPLAN; S47 Git human gates not AI failures, zero budget; S49 AUTO execution prohibited; S50 Temporary DevBridge boundary (no execution/network/Nexus/Git/roadmap tokens; 6 permission outcomes; every record AutoExecutionEnabled FALSE)."
+  },
+  "Regressions": {
+    "DBM14": "51/51 PASS, exit 0",
+    "DBM15": "71/71 PASS, exit 0",
+    "DBM16": "167/167 PASS, exit 0",
+    "DBM17": "99/99 PASS, exit 0",
+    "DBM18": "202/203 PASS, 1 failure (exit 1) -- LIVE LANE C CAUSE, NOT a DB-M21 regression: Test-DbM18Classification S27 reads live state/current-task.json; Lane C advanced WI-07-0.2.4 to status AWAITING_CLAUDE_REVIEW (nextAllowedAction COPY_TO_CLAUDE, chatgpt handoff generated 2026-08-30T18:08:13Z). TaskClassification.ps1 haystack includes the status field (line 227) and SigReview matches 'review' (line 231) -> TaskType=REVIEW instead of the fixture-expected IMPLEMENTATION. DB-M18 files untouched by DB-M21 (mtimes 2026-08-30 23:56..2026-08-31 00:08, before the DB-M21 session). See LaneCOverlap. Prior DB-M20 baseline recorded DBM18 203/203.",
+    "DBM19": "136/136 PASS, exit 0",
+    "DBM20": "149/149 PASS, exit 0",
+    "DBM24": "128/128 PASS, exit 0"
+  },
+  "FilesCreated": [
+    "scripts/ai-routing/budget/BudgetPolicy.ps1",
+    "scripts/ai-routing/budget/BudgetEngine.ps1",
+    "scripts/ai-routing/budget/Test-DbM21Budget.ps1",
+    "scripts/ai-routing/failure-fingerprints/FingerprintContracts.ps1",
+    "scripts/ai-routing/failure-fingerprints/FingerprintEngine.ps1",
+    "scripts/ai-routing/failure-fingerprints/AttemptPermission.ps1",
+    "scripts/ai-routing/failure-fingerprints/Test-DbM21Fingerprints.ps1",
+    "design/ai-routing/DB-M21_BUDGET_CONTROL.md",
+    "design/ai-routing/DB-M21_FAILURE_FINGERPRINTS.md",
+    "state/db-m21-result.json"
+  ],
+  "FilesModified": [],
+  "AutomaticExecutionEnabled": "FALSE",
+  "AI_APICalls": 0,
+  "NetworkCalls": 0,
+  "DBM14Overlap": {
+    "Overlap": "NONE",
+    "Details": "AiRoutingContracts.ps1 consumed READ-ONLY (Get-ContractProperty vocab/helpers). SHA-256 CAF41E6E52B5B98904326C7E5CD8A7BF361B8C8CDFC395AAD2B4C53F357A4408 verified MATCH (byte-identical to the DB-M14 frozen contract recorded in db-m20-result.json). Untouched."
+  },
+  "DBM15Overlap": {
+    "Overlap": "NONE",
+    "Details": "Pricing catalogue untouched; prices consumed read-only through the DB-M16 engine. Budget never calculates a price -- it consumes cost evidence. No duplicate pricing."
+  },
+  "DBM16Overlap": {
+    "Overlap": "NONE",
+    "Details": "Cost/FX files untouched. Convert-DbM21ToPolicyCurrency delegates to Get-AiExchangeRateAt with DB-M16 FX-record semantics (explicit ExchangeRate wins, effective-dated catalogue lookup, CURRENCY_UNAVAILABLE when no rate). No second FX engine."
+  },
+  "DBM17Overlap": {
+    "Overlap": "NONE",
+    "Details": "AttemptStore.ps1 untouched. DB-M17 remains authoritative for AI attempt history; DB-M21 reads/aggregates attempt records (ActualCost preferred over EstimatedCost, RetryNumber, FailureCategory, ProviderId/ModelId/UnderlyingModelId/GatewayProviderId/ReasoningLevel) -- no competing store is created or written."
+  },
+  "DBM18Overlap": {
+    "Overlap": "NONE",
+    "Details": "TaskClassification.ps1 / ContextPackage.ps1 untouched. DB-M21 fingerprints use DB-M14 task-type/reasoning vocabularies (Get-AiRoutingTaskTypes / Get-AiRoutingReasoningOrder), not DB-M18 classification. See the DB-M18 regression entry: the single S27 failure is live Lane C state, not a DB-M21 change."
+  },
+  "DBM19Overlap": {
+    "Overlap": "NONE",
+    "Details": "router/* untouched. DB-M21 consumes DB-M19 routing candidates read-only through the DB-M20 decision (NextProviderId/NextModelId/NextReasoningLevel); no routing logic duplicated."
+  },
+  "DBM20Overlap": {
+    "Overlap": "NONE",
+    "Details": "escalation/* untouched. DB-M20 vocabularies consumed read-only via Get-DbM20FailureCategories / Get-DbM20Actions / Get-DbM20DecisionStatuses / Get-DbM20FailureClassMap (FailureCategory validated against the 20-category vocabulary; Status != RECOMMENDED -> REQUIRE_ESCALATION_REPLAN; AutoExecutionEnabled -> REQUIRE_ESCALATION_REPLAN). Budget block maps to DB-M20 STOP_BUDGET_LIMIT; DB-M20 cannot bypass the block."
+  },
+  "DBM24Overlap": {
+    "Overlap": "NONE",
+    "Details": "performance/* untouched. Provider-vs-model failure separation keeps M24 model quality evidence meaningful: infrastructure failures (AUTHENTICATION/RATE_LIMIT/PROVIDER_UNAVAILABLE) never poison quality history."
+  },
+  "DBM12Overlap": {
+    "Overlap": "NONE",
+    "Details": "src/DevBridge.* (DB-M12-owned) untouched."
+  },
+  "LaneCOverlap": {
+    "Overlap": "NONE",
+    "Details": "DB-M21 wrote NO Lane C files: zero write operations in any DB-M21 script (grep-verified). state/current-task.json, state/preflight.json, workbook backups, logs untouched by DB-M21. current-task.json mtime 2026-08-31 09:04 is Lane C's own live handoff activity (status AWAITING_CLAUDE_REVIEW, COPY_TO_CLAUDE) -- observed, not caused. The DB-M18 S27 failure is that live Lane C advancement. DB-M21's fixture tasks are self-contained; the suite never reads live Lane C state."
+  },
+  "WorkbookModified": "NO",
+  "NexusRepositoriesModified": "NO",
+  "WorkbookSha256": "F520060CB753EC8EC96B44BCBD193BDAB69CA68D4CC27198663665D5FE63F884",
+  "DBM22Ready": "YES",
+  "DBM25Ready": "YES",
+  "NotesForNextMilestones": "DB-M22 (health/failover) builds on the DB-M20 transient route-switch / same-route retry semantics and the DB-M21 retry-suppression signal (RETRY_SUPPRESSED_KNOWN_FAILURE) for provider-health discrimination. DB-M25 (model quality) benefits from DB-M21 provider-vs-model failure separation, which keeps infrastructure failures out of quality history. BudgetPolicy v1 and FailureFingerprint v1 are DB-M21-owned schemas; consumers read them read-only."
+}

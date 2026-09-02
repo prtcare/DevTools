@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>DevBridge.LiveCycleDriver</RootNamespace>
+    <AssemblyName>LiveCycleDriver</AssemblyName>
+    <!-- LocateRoot() walks up from the assembly location to the folder holding config/devbridge.json -->
+    <BaseOutputPath>bin\</BaseOutputPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\DevBridge.Engine\DevBridge.Engine.csproj" />
+  </ItemGroup>
+
+</Project>

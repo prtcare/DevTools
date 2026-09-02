@@ -1,0 +1,246 @@
+{
+    "taskId":  "WI-07-0.2.3",
+    "nodeId":  "WI-07-0.2.3",
+    "name":  "Excel persistence adapter",
+    "nodeType":  "WorkItem",
+    "phase":  "P0",
+    "currentWorkNodeId":  "M-07-0.2",
+    "featureNodeId":  "F-07-0",
+    "selectedAt":  "2026-08-30T13:08:07Z",
+    "preflightVerdict":  "CLEAR",
+    "sourceReferences":  [
+                             "Master Roadmap row 327: WI-07-0.2.3",
+                             "Active Changes CHG-20260830-015 (row 78): next development prompt WI-07-0.2.3",
+                             "Active Changes CHG-20260830-014 (row 77): WI-07-0.2.1 verified complete",
+                             "Development Control workbook (read-only) SHA256 E866D3C4D260031D3C067F4C9C272A497FD913AD7C8D0CBFD0BF42F76BCD2941"
+                         ],
+    "startedAt":  null,
+    "reservationId":  null,
+    "changeId":  "CHG-20260830-016",
+    "activityId":  "ACT-20260830-016",
+    "status":  "CONTROL_VALIDATED",
+    "reservedAt":  "2026-08-30T13:35:28Z",
+    "nextAllowedAction":  "START_NEW_PREFLIGHT",
+    "controlValidationResult":  "PASS",
+    "completedWorkbookWriteAt":  "2026-08-30T16:46:58Z",
+    "completionChangeId":  "CHG-20260830-016",
+    "reservationEvidence":  {
+                                "workbookSha256After":  "F52A1A8FE491B6C91809EAC92DB2F0DCCD43FF7C5C80BA2618E19B64D3FDD4F7",
+                                "activityId":  "ACT-20260830-016",
+                                "backupSha256":  "E866D3C4D260031D3C067F4C9C272A497FD913AD7C8D0CBFD0BF42F76BCD2941",
+                                "activeChangesRow":  79,
+                                "activityLogRow":  53,
+                                "workbookSha256Before":  "E866D3C4D260031D3C067F4C9C272A497FD913AD7C8D0CBFD0BF42F76BCD2941",
+                                "reservedAt":  "2026-08-30T13:35:28Z",
+                                "backupPath":  "C:\\Personal\\DevTools\\DevBridge\\logs\\workbook-backups\\NEXUS_DEVELOPMENT_CONTROL_20260830_190528.xlsx",
+                                "changeId":  "CHG-20260830-016"
+                            },
+    "repositoryStates":  [
+                             {
+                                 "repository":  "Nexus.Developer",
+                                 "path":  "C:\\Personal\\Nexus.Developer",
+                                 "branch":  "feature/m-08-1-2-ci-pipeline",
+                                 "headCommit":  "ea39db910a6e3b00bff880316996a696ae7460dc",
+                                 "headSubject":  "CHG-20260830-015: workbook v3.26 - WI-07-0.2.2 verified clean, marked Complete; M-07-0.2 at 20%",
+                                 "isGitRepo":  true,
+                                 "stagedFiles":  [
+
+                                                 ],
+                                 "modifiedFiles":  [
+                                                       " M NEXUS_DEVELOPMENT_CONTROL.xlsx"
+                                                   ],
+                                 "untrackedFiles":  [
+
+                                                    ],
+                                 "dirty":  true,
+                                 "capturedAt":  "2026-08-30T13:35:30Z",
+                                 "scopeFileHashes":  [
+                                                         {
+                                                             "path":  "src\\Nexus.Developer.Infrastructure\\DevelopmentControl\\ActivityLogMigration.cs",
+                                                             "sha256":  "D9051FCD68F282FA5688EC47B4CC9EF5DE9FCB1A341F46F8371B17C141824A4C",
+                                                             "bytes":  16227
+                                                         },
+                                                         {
+                                                             "path":  "src\\Nexus.Developer.Infrastructure\\DevelopmentControl\\WorkbookSchemaReport.cs",
+                                                             "sha256":  "E8D053290E68BAFFBCEEDC853E28AB9876A15D4DFCC6CC9E6F8463B22D7350B0",
+                                                             "bytes":  1203
+                                                         },
+                                                         {
+                                                             "path":  "src\\Nexus.Developer.Infrastructure\\DevelopmentControl\\WorkbookSchemaValidator.cs",
+                                                             "sha256":  "DC76E648C4C16F944A9E4D580CBB45785AAD955A7987CBF79158233AB63976FD",
+                                                             "bytes":  5422
+                                                         }
+                                                     ]
+                             }
+                         ],
+    "preExistingChanges":  {
+                               "untracked":  [
+
+                                             ],
+                               "note":  "Captured before the DB-M04 reservation write. Later DB-M06 distinguishes PRE-EXISTING CHANGE from TASK CHANGE.",
+                               "staged":  [
+
+                                          ],
+                               "modified":  [
+
+                                            ]
+                           },
+    "pendingGovernanceItems":  [
+
+                               ],
+    "workbookSha256":  "24C8D3AF2210C0F1F61B10FB96019A8AC7C8D8BBC67263F1498C4A11B075297C",
+    "preflightWorkbookSha256":  "E866D3C4D260031D3C067F4C9C272A497FD913AD7C8D0CBFD0BF42F76BCD2941",
+    "chatgptHandoffGeneratedAt":  "2026-08-30T13:54:15Z",
+    "chatgptHandoffPath":  "C:\\Personal\\DevTools\\DevBridge\\tasks\\CHATGPT_HANDOFF.md",
+    "claudeReviewPackageGeneratedAt":  "2026-08-30T16:13:20Z",
+    "claudeReviewPacketPath":  "C:\\Personal\\DevTools\\DevBridge\\tasks\\REVIEW_PACKET.md",
+    "claudeReviewPromptPath":  "C:\\Personal\\DevTools\\DevBridge\\tasks\\CLAUDE_REVIEW_PROMPT.md",
+    "claudeReview":  {
+                         "decision":  "PASS",
+                         "reviewedAt":  "2026-08-30T16:23:24Z",
+                         "reviewBlockingIssues":  0,
+                         "reviewResidualObservations":  1,
+                         "claudeReviewResultPath":  "C:\\Personal\\DevTools\\DevBridge\\tasks\\CLAUDE_REVIEW_RESULT.md",
+                         "claudeReviewJsonPath":  "C:\\Personal\\DevTools\\DevBridge\\state\\claude-review.json",
+                         "scopeExpansionRequired":  false,
+                         "dbM09Required":  false
+                     },
+    "verification":  {
+                         "milestone":  "DB-M06",
+                         "primaryResult":  "VERIFICATION_PASSED",
+                         "governanceStatus":  "VALID",
+                         "scopeViolation":  false,
+                         "canonicalWorkbookModified":  false,
+                         "canonicalWorkbookSha256":  "F52A1A8FE491B6C91809EAC92DB2F0DCCD43FF7C5C80BA2618E19B64D3FDD4F7",
+                         "verificationReportPath":  "C:\\Personal\\DevTools\\DevBridge\\tasks\\VERIFICATION_REPORT.md",
+                         "verificationJsonPath":  "C:\\Personal\\DevTools\\DevBridge\\state\\verification.json",
+                         "workbookCompletionStateUpdated":  false,
+                         "roadmapNodeMarkedComplete":  false,
+                         "activeChangeClosed":  false,
+                         "verifiedAtUtc":  "2026-08-30T00:00:00Z"
+                     },
+    "dbM10Completion":  {
+                            "milestone":  "DB-M10",
+                            "status":  "COMPLETION_WRITTEN",
+                            "completedAtUtc":  "2026-08-30T16:46:58Z",
+                            "changeId":  "CHG-20260830-016",
+                            "workbookHashBefore":  "F52A1A8FE491B6C91809EAC92DB2F0DCCD43FF7C5C80BA2618E19B64D3FDD4F7",
+                            "workbookHashAfter":  "24C8D3AF2210C0F1F61B10FB96019A8AC7C8D8BBC67263F1498C4A11B075297C",
+                            "backupPath":  "C:\\Personal\\DevTools\\DevBridge\\logs\\workbook-backups\\NEXUS_DEVELOPMENT_CONTROL_20260830_220538.xlsx",
+                            "backupSha256":  "F52A1A8FE491B6C91809EAC92DB2F0DCCD43FF7C5C80BA2618E19B64D3FDD4F7",
+                            "sheetUpdatePlanPath":  "C:\\Personal\\DevTools\\DevBridge\\tasks\\SHEET_UPDATE_PLAN.md",
+                            "sheetUpdatePlanJsonPath":  "C:\\Personal\\DevTools\\DevBridge\\state\\sheet-update-plan.json",
+                            "completionReportPath":  "C:\\Personal\\DevTools\\DevBridge\\tasks\\COMPLETION_REPORT.md",
+                            "completionJsonPath":  "C:\\Personal\\DevTools\\DevBridge\\state\\completion.json",
+                            "preservedUnder":  "C:\\Personal\\DevTools\\DevBridge\\logs\\tasks\\WI-07-0.2.3\\CHG-20260830-016",
+                            "postWriteVerification":  {
+                                                          "preMoveTempChecks":  26,
+                                                          "preMoveTempPass":  26,
+                                                          "preMoveTempFail":  0,
+                                                          "postMoveCanonicalChecks":  26,
+                                                          "postMoveCanonicalPass":  26,
+                                                          "postMoveCanonicalFail":  0,
+                                                          "verdict":  "PASS"
+                                                      },
+                            "activeChangesRowClosed":  {
+                                                          "sheet":  "Active Changes",
+                                                          "row":  79,
+                                                          "status":  "Completed",
+                                                          "changeType":  "Governed Multi-Sheet Completion"
+                                                      },
+                            "masterRoadmap":  {
+                                                 "WI-07-0.2.3":  {
+                                                                     "row":  327,
+                                                                     "status":  "Complete",
+                                                                     "manualProgress":  100
+                                                                 },
+                                                 "M-07-0.2":  {
+                                                                 "row":  324,
+                                                                 "status":  "In Progress",
+                                                                 "manualProgress":  30
+                                                             }
+                                             },
+                            "versionHistoryRows":  [
+                                                       {
+                                                           "row":  958,
+                                                           "nodeId":  "WI-07-0.2.3",
+                                                           "recordVersion":  "v1.0",
+                                                           "isCurrent":  "Yes",
+                                                           "effectiveFromOADate":  46264
+                                                       },
+                                                       {
+                                                           "row":  959,
+                                                           "nodeId":  "M-07-0.2",
+                                                           "recordVersion":  "v1.0",
+                                                           "isCurrent":  "Yes",
+                                                           "effectiveFromOADate":  46264
+                                                       }
+                                                   ],
+                            "activityLogRow":  {
+                                                  "sheet":  "Activity Log",
+                                                  "row":  54,
+                                                  "activityId":  "ACT-20260830-017",
+                                                  "operation":  "Governed Multi-Sheet Completion"
+                                              },
+                            "toolRegistryRow":  {
+                                                    "sheet":  "Tool & Integration Registry",
+                                                    "row":  16,
+                                                    "name":  "ClosedXML"
+                                                },
+                            "existingAssetsRow":  {
+                                                      "sheet":  "Existing Assets",
+                                                      "row":  16,
+                                                      "area":  "Development control service (Excel-backed)"
+                                                  },
+                            "controlCenterVersion":  "v3.27",
+                            "residualObservations":  [
+                                                         {
+                                                             "severity":  "MINOR",
+                                                             "category":  "GOVERNANCE_METADATA_CONSISTENCY",
+                                                             "subject":  "MutationEnvelope validation on no-op AddDependencyAsync / RemoveDependencyAsync paths",
+                                                             "disposition":  "CARRY_FORWARD_NON_BLOCKING",
+                                                             "auditFindingCreated":  false
+                                                         }
+                                                     ],
+                            "pendingGovernanceItemsRemaining":  [
+
+                                                                ],
+                            "sourceGitEvidence":  {
+                                                      "noCommitExists":  true,
+                                                      "gitLogForStoreFileEmpty":  true,
+                                                      "workbookStatus":  " M NEXUS_DEVELOPMENT_CONTROL.xlsx",
+                                                      "implementationFilesUntracked":  true,
+                                                      "headCommit":  "ea39db910a6e3b00bff880316996a696ae7460dc",
+                                                      "branch":  "feature/m-08-1-2-ci-pipeline"
+                                                  }
+                        },
+    "dbM11Validation":  {
+                            "milestone":  "DB-M11",
+                            "status":  "CONTROL_VALIDATED",
+                            "controlValidationResult":  "PASS",
+                            "validatedAtUtc":  "2026-08-30T17:05:00Z",
+                            "workbookSha256":  "24C8D3AF2210C0F1F61B10FB96019A8AC7C8D8BBC67263F1498C4A11B075297C",
+                            "workbookModifiedByDbM11":  false,
+                            "nexusSourceModifiedByDbM11":  false,
+                            "nextTaskReserved":  false,
+                            "nextTaskStarted":  false,
+                            "nextGovernedCandidate":  {
+                                                          "nodeId":  "WI-07-0.2.4",
+                                                          "name":  "Concurrency, locking and atomic writes",
+                                                          "reason":  "Dependency WI-07-0.2.3 (Excel persistence adapter) now Complete; natural successor under M-07-0.2 (GATE_A). Recorded only; NOT reserved or started by DB-M11.",
+                                                          "reserved":  false,
+                                                          "started":  false
+                                                      },
+                            "knownMirrorGap":  {
+                                                   "developmentGuide":  "No M-07-0.2 row in Development Guide; KNOWN_MIRROR_GAP, NON_BLOCKING (pre-existing)."
+                                               },
+                            "preExistingWarnings":  [
+                                                        "Active Changes rows 75-78 (CHG-20260830-012..015) read 'Open' under the leading-keyword status rule though their work is completed (classification defect; DB-M10 closed only its own row 79 correctly).",
+                                                        "Open Decisions DEC-003 appears twice (rows 7 and 8) with different subjects - pre-existing duplicate governed identifier.",
+                                                        "Some Planned roadmap nodes still lack Version History baseline records (pre-existing data gap, DB-M06 Part 11).",
+                                                        "MR node type 'WorkItem' terminology predates ADR-005 (WorkItem retired into Task); INFORMATIONAL, non-blocking."
+                                                    ],
+                            "introducedIssuesByDbM10":  [],
+                            "stopTriggered":  "CONTROL_VALIDATION_FAILED was NOT triggered"
+                        }
+}

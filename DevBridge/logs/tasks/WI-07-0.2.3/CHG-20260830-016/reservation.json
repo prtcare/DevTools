@@ -1,0 +1,112 @@
+{
+    "nextAllowedAction":  "CHATGPT_HANDOFF",
+    "activityId":  "ACT-20260830-016",
+    "nodeId":  "WI-07-0.2.3",
+    "activeChange":  {
+                         "row":  79,
+                         "status":  "Open -- reserved via DB-M04 governed reservation; implementation pending CHATGPT handoff",
+                         "created":  "2026-08-30T13:35:28Z",
+                         "changeId":  "CHG-20260830-016"
+                     },
+    "preflight":  {
+                      "verdict":  "CLEAR",
+                      "source":  "C:\\Personal\\DevTools\\DevBridge\\state\\preflight.json"
+                  },
+    "activityLog":  {
+                        "row":  53,
+                        "operation":  "Governed Change Reservation + Git Baseline Capture",
+                        "activityId":  "ACT-20260830-016",
+                        "created":  "2026-08-30T13:35:28Z"
+                    },
+    "reservedScope":  {
+                          "repositories":  [
+                                               "Nexus.Developer"
+                                           ],
+                          "projects":  [
+                                           "Nexus.Developer.Infrastructure"
+                                       ],
+                          "affectedNodes":  [
+                                                "F-07-0",
+                                                "M-07-0.2",
+                                                "WI-07-0.2.1",
+                                                "WI-07-0.2.10",
+                                                "WI-07-0.2.2",
+                                                "WI-07-0.2.3",
+                                                "WI-07-0.2.4",
+                                                "WI-07-0.2.5",
+                                                "WI-07-0.2.6",
+                                                "WI-07-0.2.7",
+                                                "WI-07-0.2.8",
+                                                "WI-07-0.2.9"
+                                            ],
+                          "filesGlobs":  [
+                                             "src/Nexus.Developer.Infrastructure/DevelopmentControl/**"
+                                         ],
+                          "contractsApis":  [
+                                                "IDevelopmentControlStore"
+                                            ],
+                          "schemaContexts":  [
+
+                                             ]
+                      },
+    "nexusSourceModified":  false,
+    "name":  "Excel persistence adapter",
+    "pendingGovernanceItems":  [
+                                   {
+                                       "requiredAction":  "Evaluate Tool \u0026 Integration Registry when completing this work; register ClosedXML under governance.",
+                                       "source":  "DB-M03 preflight observation",
+                                       "subject":  "ClosedXML",
+                                       "targetMilestone":  "DB-M10",
+                                       "type":  "TOOL_REGISTRY_REVIEW",
+                                       "reason":  "Existing/used dependency relevant to WI-07-0.2.3 appears not yet registered in Tool \u0026 Integration Registry."
+                                   }
+                               ],
+    "gitBaseline":  {
+                        "branch":  "feature/m-08-1-2-ci-pipeline",
+                        "scopeFileHashes":  [
+                                                {
+                                                    "path":  "src\\Nexus.Developer.Infrastructure\\DevelopmentControl\\ActivityLogMigration.cs",
+                                                    "sha256":  "D9051FCD68F282FA5688EC47B4CC9EF5DE9FCB1A341F46F8371B17C141824A4C",
+                                                    "bytes":  16227
+                                                },
+                                                {
+                                                    "path":  "src\\Nexus.Developer.Infrastructure\\DevelopmentControl\\WorkbookSchemaReport.cs",
+                                                    "sha256":  "E8D053290E68BAFFBCEEDC853E28AB9876A15D4DFCC6CC9E6F8463B22D7350B0",
+                                                    "bytes":  1203
+                                                },
+                                                {
+                                                    "path":  "src\\Nexus.Developer.Infrastructure\\DevelopmentControl\\WorkbookSchemaValidator.cs",
+                                                    "sha256":  "DC76E648C4C16F944A9E4D580CBB45785AAD955A7987CBF79158233AB63976FD",
+                                                    "bytes":  5422
+                                                }
+                                            ],
+                        "repository":  "C:\\Personal\\Nexus.Developer",
+                        "postReservationModifiedFiles":  [
+                                                             " M NEXUS_DEVELOPMENT_CONTROL.xlsx"
+                                                         ],
+                        "headSubject":  "CHG-20260830-015: workbook v3.26 - WI-07-0.2.2 verified clean, marked Complete; M-07-0.2 at 20%",
+                        "headCommit":  "ea39db910a6e3b00bff880316996a696ae7460dc",
+                        "preExistingChanges":  {
+                                                   "untracked":  [
+
+                                                                 ],
+                                                   "note":  "Captured before the DB-M04 reservation write. Later DB-M06 distinguishes PRE-EXISTING CHANGE from TASK CHANGE.",
+                                                   "staged":  [
+
+                                                              ],
+                                                   "modified":  [
+
+                                                                ]
+                                               },
+                        "preReservationClean":  true
+                    },
+    "changeId":  "CHG-20260830-016",
+    "workbook":  {
+                     "sha256Before":  "E866D3C4D260031D3C067F4C9C272A497FD913AD7C8D0CBFD0BF42F76BCD2941",
+                     "backupSha256":  "E866D3C4D260031D3C067F4C9C272A497FD913AD7C8D0CBFD0BF42F76BCD2941",
+                     "sha256After":  "F52A1A8FE491B6C91809EAC92DB2F0DCCD43FF7C5C80BA2618E19B64D3FDD4F7",
+                     "backupPath":  "C:\\Personal\\DevTools\\DevBridge\\logs\\workbook-backups\\NEXUS_DEVELOPMENT_CONTROL_20260830_190528.xlsx"
+                 },
+    "milestone":  "DB-M04",
+    "generatedAtUtc":  "2026-08-30T13:35:28Z"
+}

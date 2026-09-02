@@ -1,0 +1,134 @@
+[
+  {
+    "number": "01",
+    "name": "CORE",
+    "description": "Who can use Nexus?",
+    "status": "Started",
+    "solution": "Nexus.AI",
+    "repository": "NexusAI",
+    "path": "C:\\Personal\\NexusAI",
+    "github": "https://github.com/prtcare/NexusAI",
+    "module": ""
+  },
+  {
+    "number": "02",
+    "name": "DATA",
+    "description": "What information does Nexus know and store?",
+    "status": "Not Started",
+    "solution": "",
+    "repository": "",
+    "path": "",
+    "github": "",
+    "module": ""
+  },
+  {
+    "number": "03",
+    "name": "GOVERNANCE",
+    "description": "What rules, standards and assets govern Nexus?",
+    "status": "Not Started",
+    "solution": "",
+    "repository": "",
+    "path": "",
+    "github": "",
+    "module": ""
+  },
+  {
+    "number": "04",
+    "name": "AI",
+    "description": "How does Nexus reason?",
+    "status": "Started",
+    "solution": "Nexus.Int",
+    "repository": "Nexus.Int",
+    "path": "C:\\Personal\\Nexus.Int",
+    "github": "",
+    "module": ""
+  },
+  {
+    "number": "05",
+    "name": "AUTOMATION",
+    "description": "How does Nexus execute processes?",
+    "status": "Not Started",
+    "solution": "",
+    "repository": "",
+    "path": "",
+    "github": "",
+    "module": ""
+  },
+  {
+    "number": "06",
+    "name": "PRODUCT CORE",
+    "description": "What common capabilities do all products reuse?",
+    "status": "Not Started",
+    "solution": "",
+    "repository": "",
+    "path": "",
+    "github": "",
+    "module": ""
+  },
+  {
+    "number": "07",
+    "name": "DEVELOPER",
+    "description": "How does Nexus plan and build things?",
+    "status": "Started",
+    "solution": "",
+    "repository": "",
+    "path": "",
+    "github": "",
+    "module": "C:\\Personal\\DevTools\\layers\\07-developer\\DeveloperLayer.ps1"
+  },
+  {
+    "number": "08",
+    "name": "DELIVERY",
+    "description": "How does code become a running system?",
+    "status": "Not Started",
+    "solution": "",
+    "repository": "",
+    "path": "",
+    "github": "",
+    "module": ""
+  },
+  {
+    "number": "09",
+    "name": "ASSURANCE",
+    "description": "How do we prove it is correct?",
+    "status": "Not Started",
+    "solution": "",
+    "repository": "",
+    "path": "",
+    "github": "",
+    "module": ""
+  },
+  {
+    "number": "10",
+    "name": "OPERATIONS",
+    "description": "How do we keep it running?",
+    "status": "Not Started",
+    "solution": "",
+    "repository": "",
+    "path": "",
+    "github": "",
+    "module": ""
+  },
+  {
+    "number": "11",
+    "name": "EXPERIENCE",
+    "description": "How do humans and systems interact with Nexus?",
+    "status": "Started",
+    "solution": "Nexus.Web",
+    "repository": "Nexus.Web",
+    "path": "C:\\Personal\\Nexus.Web",
+    "github": "",
+    "module": ""
+  },
+  {
+    "number": "12",
+    "name": "PRODUCTS",
+    "description": "What actual solutions do users use?",
+    "status": "Not Started",
+    "solution": "",
+    "repository": "",
+    "path": "",
+    "github": "",
+    "module": ""
+  }
+]

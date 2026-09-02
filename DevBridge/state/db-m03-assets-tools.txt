@@ -1,0 +1,69 @@
+=== Existing Assets ===
+  --- Architecture split | state=Existing | row=5
+      repo/files: Nexus.Platform | Nexus.Intelligence | Nexus.Experience
+      exists: Platform, Intelligence and Experience are separated into distinct repositories/solutions.
+      missing: Security, durable state and final layer ownership are still incomplete.
+      roadmap: Foundation architecture exists and should be preserved.
+  --- Model gateway | state=Working foundation | row=6
+      repo/files: Nexus.Platform.Core/Models | Nexus.Platform.Providers.OpenAI
+      exists: Provider contracts, model catalogue and RoutingModelGateway are implemented; OpenAI provider code exists.
+      missing: Live smoke-test proof, durable cost/usage/quota/audit and final provider governance.
+      roadmap: Good starting point for Layer 01/04 model access.
+  --- Tool contracts | state=Contract only | row=7
+      repo/files: Nexus.Platform.Contracts/Tools
+      exists: IToolCatalog, IToolGateway, descriptors, invocations and results exist.
+      missing: The actual governed tool registry/gateway is still a stub.
+      roadmap: Useful contract foundation for future safe tool execution.
+  --- Intelligence turn pipeline | state=Working foundation | row=8
+      repo/files: Nexus.Intelligence.Core/Turns
+      exists: Intent, policy, context selection, agent/model selection, prompt, model step, tool loop and response composition exist.
+      missing: Stores are in-memory; authentication, durable traces/memory and usable tools remain.
+      roadmap: Strong base for Layer 04 AI.
+  --- Developer agent shell | state=Stub | row=9
+      repo/files: Nexus.Intelligence.Agents/BuiltIn/DeveloperAgent.cs
+      exists: DeveloperAgent exists and is registered with metadata.
+      missing: Real work-graph reasoning, dependency explanations and tool action.
+      roadmap: Starting point for Developer reasoning.
+  --- Chat API/domain | state=Working prototype | row=10
+      repo/files: Nexus.Products.Chat.*
+      exists: Workspace, Project, Conversation, Message, Knowledge, ADR, WorkItem, Artifact, Session, Branch and Snapshot code exists.
+      missing: Move each concept to its final owning layer without duplicating data.
+      roadmap: Prototype/source material for Product Core, Data, Developer and Chat Core extraction.
+  --- Chat web UI | state=Working prototype | row=11
+      repo/files: Nexus.Experience.Client
+      exists: React ChatPage, ChatPanel, ConversationList and other product pages exist.
+      missing: Extract reusable product-agnostic components and add approval/tool/progress states.
+      roadmap: Prototype for the reusable Layer 11 chat experience.
+  --- SQL Stage 1b | state=Implemented - Verify | row=12
+      repo/files: Nexus.Products.Chat.Infrastructure/Sql | api_run.log
+      exists: Workspace SQL DbContext/configuration/repository and migration exist; api_run.log shows successful insert/read.
+      missing: Verify the commit/push; migrate the remaining aggregates.
+      roadmap: Substantial progress on M-02-1.1.
+  --- CI workflows | state=Implemented - Verify | row=13
+      repo/files: Each repo .github/workflows/build.yml
+      exists: Platform, Intelligence and Experience each contain GitHub Actions build workflows; Experience includes frontend checks.
+      missing: Confirm green GitHub runs and record one deliberate red-build test.
+      roadmap: Substantial progress on M-08-1.2.
+  --- Developer control | state=Working | row=14
+      repo/files: Nexus.Developer
+      exists: Nexus.Developer bootstrap, preflight, completion and safe DevTools import scripts exist.
+      missing: Import the actual DevTools source, then build M-07-1.1 work graph.
+      roadmap: Temporary predecessor to the permanent work graph.
+  --- Developer desktop tools | state=Source available | row=15
+      repo/files: DevTools.zip
+      exists: NexusDev/LayerShell launchers plus notify/checkpoint/verify/start-dev tools are supplied.
+      missing: Run copy-first migration, remove hard-coded paths and test all functions.
+      roadmap: Existing local developer shell that can be migrated into Nexus.Developer.
+
+=== Tool & Integration Registry ===
+  OpenAI / model gateway | AI model | layer=04 AI | state=Existing / evolving | phase1=Required | approval=Model policy + usage/audit
+  Claude | AI development assistant | layer=04 AI / external tool | state=External today | phase1=Required | approval=Model policy + tool boundaries
+  DeepSeek | AI implementation assistant | layer=04 AI / external tool | state=External today | phase1=Required | approval=Bounded execution + evidence
+  Git / GitHub | Source control | layer=07 DEVELOPER | state=Existing externally | phase1=Required | approval=Scoped repository permissions
+  Terminal / PowerShell | Execution | layer=07 DEVELOPER | state=Existing externally | phase1=Required | approval=Explicit scope, approvals, evidence
+  Visual Studio / VS Code | IDE | layer=07 DEVELOPER | state=Existing externally | phase1=Useful | approval=Do not require IDE automation for first gate
+  Docker | Runtime/build environment | layer=08 DELIVERY / 07 adapter | state=Local setup in progress | phase1=Required | approval=Restricted command templates initially
+  SQL Server / Azure SQL | Persistence | layer=02 DATA | state=Local SQL + Azure direction | phase1=Required | approval=Credential/secrets boundary + migration control
+  SSMS | Database administration | layer=02 DATA / external tool | state=Existing externally | phase1=Optional | approval=Prefer app/migration tooling for repeatability
+  Development Control workbook | Development governance | layer=07 DEVELOPER | state=Active | phase1=Required | approval=Append-only history + conflict checks
+  Nexus DevTools shell | Developer desktop shell | layer=07 DEVELOPER | state=Source available | phase1=Required | approval=Copy-first migration; no deletion until verified

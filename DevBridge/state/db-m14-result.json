@@ -1,0 +1,145 @@
+{
+  "milestone": "DB-M14",
+  "lane": "B",
+  "phase": "PROVIDER_ABSTRACTION_AND_MODEL_CATALOGUE_FOUNDATION",
+  "status": "IMPLEMENTED",
+  "completedAtUtc": "2026-08-30T23:30:00Z",
+  "projectRoot": "C:\\Personal\\DevTools\\DevBridge",
+  "technology": "PowerShell 5.1 + versioned JSON contracts (schemaVersion=1)",
+  "implementationLocation": {
+    "libraries": "scripts\\ai-routing\\",
+    "configuration": "config\\ai-routing.json, config\\providers.json, config\\models.json",
+    "tests": "scripts\\ai-routing\\Test-AiRoutingFoundation.ps1",
+    "designDocs": "design\\ai-routing\\DB-M14_PROVIDER_MODEL_CONTRACTS.md, design\\ai-routing\\DB-M14_SHARED_CONTRACT_FREEZE.md"
+  },
+  "implementation": {
+    "result": "PASS",
+    "providerAbstraction": "PASS",
+    "modelAbstraction": "PASS",
+    "capabilityMetadata": "PASS",
+    "modelCatalogue": "PASS",
+    "reasoningNormalization": "PASS",
+    "healthVocabulary": "PASS",
+    "routingRequestV1": "PASS",
+    "routingDecisionV1": "PASS",
+    "manualModePreserved": "YES",
+    "automaticExecutionEnabled": "NO",
+    "sharedContractFreeze": "PASS",
+    "pricingSeeded": "NO",
+    "unsupportedCapabilityClaims": "NONE (all unverified capabilities null = UNKNOWN)"
+  },
+  "contracts": {
+    "frozenAt": "DB-M14",
+    "schemaVersions": {
+      "AiRoutingConfigVersion": 1,
+      "ProviderVersion": 1,
+      "ModelVersion": 1,
+      "CapabilityRequirementVersion": 1,
+      "RoutingDecisionVersion": 1
+    },
+    "freezeDoc": "design\\ai-routing\\DB-M14_SHARED_CONTRACT_FREEZE.md",
+    "v2Rule": "incompatible changes require v2 with own schemaVersion and validator; additive optional fields allowed within v1"
+  },
+  "executionMode": {
+    "active": "MANUAL",
+    "allowedRuntimeModes": ["MANUAL"],
+    "futureVocabularyValues": ["ASSISTED", "AUTO"],
+    "autoGateRequired": "new ADR + workbook governance update + explicit enable flag + kill switch (NOT implemented)"
+  },
+  "seedCatalogues": {
+    "providers": ["deepseek", "anthropic", "openai", "gemini", "openrouter", "local", "ollama"],
+    "providerState": "all Enabled=false, Configured=false (none claimed operational)",
+    "models": ["deepseek-v4-flash", "claude-opus-5", "claude-sonnet-5", "claude-haiku-4-5"],
+    "modelState": "all Enabled=false; conservative capabilities, null = UNKNOWN",
+    "pricing": "NOT seeded (DB-M15 owns pricing)"
+  },
+  "secrets": "SecretReference / ConfigurationKey hold env-var NAMEs only (e.g. DEEPSEEK_API_KEY); no secret values stored; secret-value leak guard runs inside every catalogue validation",
+  "tests": {
+    "suite": "scripts\\ai-routing\\Test-AiRoutingFoundation.ps1",
+    "passed": 51,
+    "failed": 0,
+    "paidApiCalls": 0,
+    "scenarios": [
+      "S1 provider creation and normalization",
+      "S2 duplicate provider rejected",
+      "S3 model creation (enabled default false, UnderlyingModelId defaults self, unknown capability null)",
+      "S4 unknown provider rejected",
+      "S5 disabled models excluded from capability query",
+      "S6 coding capability filter",
+      "S7 reasoning-level filter",
+      "S8 context-size filter",
+      "S9 gateway identity (same underlying model via direct + gateway route, distinct delivery routes)",
+      "S10 vision / structured-output / local-remote filters",
+      "S11 execution modes (MANUAL valid; AUTO rejected as active; ASSISTED vocabulary-valid)",
+      "S12 secret-value leak detection",
+      "S13 schemaVersion 2 rejected (v1 freeze)",
+      "S14 provider-name branching guard (literal, array membership, real libraries clean)",
+      "S15 catalogue serialization/deserialization round-trip",
+      "S16 duplicate ProviderModelId within a provider rejected",
+      "S17 provider-health exclusion (UNAVAILABLE/DISABLED/AUTH_ERROR)",
+      "S18 no-network scan of the routing libraries",
+      "S19 role alias resolution",
+      "S20 capability-requirement contract validation",
+      "S21 routing-decision shape validation (EstimatedCost stays null)"
+    ],
+    "diskValidation": {
+      "valid": true,
+      "errors": 0,
+      "warnings": 0,
+      "mode": "MANUAL",
+      "providers": 7,
+      "models": 4
+    }
+  },
+  "hardConstraintsHonored": {
+    "dbM12Overlap": "NONE - no DB-M12 files read-write or modified; no dependency on unfinished DevBridge.Engine/UI/Tests",
+    "laneCOverlap": "NONE - state/current-task.json (WI-07-0.2.4 PREFLIGHTED/CLEAR/RESERVE) untouched",
+    "workbookModified": false,
+    "nexusRepositoriesModified": false,
+    "dbM03ToM11BehaviorModified": false,
+    "existingTasksAndActiveChangesModified": false,
+    "dbM13HistoryRewritten": false,
+    "automaticAiExecutionImplemented": false,
+    "liveProviderApiCallsImplemented": false,
+    "automaticRoutingImplemented": false,
+    "automaticEscalationImplemented": false,
+    "taskClassifierImplemented": false,
+    "pricingCalculationsImplemented": false,
+    "budgetEnforcementImplemented": false,
+    "providerFailoverExecutionImplemented": false,
+    "localModelExecutionImplemented": false,
+    "openRouterExecutionImplemented": false
+  },
+  "parallelSafety": {
+    "isolation": "PowerShell-first, additive-only, DB-M14-owned files under scripts/ai-routing/, config/, design/ai-routing/",
+    "sharedFileChangesRequired": "NONE",
+    "parallelScopeChangeRequired": "NO"
+  },
+  "deliverables": {
+    "contractsDoc": "design\\ai-routing\\DB-M14_PROVIDER_MODEL_CONTRACTS.md",
+    "freezeDoc": "design\\ai-routing\\DB-M14_SHARED_CONTRACT_FREEZE.md",
+    "resultState": "state\\db-m14-result.json"
+  },
+  "filesCreated": [
+    "scripts/ai-routing/AiRoutingContracts.ps1",
+    "scripts/ai-routing/AiProvider.ps1",
+    "scripts/ai-routing/ModelCatalogue.ps1",
+    "scripts/ai-routing/AiRoutingFoundation.ps1",
+    "scripts/ai-routing/Test-AiRoutingFoundation.ps1",
+    "config/ai-routing.json",
+    "config/providers.json",
+    "config/models.json",
+    "design/ai-routing/DB-M14_PROVIDER_MODEL_CONTRACTS.md",
+    "design/ai-routing/DB-M14_SHARED_CONTRACT_FREEZE.md",
+    "state/db-m14-result.json"
+  ],
+  "filesModified": [],
+  "parallelSafeNextMilestones": ["DB-M15", "DB-M17"],
+  "doNotImplement": [
+    "DB-M15 (pricing) - NOT implemented in DB-M14",
+    "DB-M16 - NOT implemented",
+    "DB-M17 (attempt history) - NOT implemented",
+    "DB-M18, DB-M19, DB-M20, DB-M21, DB-M22, DB-M23, DB-M24, DB-M25 - NOT implemented"
+  ],
+  "notes": "NO AUTOMATIC AI EXECUTION EXISTS YET. DB-M14 establishes provider/model identity + capability contracts only. Stop after DB-M14."
+}

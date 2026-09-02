@@ -1,0 +1,127 @@
+{
+  "Milestone": "DB-M30",
+  "Title": "SUPERVISED DEVELOPMENT WORKFLOW INTEGRATION",
+  "Lane": "B",
+  "DateUtc": "2026-09-01T08:00:00Z",
+  "Implementation": "PASS",
+  "Summary": "A SUPERVISED operator workflow integrating the existing DevBridge lifecycle, dependency context, AI recommendation, cost information and history systems into ONE coherent guided pipeline: Excel / governed task -> M03 task selection -> DB-M18.1 dependency development context -> M04 reservation -> M05 ChatGPT handoff -> AI recommendation / cost guidance -> HUMAN copies handoff to ChatGPT -> ChatGPT produces implementation prompt -> HUMAN copies prompt to Claude Code / DeepSeek -> implementation happens externally -> HUMAN returns implementation result -> M06 deterministic verification -> M07 Claude review package -> HUMAN sends package to Claude -> HUMAN records Claude decision -> M08 -> correction loop if required -> human Git gates in REAL mode -> governed completion. DB-M30 is a READ-ONLY presentation/guide engine over the 13-stage catalog (GOVERNED_TASK, M03_SELECTION, DEPENDENCY_CONTEXT, M04_RESERVATION, M05_CHATGPT_HANDOFF, AI_RECOMMENDATION_COST, EXTERNAL_IMPLEMENTATION, M06_VERIFICATION, M07_REVIEW_PACKAGE, M08_CLAUDE_DECISION, CORRECTION_LOOP, HUMAN_GIT_GATE, GOVERNED_COMPLETION) with the DevBridge.Engine 8-token vocabulary (NOT_STARTED/READY/CURRENT/PASS/FAIL/BLOCKED/HUMAN_ACTION/NOT_APPLICABLE), five fault-isolated guidance cards (DependencyContext DB-M18.1, RoutingRecommendation DB-M19 dry-run gated on config/ai-routing.json routingDefaults.enabled, CostGuidance DB-M27/M21/M25, ProviderHealth DB-M22, History DB-M26/M29), a self-contained HTML renderer, a read-only guard (AutoExecutionEnabled=FALSE, paid 0, network 0, every *Modified=NO) and a secret-value scanner (free-text fields scanned, identifier/reference/hash/numeric fields exempt). DB-M30 NEVER advances the lifecycle, never executes a model/provider, never invokes ChatGPT/Claude Code/Claude, never creates/approves/merges PRs, never modifies the roadmap, never restores a baseline, never enables routing, never auto-advances -- every external step is a HUMAN_ACTION stage with the operator's exact instruction. Evidence is bound to the current task nodeId/changeId (a stale global artifact is warned, not counted). TRIAL mode truthfully marks HUMAN_GIT_GATE + GOVERNED_COMPLETION NOT_APPLICABLE (DB-M12.4 trial-cycle closure path replaces real completion). Live truth today (I38): node M-07-0.2 PREFLIGHTED -> M03 BLOCKED (preflight verdict NO_IMPLEMENTABLE_DESCENDANT; the container is NEVER the task), routing NOT_ENABLED (live gate closed), dependency context AVAILABLE, provider health EMPTY, history EMPTY (honest empty DB-M17 store). Two external drifts reported separately (not DB-M30 failures): DBM26 S41 workbook-authority drift (suite records F520060C; live workbook 6D42C3BF post DB-M12.4 closure) and DBM181 R45 (child DB-M18 regression exits non-zero).",
+  "StageCatalog": "PASS",
+  "EightTokenVocabulary": "PASS",
+  "StageTokenDerivation": "PASS",
+  "CurrentStageResolution": "PASS",
+  "EvidenceBindingToCurrentTask": "PASS",
+  "DependencyContextCard": "PASS",
+  "RoutingRecommendationCard": "PASS",
+  "CostGuidanceCard": "PASS",
+  "ProviderHealthCard": "PASS",
+  "HistoryCard": "PASS",
+  "HumanActionStages": "PASS",
+  "CorrectionLoopStage": "PASS",
+  "HumanGitGateTrialNotApplicable": "PASS",
+  "GovernedCompletionTrialNotApplicable": "PASS",
+  "HtmlRenderer": "PASS",
+  "ReadOnlyGuard": "PASS",
+  "SecretScannerFreeTextFieldScanning": "PASS",
+  "BackendMarkers": "PASS",
+  "LifecycleStateModified": "NO",
+  "RoutingPolicyModified": "NO",
+  "AttemptStoreModified": "NO",
+  "EscalationDecisionsModified": "NO",
+  "BudgetPolicyModified": "NO",
+  "FingerprintsModified": "NO",
+  "SecretValuesDisplayed": "NO",
+  "SecretValuesLogged": "NO",
+  "AutoExecutionEnabled": "FALSE",
+  "PaidApiCalls": 0,
+  "NetworkCalls": 0,
+  "CanonicalWorkbookModified": "NO",
+  "NexusSourceModified": "NO",
+  "GitModified": "NO",
+  "KnownDBM26S41Fixture": "PRESENT",
+  "KnownDBM181R45Fixture": "PRESENT",
+  "TemporaryDevBridgeBoundary": "PASS",
+  "Tests": {
+    "Passed": 314,
+    "Failed": 0,
+    "Total": 314,
+    "Scenarios": 39,
+    "ScenarioCount": "39/39",
+    "PaidApiCalls": 0,
+    "NetworkCalls": 0,
+    "Note": "Test-DbM30SupervisedWorkflow.ps1: 314 assertions, 0 failed, exit 0; 39/39 scenarios (A1-I39). Summary in state/db-m30-test-run.log. See tasks/DB-M30_IMPLEMENTATION_REPORT.md for the scenario-by-scenario walkthrough."
+  },
+  "Regressions": {
+    "DBM29": "391/391 PASS, exit 0",
+    "DBM26": "381/382 PASS, exit 1 -- SINGLE external failure S41: recorded workbook authority hash F520060C vs live 6D42C3BF (post DB-M12.4 closure), reported separately",
+    "DBM28": "359/359 PASS, exit 0",
+    "DBM181": "63/64 PASS, exit 1 -- SINGLE external failure R45: child DB-M18 regression exits non-zero, reported separately",
+    "Note": "DB-M16/M17/M20/M21/M22/M23/M24/M25/M27 are covered by the DB-M26 and DB-M29 child regression runs (all 0 failures). DB-M30 does NOT invoke the DB-M18.1 resolver; its frozen files (DependencyLineage.ps1 + Test-DbM181DependencyLineage.ps1) are re-verified byte-identical by I37 and its R45 external drift is asserted at its recorded 63/64 signature by R35."
+  },
+  "ExternalDrift": [
+    "M26 S41 workbook-authority drift: DB-M26 freezes recorded authority hash F520060C; live workbook is 6D42C3BF6D3307B4B1A45870CE12F41E403DFED412E59F33D7B487E93A83E4F5 after DB-M12.4 live trial-cycle closure 2026-08-31. DB-M30 D30/I37 independently prove the workbook byte-identical across its own run."
+  ],
+  "FilesCreated": [
+    "design/DB-M30_SUPERVISED_DEVELOPMENT_WORKFLOW_INTEGRATION.md",
+    "scripts/supervised-workflow/WorkflowContracts.ps1",
+    "scripts/supervised-workflow/WorkflowEngine.ps1",
+    "scripts/supervised-workflow/WorkflowRender.ps1",
+    "scripts/supervised-workflow/Show-DbM30SupervisedWorkflow.ps1",
+    "scripts/supervised-workflow/Test-DbM30SupervisedWorkflow.ps1",
+    "state/db-m30-result.json",
+    "state/db-m30-test-run.log",
+    "tasks/DB-M30_IMPLEMENTATION_REPORT.md"
+  ],
+  "FilesModified": [
+    "scripts/supervised-workflow/WorkflowContracts.ps1 -- in-scope hardening: Test-DbM30SecretLeak now scans free-text fields (Note, HumanAction) instead of exempting them, matching the function's documented contract. A9 depends on this. No file outside the DB-M30-owned scope was modified."
+  ],
+  "DBM17Overlap": {
+    "Overlap": "NONE",
+    "Details": "AttemptStore.ps1 consumed READ-ONLY via the DB-M17 query layer (Get-AiAttemptsAll etc.) by the History card. The live on-disk store is EMPTY today and the card shows an honest empty state (C25). DB-M30 never writes an attempt record (D28: store absent before and after)."
+  },
+  "DBM18Overlap": {
+    "Overlap": "NONE",
+    "Details": "DependencyLineage.ps1 consumed READ-ONLY via Get-DbM181TaskDependencyContext (same Task shape M05 handoff uses) by the DependencyContext card; freshness FRESH/STALE/UNVERIFIED from the reservation gitBaseline.repository root (C19/C20, I38). DB-M18.1 frozen files byte-identical (I37); R45 external drift asserted separately (R35)."
+  },
+  "DBM19Overlap": {
+    "Overlap": "NONE",
+    "Details": "Router.ps1 / RoutingEligibility.ps1 untouched. The RoutingRecommendation card is a DRY-RUN recommendation behind config/ai-routing.json routingDefaults.enabled; the gate is closed today -> NOT_ENABLED (C21), and the enabled path is proven ONLY by a synthetic-catalogue fixture with a placeholder Router.ps1 + the REAL router preloaded -- no live config is modified (C22). The hard capability gate is never forced open."
+  },
+  "DBM21Overlap": {
+    "Overlap": "NONE",
+    "Details": "budget/* consumed READ-ONLY as informational budget context on the CostGuidance card (informational only; budget never gates execution; no budget policy supplied -> honest informational note). No budget-write token."
+  },
+  "DBM22Overlap": {
+    "Overlap": "NONE",
+    "Details": "provider-health/* untouched. OPTIONAL ProviderHealthState (DB-M22 shape) consumed by the ProviderHealth card; empty evidence -> honest EMPTY + 'No provider-health evidence recorded' (C24). No Set-ProviderHealth / Update-ProviderCircuitState token."
+  },
+  "DBM25Overlap": {
+    "Overlap": "NONE",
+    "Details": "quality-cost/* untouched. Resolve-DbM25RecordCost consumed READ-ONLY as cost-authority totals on the CostGuidance card; DB-M16 remains the sole cost authority."
+  },
+  "DBM26Overlap": {
+    "Overlap": "NONE",
+    "Details": "dashboard/* untouched. DB-M26 aggregate view consumed READ-ONLY by the History card (DashboardAvailable). The DB-M26 suite is preserved (child regression R33) at its current external S41 signature."
+  },
+  "DBM27Overlap": {
+    "Overlap": "NONE",
+    "Details": "calculator/* untouched. Resolve-DbM27Estimate consumed READ-ONLY by the CostGuidance card (illustrative estimate; EstimateSource ESTIMATED/ACTUAL). No cost formula duplicated."
+  },
+  "DBM28Overlap": {
+    "Overlap": "NONE",
+    "Details": "model-config/* untouched. ReadOnlyGuard + Test-DbM30SecretLeak + Out-DbM30Markers (backend always exits 0, outcomes via stdout markers) pattern borrowed from DB-M28; DB-M28 suite preserved 359/0 exit 0 (R34)."
+  },
+  "DBM29Overlap": {
+    "Overlap": "NONE",
+    "Details": "task-history/* untouched. DB-M29 per-task drilldown consumed READ-ONLY by the History card (HistoryViewAvailable / TaskRowCount). The DB-M29 suite is preserved 391/0 exit 0 (R32)."
+  },
+  "DBGH01Overlap": {
+    "Overlap": "NONE",
+    "Details": "DB-GH01 (Lane A) owns lifecycle/governance scripts and the workbook. DB-M30 wrote ONLY under scripts/supervised-workflow/ (4 new files + the one in-scope WorkflowContracts.ps1 hardening edit) + design/DB-M30_SUPERVISED_DEVELOPMENT_WORKFLOW_INTEGRATION.md + state/ (result + run log) + tasks/DB-M30_IMPLEMENTATION_REPORT.md. Grep-verified zero disk-write tokens in the library except Export-DbM30WorkflowHtml's WriteAllText of the operator-requested artifact (UTF-8 no-BOM). NO PARALLEL_SCOPE_CONFLICT."
+  },
+  "WorkbookModified": "NO (by DB-M30; D30/I37 canonical workbook SHA-256 byte-identical)",
+  "NexusRepositoriesModified": "NO",
+  "WorkbookSha256Current": "6D42C3BF6D3307B4B1A45870CE12F41E403DFED412E59F33D7B487E93A83E4F5",
+  "WorkbookSha256Note": "Canonical workbook C:\\Personal\\Nexus.Developer\\NEXUS_DEVELOPMENT_CONTROL.xlsx verified present and SHA-256 byte-identical across the DB-M30 run (D30/I37). DB-M30 itself performed ZERO workbook writes.",
+  "DBM31Ready": "YES",
+  "NotesForNextMilestones": "DB-M30 delivers the SUPERVISED operator workflow: 13-stage catalog + 8-token vocabulary + five guidance cards (DependencyContext/RoutingRecommendation/CostGuidance/ProviderHealth/History) + self-contained HTML renderer + read-only guard + secret scanner, consuming the DB-M14..M29 chain READ-ONLY as a guide engine with AUTO_EXECUTION_ENABLED=FALSE. Live truth (I38): M-07-0.2 M03 BLOCKED (governance block, container never the task), routing NOT_ENABLED, dependency AVAILABLE, health/history EMPTY. Known external drifts: DBM26 S41 (workbook authority F520060C vs live 6D42C3BF) and DBM181 R45 (child DB-M18 regression exit non-zero), both reported separately and asserted at their recorded signatures in-suite. Real Nexus restart rule still holds: after DevBridge validation, restore the pre-DevBridge workbook backup + Nexus source/Git baseline; DB-M30 is DevBridge-only, temporary, and NOT designed for Nexus migration. DB-M31 next."
+}

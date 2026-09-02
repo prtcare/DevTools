@@ -1,0 +1,42 @@
+{
+  "milestone": "DB-M06",
+  "taskId": "WI-07-0.2.3",
+  "changeId": "CHG-20260830-016",
+  "capturedAtUtc": "2026-08-30T00:00:00Z",
+  "verifier": "DB-M06 (independent re-run, not a repetition of the implementation report)",
+  "projects": [
+    {
+      "project": "src/Nexus.Developer.Core/Nexus.Developer.Core.csproj",
+      "configuration": "Release",
+      "buildSucceeded": true,
+      "warnings": 0,
+      "errors": 0
+    },
+    {
+      "project": "src/Nexus.Developer.Infrastructure/Nexus.Developer.Infrastructure.csproj",
+      "configuration": "Release",
+      "buildSucceeded": true,
+      "warnings": 0,
+      "errors": 0
+    },
+    {
+      "project": "src/Nexus.Developer.Application/Nexus.Developer.Application.csproj",
+      "configuration": "Release",
+      "buildSucceeded": true,
+      "warnings": 0,
+      "errors": 0
+    },
+    {
+      "project": "src/Nexus.Developer.Api/Nexus.Developer.Api.csproj",
+      "configuration": "Release",
+      "buildSucceeded": true,
+      "warnings": 0,
+      "errors": 0
+    }
+  ],
+  "overall": {
+    "succeeded": true,
+    "warnings": 0,
+    "errors": 0
+  }
+}

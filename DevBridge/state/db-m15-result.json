@@ -1,0 +1,68 @@
+{
+  "Milestone": "DB-M15",
+  "Title": "Pricing Catalogue + Price Versioning",
+  "Lane": "B1",
+  "DateUtc": "2026-08-30T23:15:00Z",
+  "Implementation": "PASS",
+  "Summary": "Provider/model-independent, effective-dated pricing catalogue. Rates are data in config/pricing/pricing-catalogue.json, consumed only through catalogue lookups. Historic prices preserved via [EffectiveFromUtc, EffectiveToUtc) versioning; only legitimate mutation is closing a predecessor at a successor's boundary. DeepSeek time-band resolver isolated in AiPricingTimeBands.ps1 (PEAK [01:00,04:00) + [06:00,10:00) UTC, boundary tests mandatory). Zero paid API calls, zero network, zero credentials.",
+  "PricingRecordV1": "PASS",
+  "PriceLookupResultV1": "PASS",
+  "PricingCatalogueV1": "PASS",
+  "EffectiveDating": "PASS",
+  "HistoricPricesPreserved": "PASS",
+  "DeepSeekTimeBandResolver": "PASS",
+  "InitialPriceCatalogue": "PASS",
+  "ProcessingTiers": "PASS",
+  "PriceStatus": "PASS",
+  "Validation": "PASS",
+  "Tests": {
+    "Passed": 71,
+    "Failed": 0,
+    "Total": 71,
+    "PaidApiCalls": 0,
+    "NetworkCalls": 0
+  },
+  "SeedCatalogue": {
+    "Records": 10,
+    "Currency": "USD",
+    "StatusCounts": { "CURRENT": 0, "NEEDS_REVIEW": 10, "EXPIRED": 0, "MANUAL_OVERRIDE": 0 },
+    "Warnings": 5,
+    "Errors": 0,
+    "Gaps": 0,
+    "Note": "All records Source='reference', VerifiedAtUtc=null -> NEEDS_REVIEW until verified against provider documentation. deepseek-v4-pro, gpt-5.4-nano, gpt-5.4, gemini-economical not yet in DB-M14 model catalogue -> warning (needs review), not error."
+  },
+  "FilesCreated": [
+    "scripts/ai-routing/AiPricingContracts.ps1",
+    "scripts/ai-routing/AiPricingTimeBands.ps1",
+    "scripts/ai-routing/PricingCatalogue.ps1",
+    "scripts/ai-routing/AiRoutingPricingFoundation.ps1",
+    "scripts/ai-routing/Test-AiPricingCatalogue.ps1",
+    "config/pricing/pricing-catalogue.json",
+    "design/ai-routing/DB-M15_PRICING_ARCHITECTURE.md",
+    "design/ai-routing/DB-M15_PRICE_VERSIONING.md",
+    "state/db-m15-result.json"
+  ],
+  "FilesModified": [
+    "scripts/ai-routing/AiPricingContracts.ps1",
+    "scripts/ai-routing/AiPricingTimeBands.ps1",
+    "scripts/ai-routing/PricingCatalogue.ps1",
+    "scripts/ai-routing/Test-AiPricingCatalogue.ps1"
+  ],
+  "DBM14FrozenContractsModified": "NO",
+  "DBM17Overlap": {
+    "Overlap": "NONE",
+    "Details": "AttemptStore.ps1, Test-AttemptStore.ps1, state/attempts/ are DB-M17-owned; not created or modified by DB-M15. No DB-M17 file overlaps DB-M15-owned pricing files."
+  },
+  "DBM12Overlap": {
+    "Overlap": "NONE",
+    "Details": "src/DevBridge.Engine, src/DevBridge.Tests, src/DevBridge.UI are DB-M12-owned; not touched by DB-M15."
+  },
+  "LaneCOverlap": {
+    "Overlap": "NONE",
+    "Details": "Lane C concurrency/workbook artifacts (logs/dbm04_*, logs/workbook-backups, logs/selftest) untouched by DB-M15; no overlap with config/pricing/ or scripts/ai-routing/ pricing files."
+  },
+  "WorkbookModified": "NO",
+  "NexusRepositoriesModified": "NO",
+  "DBM16Ready": "YES",
+  "NotesForDBM16": "Get-AiPriceAt/Get-AiCurrentPrice return PriceLookupResult v1 (Rate fields per 1,000,000 tokens, Currency USD, ProcessingTier, TimeBand, TimestampUtc, LookupState). DB-M16 consumes matched Record rates + token counts to compute actual cost and USD->INR conversion. No cost logic in DB-M15. Historic lookup available for actual-cost reconciliation (IsExpired/IsFuture/HasGap flags signal coverage gaps)."
+}

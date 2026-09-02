@@ -1,0 +1,130 @@
+{
+  "Milestone": "DB-M27",
+  "Title": "AI Cost Calculator UI",
+  "Lane": "B",
+  "DateUtc": "2026-08-31T18:00:05Z",
+  "Implementation": "PASS",
+  "Summary": "An operator-facing AI Cost Calculator UI that ESTIMATES the expected monetary cost of a model/provider configuration BEFORE execution. Calculation/UI only -- the calculator never executes a provider/model, never makes a paid API call, never makes a network call. Single self-contained interactive HTML artifact; every token->cost number comes READ-ONLY from DB-M16 Calculate-AiAttemptCost (authoritative engine) -- no pricing formula, exchange rate, or rate is invented or duplicated. DB-M14 catalogue drives provider/route/model selectors with UnderlyingModelId + GatewayProviderId preserved separately (OpenRouter identity never collapsed); DB-M15 pricing version (record id + status NEEDS_REVIEW for the effective anthropic record at ref time + effective window) always shown, missing/stale is an explicit PRICE_NOT_FOUND/PRICE_UNKNOWN/LOCAL_COST_UNKNOWN state; DB-M16 ESTIMATED semantics (uncached input at input price, cached at cached rate, output at output price, reasoning billed INCLUDED_IN_OUTPUT never double-charged, cache-write never billed on an ESTIMATE -- null + explicit CacheWriteBillingNote, never a fabricated zero; USD identity or INR via effective fx-usdinr-dev-v2 83.5: 0.0310 USD -> 2.5885 INR; per-attempt 0.0310, multi-attempt 3x = 0.0930); LOCAL != FREE (LOCAL_COST_UNKNOWN never shown as a real zero); escalation path is a read-only per-step DB-M16 simulation with cumulative totals (sonnet 0.04 -> haiku 0.02 -> cum 0.06), SimulationOnly and RoutingPolicyUnmodified always true; quality panel is DB-M25/DB-M24 observed evidence with confidence category + sample (30 chains -> MODERATE, observed/expected cost per verified success 3.5, basis OBSERVED_CHAINS; low confidence explicitly labelled not statistically reliable; no evidence -> honest no-evidence note); budget context is DB-M21 informational only (TASK limit 100, projected 2.5885 INR / 2.59% consumed, ALLOW; an over-limit attempt surfaces BLOCK_BUDGET_EXCEEDED / REQUIRE_HUMAN_OVERRIDE yet OverrideAllowed=false -- the calculator never grants, modifies, or overrides a budget and never executes an attempt). S1-S46: UI opens + selector/route/model/underlying/pricing-version display, token-cost arithmetic, USD/INR, actual-vs-estimated, missing/local/gateway semantics, reasoning billing, quality metrics, escalation chain, budget informational view, capability proofs (no override/routing/pricing/health/execution/network capability), child-suite regressions (M16/M21/M23/M24/M25 green; M26 preserved at its current external signature), DB-M18.1 preserved, Lane C UI byte-identical, solution build 0 errors, and frozen files/config/workbook SHA-256 byte-identical after the run. AUTO_EXECUTION_ENABLED=FALSE; provider/model executed NO; paid calls 0; network calls 0.",
+  "CalculatorRequestV1": "PASS",
+  "CalculatorViewV1": "PASS",
+  "CalculatorLaunches": "PASS",
+  "ProviderSelection": "PASS",
+  "RouteSelection": "PASS",
+  "ModelSelection": "PASS",
+  "UnderlyingModel": "PASS",
+  "PricingVersion": "PASS",
+  "InputCost": "PASS",
+  "OutputCost": "PASS",
+  "CacheCost": "PASS",
+  "CacheWriteNotBilledOnEstimate": "PASS",
+  "TotalEstimate": "PASS",
+  "MultiAttemptEstimate": "PASS",
+  "Usd": "PASS",
+  "Inr": "PASS",
+  "ActualVsEstimated": "PASS",
+  "LocalCostSemantics": "PASS",
+  "OpenRouterSemantics": "PASS",
+  "QualityMetrics": "PASS",
+  "EscalationEstimate": "PASS",
+  "BudgetInformationalView": "PASS",
+  "ReadOnlyGuard": "PASS",
+  "BudgetOverrideCapability": "NO",
+  "RoutingModificationCapability": "NO",
+  "PricingModificationCapability": "NO",
+  "ProviderHealthModificationCapability": "NO",
+  "RoadmapModificationCapability": "NO",
+  "GitPrMergeCapability": "NO",
+  "AutoExecutionEnabled": "FALSE",
+  "ProviderModelExecuted": "NO",
+  "PaidApiCalls": 0,
+  "NetworkCalls": 0,
+  "TemporaryDevBridgeBoundary": "PASS",
+  "Tests": {
+    "Passed": 266,
+    "Failed": 0,
+    "Total": 266,
+    "Scenarios": 46,
+    "ScenarioCount": "46/46",
+    "PaidApiCalls": 0,
+    "NetworkCalls": 0,
+    "Note": "Test-DbM27Calculator.ps1: 266 assertions, 0 failed, exit 0; 46/46 scenarios (S1-S46). See tasks/DB-M27_IMPLEMENTATION_REPORT.md for the scenario-by-scenario walkthrough."
+  },
+  "Regressions": {
+    "DBM16": "167/167 PASS, exit 0",
+    "DBM21": "77/77 PASS, exit 0",
+    "DBM23": "203/203 PASS, exit 0",
+    "DBM24": "128/128 PASS, exit 0",
+    "DBM25": "337/337 PASS, exit 0",
+    "DBM26": "381/382 PASS, exit 1 -- SINGLE external failure S41: recorded workbook authority hash F520060C vs live 6D42C3BF (post DB-M12.4 closure), reported separately",
+    "DBM181": "63/64 PASS, exit 1 -- external R45 (DB-M18 classification S27 fixture drift) reported separately; R50 (DB-M12.4 child) green standalone 54/54, only flakes under nested build load (environment artifact)"
+  },
+  "ExternalDrift": [
+    "M26 S41 workbook-authority drift: DB-M26 freezes recorded authority hash F520060C; live workbook is 6D42C3BF6D3307B4B1A45870CE12F41E403DFED412E59F33D7B487E93A83E4F5 after DB-M12.4 live trial-cycle closure 2026-08-31. DB-M27 S46 independently proves the workbook byte-identical across its own run.",
+    "DBM181 R45: pre-existing DB-M18 classification S27 fixture drift. DB-M18.1 frozen and unmodified by DB-M27.",
+    "DBM181 R50 (intermittent): DB-M12.4 child suite green standalone (54/54, exit 0); flakes to exit 1 only under heavy sequential build load inside a parent suite. S43 proves the standalone green if it flakes and records it as an environment artifact."
+  ],
+  "FilesCreated": [
+    "scripts/ai-routing/calculator/CalculatorContracts.ps1",
+    "scripts/ai-routing/calculator/CalculatorEngine.ps1",
+    "scripts/ai-routing/calculator/CalculatorRender.ps1",
+    "scripts/ai-routing/calculator/Test-DbM27Calculator.ps1",
+    "design/DB-M27_AI_COST_CALCULATOR_UI.md",
+    "state/db-m27-result.json",
+    "tasks/DB-M27_IMPLEMENTATION_REPORT.md"
+  ],
+  "FilesModified": [],
+  "DBM16Overlap": {
+    "Overlap": "NONE",
+    "Details": "CostCalculator.ps1 / AiRoutingCostFoundation.ps1 / AiCostContracts.ps1 consumed READ-ONLY (SHA-256 byte-identical, S46). DB-M16 Calculate-AiAttemptCost is the sole token->cost authority; the calculator never duplicates pricing formulas. ESTIMATED semantics honored: EstimatedInputTokens is TOTAL incl. cached (uncached = Input - Cached), cache-write billed only on ACTUAL usage (null + explicit billing note on estimates), reasoning INCLUDED_IN_OUTPUT."
+  },
+  "DBM14Overlap": {
+    "Overlap": "NONE",
+    "Details": "ModelCatalogue.ps1 / AiRoutingFoundation.ps1 consumed READ-ONLY (New-AiModel, Find-AiModelByUnderlyingModel for gateway billing identity). ProviderType/RouteType validation, UnderlyingModelId + GatewayProviderId preserved separately."
+  },
+  "DBM15Overlap": {
+    "Overlap": "NONE",
+    "Details": "AiPricingContracts.ps1 / PricingCatalogue.ps1 consumed READ-ONLY. Pricing version display uses Get-AiPricingRecordStatus (CURRENT/NEEDS_REVIEW/EXPIRED/MANUAL_OVERRIDE) + Get-AiPriceAt; the effective anthropic record shows NEEDS_REVIEW at the reference timestamp and is shown as-is -- never silently invented as CURRENT."
+  },
+  "DBM17Overlap": {
+    "Overlap": "NONE",
+    "Details": "AttemptStore.ps1 untouched. AiAttemptRecord v1 consumed READ-ONLY through the DB-M24/M25 chain as quality/metrics inputs."
+  },
+  "DBM20Overlap": {
+    "Overlap": "NONE",
+    "Details": "escalation/* untouched. The escalation estimate is a read-only per-step DB-M16 iteration along the operator path; routing policy is never consulted, never modified (RoutingPolicyUnmodified=true, SimulationOnly=true)."
+  },
+  "DBM21Overlap": {
+    "Overlap": "NONE",
+    "Details": "budget/* untouched. DB-M21 BudgetPolicy v1 + Test-AiBudget consumed READ-ONLY for the informational panel; OverrideAllowed=false and InformationalOnly=true in every path; no budget-write token in the calculator library (S30)."
+  },
+  "DBM23Overlap": {
+    "Overlap": "NONE",
+    "Details": "providers/common/AdapterContracts.ps1 consumed READ-ONLY (Get-ProviderRoutePriceStatus: LOCAL_COST_UNKNOWN / PRICE_UNKNOWN / CONFIGURED / FREE). LOCAL never shown as FREE; provider-level 0 is a default, never rendered as a real zero."
+  },
+  "DBM24Overlap": {
+    "Overlap": "NONE",
+    "Details": "performance/* untouched. AiPerformanceFoundation / ModelPerformance consumed READ-ONLY for first-attempt success + Get-AiConfidenceLevel bands (INSUFFICIENT/LOW/MODERATE/HIGH). Resolve-AiTaskKey prefers ChangeId; fixtures default change key to task id so SampleCount == observed task chains."
+  },
+  "DBM25Overlap": {
+    "Overlap": "NONE",
+    "Details": "quality-cost/* untouched. Get-DbM25QualityAdjustedCost consumed READ-ONLY for verified-success rate, observed/expected cost per verified success, expected-cost basis (OBSERVED_CHAINS / COLD_START_SIMPLE). Only reporting-currency evidence contributes; never re-converted."
+  },
+  "DBM26Overlap": {
+    "Overlap": "NONE",
+    "Details": "dashboard/* untouched. The calculator borrows the DB-M26 Contracts/Render/Test pattern (ReadOnlyGuard, secret-leak guard, Export-DbM27CalculatorHtml as the only library write) but is a focused calculator, not a duplicate dashboard. The DB-M26 suite itself is preserved (S42) at its current external S41 signature."
+  },
+  "DBM181Overlap": {
+    "Overlap": "NONE",
+    "Details": "DependencyLineage.ps1 + Test-DbM181DependencyLineage.ps1 frozen and unmodified (S46 byte-identical). S43 runs the DB-M18.1 child suite and preserves its current external signature (R45 known fixture drift, reported separately; R50 intermittent nested build-contention artifact proven green standalone)."
+  },
+  "DBGH01Overlap": {
+    "Overlap": "NONE",
+    "Details": "DB-GH01 (Lane A) owns lifecycle/governance scripts and the workbook; DB-M27 wrote ONLY under scripts/ai-routing/calculator/ + design/DB-M27_AI_COST_CALCULATOR_UI.md + state/db-m27-result.json + tasks/DB-M27_IMPLEMENTATION_REPORT.md. Grep-verified zero disk-write tokens in the calculator library except Export-DbM27CalculatorHtml's WriteAllText of the operator-requested artifact (S30-S36). NO PARALLEL_SCOPE_CONFLICT."
+  },
+  "WorkbookModified": "NO (by DB-M27; S46 canonical workbook SHA-256 byte-identical)",
+  "NexusRepositoriesModified": "NO",
+  "WorkbookSha256Current": "6D42C3BF6D3307B4B1A45870CE12F41E403DFED412E59F33D7B487E93A83E4F5",
+  "WorkbookSha256Note": "Canonical workbook C:\\Personal\\Nexus.Developer\\NEXUS_DEVELOPMENT_CONTROL.xlsx verified present and SHA-256 byte-identical across the DB-M27 run (S46). DB-M27 itself performed ZERO workbook writes.",
+  "DBM28Ready": "YES",
+  "NotesForNextMilestones": "DB-M27 delivers the operator-facing AI Cost Calculator UI: CalculatorRequest v1 + CalculatorView v1 + engine + self-contained interactive HTML renderer, all consuming the DB-M14/15/16/17/21/23/24/25 evidence READ-ONLY with the DB-M16 engine as the single cost authority. Real Nexus restart rule still holds: after DevBridge validation, restore the pre-DevBridge workbook backup + Nexus source/Git baseline; DB-M27 is DevBridge-only, temporary, and NOT designed for Nexus migration."
+}

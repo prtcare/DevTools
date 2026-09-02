@@ -1,0 +1,49 @@
+Full governed node universe: 659 RoadmapNode records (DB-M02.1 governedDataRange)
+
+=== CROSS-SHEET RESOLUTION VS FULL 659-NODE UNIVERSE ===
+Master Roadmap Parent ID     : 647 / 647 (100%)  [col B]
+Master Roadmap Dependencies  : 187 / 189 (98.9%)  [col J]
+    unresolved: R429: DEC-002
+    unresolved: R620: DEC-003
+Active Changes Node ID       : 48 / 49 (98%)  [col B]
+    unresolved: R31: FULL ROADMAP
+Active Changes Affected Nodes: 48 / 49 (98%)  [col AB]
+    unresolved: R33: 117 (23 superseded, 71 reclassified, 2 tightened, 21 new)
+Version History Node ID      : 906 / 952 (95.2%)  [col A]
+    unresolved: R401: T-07-6.1.1.1
+    unresolved: R402: S-07-6.1.1.1.1
+    unresolved: R403: S-07-6.1.1.1.2
+    unresolved: R404: S-07-6.1.1.1.3
+    unresolved: R405: S-07-6.1.1.1.4
+    unresolved: R567: T-11-1.1.1.1
+    unresolved: R568: S-11-1.1.1.1.1
+    unresolved: R569: S-11-1.1.1.1.2
+    ... and 38 more
+Version History Parent ID    : 904 / 932 (97%)  [col B]
+    unresolved: R402: T-07-6.1.1.1
+    unresolved: R403: T-07-6.1.1.1
+    unresolved: R404: T-07-6.1.1.1
+    unresolved: R405: T-07-6.1.1.1
+    unresolved: R568: T-11-1.1.1.1
+    unresolved: R569: T-11-1.1.1.1
+    unresolved: R571: T-11-1.1.1.2
+    unresolved: R573: T-11-1.1.1.3
+    ... and 20 more
+Dev Guide Milestone ID       : 56 / 56 (100%)  [col C]
+D&B From Node                : 11 / 11 (100%)  [col B]
+D&B Depends On / Blocks      : 9 / 11 (81.8%)  [col C]
+    unresolved: R13: DevTools source ZIP
+    unresolved: R15: Local SQL Server config (port/auth drift)
+ADR Roadmap Links            : 4 / 5 (80%)  [col F]
+    unresolved: R7: Master Roadmap | Version History
+Open Dec Roadmap Links       : 4 / 4 (100%)  [col E]
+Open Dec Resolution / ADR    : 0 / 1 (0%)  [col J]
+    unresolved: R7: ADR-005 (2026-08-26): Developer Chat stays physically inside Nexus.Developer for Phase 1, not a separate Nexus.Products.DeveloperChat repository. It may still be logically identified as a Layer 12 Product consuming the reusable Chat Layer. Repository separation can be reconsidered only if Developer Chat later becomes a standalone commercial product.
+Audit Roadmap Link           : 18 / 18 (100%)  [col H]
+Phase Plan Roadmap Link      : 21 / 25 (84%)  [col C]
+    unresolved: R5: P0 / GATE A
+    unresolved: R20: All Phase 1 (P1-1..P1-7) roadmap links
+    unresolved: R21: ADR-014 Azure SQL Migration
+    unresolved: R27: Layer 09 Assurance traceability model (reused)
+
+Recovered beyond-table nodes now in the governed universe and resolvable: 34 of 34

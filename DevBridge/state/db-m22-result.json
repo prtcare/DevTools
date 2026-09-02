@@ -1,0 +1,121 @@
+{
+  "Milestone": "DB-M22",
+  "Title": "Provider Health + Failover Foundation",
+  "Lane": "B",
+  "DateUtc": "2026-08-31T05:10:36Z",
+  "Implementation": "PASS",
+  "Summary": "HEALTH/FAILOVER DECISION FOUNDATION. Deterministic provider-health and route-failover foundation. Provider health is NOT model quality: health vocabulary reuses the DB-M14/DB-M20 failure vocabularies as AVAILABLE, RATE_LIMITED, DEGRADED, AUTH_ERROR, UNAVAILABLE, DISABLED, UNKNOWN with the fixed ProviderHealthEvidence v1 / ProviderHealthPolicy v1 / ProviderFailoverDecision v1 field lists. No hard-coded thresholds scattered in the implementation (all thresholds live on ProviderHealthPolicy v1). Circuit breaker CLOSED/OPEN/HALF_OPEN derives from failure threshold + cooldown (no uncontrolled network probing). Rate-limit is never a MODEL_QUALITY_FAILURE; RetryAfterUtc honored; DISABLED never auto re-enabled; AUTH_ERROR -> HUMAN_PROVIDER_CONFIGURATION_REQUIRED, never model-escalated; UNKNOWN explicit, never silently AVAILABLE. Failover eligibility: a fallback route must already satisfy DB-M19 hard eligibility constraints -- hard filters are never bypassed because the preferred provider is down; if no healthy alternate route exists the decision returns that fact (NO_HEALTHY_ROUTE / WAIT_COOLDOWN / WAIT_RETRY_AFTER), never a fabricated fallback. DB-M20 integration: SWITCH_PROVIDER_ROUTE handling (git-gate HUMAN_* and non-RECOMMENDED statuses are NOT provider failures and never execute a switch); Test-AiBudget consumption -> over budget -> ROUTING_REPLAN_REQUIRED (never executable failover); failure-fingerprint suppression (never keeps retrying an identical known provider failure). Manual override requires explicit reference + reason + timestamp and never re-enables a config-DISABLED provider. Operating modes: MANUAL (display only) / ASSISTED (recommend, human triggers) / AUTO prohibited; AUTO_EXECUTION_ENABLED = FALSE. Eight operations: New-ProviderHealthEvidence, Get-EffectiveProviderHealth, Test-ProviderRouteAvailable, Get-ProviderCircuitState, Update-ProviderCircuitState, Get-EligibleFailoverRoutes, Get-ProviderFailoverDecision, Test-ProviderHealthOverride, Export-ProviderHealthReport. No operation executes an AI provider/model: 0 network calls, 0 paid API calls. Health aggregation priority DISABLED(config) > AUTH_ERROR > RATE_LIMITED > UNAVAILABLE > DEGRADED > AVAILABLE > UNKNOWN; UNAVAILABLE fires on ANY fresh UNAVAILABLE evidence (threshold reached OR cooldown pending). Provider failures are evidence-only signals, never Nexus roadmap tasks (FIX-TASK RULE: never NEW_FIX_TASK_REQUIRED unless an independently verified Nexus code failure; DB-M22 creates no Nexus tasks).",
+  "ProviderHealthEvidenceV1": "PASS",
+  "ProviderHealthPolicyV1": "PASS",
+  "ProviderFailoverDecisionV1": "PASS",
+  "HealthVocabulary7States": "PASS",
+  "CircuitBreaker3States": "PASS",
+  "NoUncontrolledNetworkProbing": "PASS",
+  "RateLimitNeverModelQualityFailure": "PASS",
+  "RetryAfterUtcHonored": "PASS",
+  "DisabledNeverAutoReEnabled": "PASS",
+  "AuthErrorHumanConfigRequired": "PASS",
+  "AuthNeverModelEscalates": "PASS",
+  "UnknownExplicitNeverSilent": "PASS",
+  "FailoverEligibilityHardFilters": "PASS",
+  "NoHealthyAlternateReturnsFact": "PASS",
+  "Dbm20SwitchProviderRoute": "PASS",
+  "BudgetBlockRoutingReplan": "PASS",
+  "FingerprintSuppression": "PASS",
+  "ManualOverrideExplicit": "PASS",
+  "ManualOverrideCannotReEnableDisabled": "PASS",
+  "OperatingModesManualAssistedAuto": "PASS",
+  "AutoExecutionEnabled": "FALSE",
+  "AutoExecutionRefused": "PASS",
+  "ManualModePreserved": "YES",
+  "AssistedRecommendation": "PASS",
+  "ProviderModelExecuted": "NO",
+  "Operations8": "PASS",
+  "NoOperationExecutesProvider": "PASS",
+  "NoInfiniteRetryLoops": "PASS",
+  "RoadmapModificationCapability": "NO",
+  "FixTaskRule": "PASS",
+  "Tests": {
+    "Passed": 132,
+    "Failed": 0,
+    "Total": 132,
+    "Scenarios": 45,
+    "ScenarioCount": "45/45",
+    "PaidApiCalls": 0,
+    "NetworkCalls": 0,
+    "Note": "Health suite (Test-DbM22Health.ps1) 68 assertions, 0 failed, exit 0; S1..S30 = 30 scenarios. Failover suite (Test-DbM22Failover.ps1) 64 assertions, 0 failed, exit 0; S31..S45 = 15 scenarios. Total 132 assertions across the required 45 scenarios. S1 evidence normalization/id determinism (case-insensitive); S2 invalid ObservedState rejected; S3 invalid EvidenceType rejected; S4 invalid FailureCategory rejected; S5 secret-like value in Notes rejected; S6 default EvidenceType + ObservedAtUtc required; S7 fresh success -> AVAILABLE/CLOSED; S8 stale success -> UNKNOWN (never silently AVAILABLE); S9 config DISABLED wins over fresh success; S10 DISABLED > success priority; S11 AUTH_ERROR requires human, never model-escalates; S12 stale AUTH_ERROR falls through; S13 RATE_LIMITED + RetryAfterUtc honored; S14 rate-limit cooldown pending; S15 cooldown elapsed -> no longer RATE_LIMITED; S16 DEGRADED from ObservedState only; S17 failure threshold -> UNAVAILABLE + circuit OPEN; S18 recovery threshold (success below threshold not AVAILABLE); S19 no evidence -> UNKNOWN explicit, high-risk denied; S20 UNKNOWN usable under permissive policy; S21 UNKNOWN low-risk allowed; S22 cooldown elapsed -> HALF_OPEN; S23 circuit transitions via Update-ProviderCircuitState (HALF_OPEN+success->CLOSED, HALF_OPEN+failure->OPEN, CLOSED+failure->OPEN, OPEN+success->CLOSED); S24 determinism; S25 multi-route (gateway route vs provider-level); S26 model-quality concern does not poison route health; S27 override granted with reference+reason+timestamp; S28 override without reason/timestamp denied; S29 override prohibited by policy; S30 override cannot re-enable config-DISABLED provider. S31 healthy original -> USE_CURRENT_ROUTE; S32 UNAVAILABLE original + healthy eligible alternate -> SWITCH_ROUTE; S33 HALF_OPEN circuit + no alternate -> NO_HEALTHY_ROUTE (custom policy: freshness 600s > circuitDur 300s); S34 DISABLED -> same-provider gateway SWITCH else STOP_PROVIDER_UNAVAILABLE; S35 AUTH_ERROR + alternate budget-ok -> SWITCH (AUTH_REQUIRES_HUMAN + AUTH_NEVER_MODEL_ESCALATES), RequiresHuman true; S36 AUTH_ERROR no alternate -> HUMAN_PROVIDER_CONFIGURATION_REQUIRED; S37 RATE_LIMITED future RetryAfter + no alternate -> WAIT_RETRY_AFTER carrying RetryAfterUtc; S38 over-budget alternate -> ROUTING_REPLAN_REQUIRED; S39 RATE_LIMITED over budget -> ROUTING_REPLAN_REQUIRED; S40 UNKNOWN usable -> USE_CURRENT_ROUTE UNKNOWN_HEALTH_LOW_RISK_ALLOWED; S41 UNKNOWN high-risk + alternate -> SWITCH / else HUMAN_PROVIDER_DECISION_REQUIRED; S42 circuit OPEN + no alternate -> WAIT_COOLDOWN (3 failures, never NO_HEALTHY_ROUTE); S43 fingerprint suppression -> HUMAN_PROVIDER_CONFIGURATION_REQUIRED with KNOWN_FAILURE_SUPPRESSED+REPEAT_PROHIBITED (4 known identical fingerprints, empty ReasoningLevel); S44 DB-M20 gates (git-gate HUMAN_* not provider failure -> USE_CURRENT_ROUTE; non-RECOMMENDED status -> ROUTING_REPLAN_REQUIRED); S45 DB-M20 SWITCH_PROVIDER_ROUTE + DB-M19 eligibility + Export-ProviderHealthReport invariants (NetworkCalls=0, PaidApiCalls=0, AutoExecutionEnabled=false, BOM-less UTF-8 file, absent candidate lists count as 0)."
+  },
+  "Regressions": {
+    "DBM14": "51/51 PASS, exit 0",
+    "DBM19": "136/136 PASS, exit 0",
+    "DBM20": "149/149 PASS, exit 0",
+    "DBM21": "Budget S1-S23 (77 assertions) PASS, exit 0; Fingerprints S24-S50 (74 assertions) PASS, exit 0",
+    "DBM24": "128/128 PASS, exit 0"
+  },
+  "FilesCreated": [
+    "scripts/ai-routing/provider-health/ProviderHealthContracts.ps1",
+    "scripts/ai-routing/provider-health/ProviderHealthEngine.ps1",
+    "scripts/ai-routing/provider-health/ProviderHealthOverride.ps1",
+    "scripts/ai-routing/provider-health/ProviderHealthReport.ps1",
+    "scripts/ai-routing/provider-health/Test-DbM22Health.ps1",
+    "scripts/ai-routing/failover/FailoverContracts.ps1",
+    "scripts/ai-routing/failover/FailoverEngine.ps1",
+    "scripts/ai-routing/failover/Test-DbM22Failover.ps1",
+    "design/ai-routing/DB-M22_PROVIDER_HEALTH.md",
+    "design/ai-routing/DB-M22_FAILOVER.md",
+    "state/db-m22-result.json"
+  ],
+  "FilesModified": [],
+  "AutomaticExecutionEnabled": "FALSE",
+  "AI_APICalls": 0,
+  "NetworkCalls": 0,
+  "DBM14Overlap": {
+    "Overlap": "NONE",
+    "Details": "AiRoutingContracts.ps1 consumed READ-ONLY (Get-ContractProperty vocab/helpers, health/failure vocabularies). SHA-256 CAF41E6E52B5B98904326C7E5CD8A7BF361B8C8CDFC395AAD2B4C53F357A4408 verified MATCH (byte-identical to the DB-M14 frozen contract recorded in db-m20/db-m21 results). Untouched."
+  },
+  "DBM15Overlap": {
+    "Overlap": "NONE",
+    "Details": "Pricing catalogue untouched; no price data in health/failover. Health aggregation and failover decisions never consult model prices."
+  },
+  "DBM16Overlap": {
+    "Overlap": "NONE",
+    "Details": "Cost/FX files untouched. DB-M22 introduces no currency logic."
+  },
+  "DBM17Overlap": {
+    "Overlap": "NONE",
+    "Details": "AttemptStore.ps1 untouched. DB-M22 consumes attempt-derived failure evidence through its own ProviderHealthEvidence (ObservedState/EvidenceType/ObservedAtUtc); it does not write attempt records. No competing store is created or written."
+  },
+  "DBM18Overlap": {
+    "Overlap": "NONE",
+    "Details": "TaskClassification.ps1 / ContextPackage.ps1 untouched. DB-M22 uses DB-M14 task-type/reasoning vocabularies only."
+  },
+  "DBM19Overlap": {
+    "Overlap": "NONE",
+    "Details": "router/* untouched. DB-M19 RoutingCandidate consumed READ-ONLY via New-RoutingCandidate in the failover suite and via DB-M20 decision semantics; fallback eligibility is DB-M19 hard-constraint driven (Get-EligibleFailoverRoutes filters non-ELIGIBLE candidates), never reimplemented."
+  },
+  "DBM20Overlap": {
+    "Overlap": "NONE",
+    "Details": "escalation/* untouched. DB-M20 failure categories/actions/statuses consumed read-only; SWITCH_PROVIDER_ROUTE handled as a provider-route decision input, never an executable switch; non-RECOMMENDED statuses and git-gate HUMAN_* states never bypassed (HUMAN_GIT_GATE_NOT_PROVIDER_FAILURE / GOVERNANCE_BLOCK_NOT_FAILOVER)."
+  },
+  "DBM21Overlap": {
+    "Overlap": "NONE",
+    "Details": "budget/* and failure-fingerprints/* untouched. Test-AiBudget consumed read-only: over budget -> ROUTING_REPLAN_REQUIRED (never executable failover). New-FailureFingerprint + Test-AiRepeatAttemptAllowed + Get-AiKnownFailureEvidence consumed read-only for suppression: identical known provider failure above MaxRepeatsBeforeSuppress -> HUMAN_PROVIDER_CONFIGURATION_REQUIRED with KNOWN_FAILURE_SUPPRESSED+REPEAT_PROHIBITED; never an infinite retry loop."
+  },
+  "DBM24Overlap": {
+    "Overlap": "NONE",
+    "Details": "performance/* untouched. Provider-vs-model separation keeps AUTH_ERROR/RATE_LIMITED/UNAVAILABLE infrastructure failures out of model-quality history, so DB-M24 quality evidence stays meaningful."
+  },
+  "DBM12Overlap": {
+    "Overlap": "NONE",
+    "Details": "src/DevBridge.* (DB-M12-owned) untouched."
+  },
+  "LaneCOverlap": {
+    "Overlap": "NONE",
+    "Details": "DB-M22 wrote NO Lane C files: grep-verified zero references to C:\\Personal\\Nexus.Developer or NEXUS_DEVELOPMENT_CONTROL in all DB-M22 scripts; no Set-Content/Out-File/Add-Content anywhere in scripts/ai-routing/provider-health or scripts/ai-routing/failover. The only disk write in the DB-M22 test suites is state\\_dbm22-test-report.json (DevBridge-scoped, removed in a finally block). state/current-task.json, state/preflight.json, workbook backups, logs untouched by DB-M22."
+  },
+  "WorkbookModified": "NO",
+  "NexusRepositoriesModified": "NO",
+  "WorkbookSha256": "F520060CB753EC8EC96B44BCBD193BDAB69CA68D4CC27198663665D5FE63F884",
+  "DBM25Ready": "YES",
+  "NotesForNextMilestones": "DB-M25 (model quality) builds on DB-M22 health evidence: infrastructure failures (AUTH_ERROR/RATE_LIMITED/UNAVAILABLE) are recorded as provider health evidence, not model-quality failures; DEGRADED comes only from observed quality evidence; UNKNOWN is explicit so quality evaluation never silently treats missing evidence as good. Failover decisions consume DB-M19 eligibility and DB-M20/DB-M21 gates read-only; provider-health remains a recommendation layer (AUTO_EXECUTION_ENABLED = FALSE) pending DB-M25 quality signals."
+}

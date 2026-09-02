@@ -1,0 +1,132 @@
+{
+  "Milestone": "DB-M29",
+  "Title": "TASK COST, ATTEMPT & ESCALATION HISTORY UI",
+  "Lane": "B",
+  "DateUtc": "2026-08-31T19:32:52Z",
+  "Implementation": "PASS",
+  "Summary": "An operator-facing TASK COST, ATTEMPT & ESCALATION HISTORY UI for the existing DevBridge AI subsystem. For any task the operator can see the COMPLETE AI execution history across attempts, retries, corrections, escalations, provider failures, model-quality failures, budget decisions and verification outcomes: WHAT WAS TRIED (ordered attempt timeline: provider, model, reasoning), WHY DID IT FAIL (failure category + failure fingerprint + verification), WHY DID DEVBRIDGE RETRY OR ESCALATE (transition arrows carrying the DB-M20 action + reason codes + explanation), HOW MUCH DID EACH ATTEMPT COST (per-attempt actual vs estimated), WHAT WAS THE TOTAL COST (task total actual + total estimated), and WHICH ATTEMPT FINALLY PASSED VERIFICATION (terminal VERIFIED_SUCCESS marker). DB-M29 is a PURE presentation engine: it takes AiAttemptRecord v1 (DB-M17) + optional DB-M20 EscalationDecisions + DB-M21 FailureFingerprints + DB-M22 ProviderHealthEvidence and returns a TaskHistoryView v1. NO persistence and NO second attempt-history database: the DB-M17 attempt store is consumed READ-ONLY and the EMPTY on-disk store renders an honest empty state ('No attempt history recorded.') rather than invented history. The engine never recomputes a cost formula (DB-M16 authority via Resolve-DbM25RecordCost, actual preferred / estimated labelled / cumulative), never writes an attempt/escalation/budget/fingerprint record, never executes a provider, never makes a paid API call, never makes a network call, and AUTO_EXECUTION_ENABLED=FALSE. DB-M29 reuses (does NOT rebuild) DB-M14..M28 READ-ONLY: DB-M14 route/health vocabularies, DB-M16 cost semantics, DB-M17 attempt store (the ONLY history source), DB-M19 routing eligibility vocabulary (NOT invoked, history is display only), DB-M20 New-EscalationChain + EscalationDecision/Input contracts + action/reason vocabularies (the timeline's WHY-RETRY/ESCALATE evidence), DB-M21 budget decision vocab + FailureFingerprint v1 (fingerprint + budget-stop evidence), DB-M22 ProviderHealthEvidence (optional provider-failure context, never a health-write), DB-M23 price-status + route identity (GatewayProviderId vs UnderlyingModelId never collapsed), DB-M24 Resolve-AiTaskChains/Resolve-AiChainFacts (task grouping, chain ordering, task facts), DB-M25 Resolve-DbM25VerifiedSuccess + Resolve-DbM25RecordCost (authoritative verified-success + cost resolution), DB-M26 aggregate dashboard (DB-M29 is the per-task drilldown, not a duplicate analytics), DB-M27/DB-M28 renderer + ReadOnlyGuard + secret-leak guard + markers pattern. TASK HISTORY VIEW carries the brief's fields: Task ID, Change ID, Mode, Attempt count, Total actual cost, Total estimated cost, Verified-success state (VERIFIED_SUCCESS/CONTRADICTED/MODEL_RETURNED/INCOMPLETE/NO_ATTEMPTS), First-attempt success YES/NO/UNKNOWN, Final model/provider (+ underlying/gateway identity), Corrections count, Escalations count, Failure count. The attempt timeline shows transition arrows (RETRY / RETRY_SAME_MODEL_HIGHER_REASONING / SWITCH_MODEL / SWITCH_PROVIDER_ROUTE / REBUILD_CONTEXT / CORRECTION / CORRECTION_CLAUDE_REVIEW_FIX) and terminal markers (BUDGET_STOP / HUMAN_REVIEW / GOVERNANCE_STOP / VERIFIED_SUCCESS / FAILED_NO_RETRY). S1-S55: UI opens + honest empty store, 13 task-row fields, attempt/total/cumulative cost, verified-success/contradicted/model-returned, first-attempt success, final model/provider, corrections/escalations/failure counts, timeline ordering + node fields, transition typing + DB-M20 decision carried, budget/human/governance/verified/no-retry terminals, failure category (DB-M17/DB-M20 vocab), fingerprint display, provider-failure evidence (read-only), route identity preserved, task filtering + sorting, cost authority (no formula re-implemented), no second attempt-history database, secrets never rendered/logged, no AI execution, paid calls 0, network calls 0, escalation/budget stores untouched, canonical workbook byte-identical, Nexus source unchanged, Lane C UI byte-identical, solution build 0 errors, frozen files/config/workbook SHA-256 byte-identical.",
+  "UiLaunches": "PASS",
+  "TaskHistoryView": "PASS",
+  "AttemptTimeline": "PASS",
+  "TransitionEvidence": "PASS",
+  "TerminalMarkers": "PASS",
+  "CostPerAttempt": "PASS",
+  "TotalCost": "PASS",
+  "CumulativeCost": "PASS",
+  "VerifiedSuccessMarkers": "PASS",
+  "FailureFingerprintDisplay": "PASS",
+  "ProviderFailureContext": "PASS",
+  "RouteIdentityPreserved": "PASS",
+  "EmptyStoreHonesty": "PASS",
+  "ReadOnlyGuard": "PASS",
+  "AttemptStoreModified": "NO",
+  "EscalationDecisionsModified": "NO",
+  "BudgetPolicyModified": "NO",
+  "FingerprintsModified": "NO",
+  "SecretValuesDisplayed": "NO",
+  "SecretValuesLogged": "NO",
+  "AutoExecutionEnabled": "FALSE",
+  "AttemptsExecuted": "NO",
+  "PaidApiCalls": 0,
+  "NetworkCalls": 0,
+  "SecondAttemptHistoryDatabase": "NO",
+  "CanonicalWorkbookModified": "NO",
+  "NexusSourceModified": "NO",
+  "DBM17Preserved": "PASS",
+  "DBM20Preserved": "PASS",
+  "DBM21Preserved": "PASS",
+  "DBM26Preserved": "PASS",
+  "DBM28Preserved": "PASS",
+  "KnownDBM26S41Fixture": "PRESENT",
+  "TemporaryDevBridgeBoundary": "PASS",
+  "Tests": {
+    "Passed": 391,
+    "Failed": 0,
+    "Total": 391,
+    "Scenarios": 55,
+    "ScenarioCount": "55/55",
+    "PaidApiCalls": 0,
+    "NetworkCalls": 0,
+    "Note": "Test-DbM29TaskHistory.ps1: 391 assertions, 0 failed, exit 0; 55/55 scenarios (S1-S55). Summary in state/db-m29-test-run.log. See tasks/DB-M29_IMPLEMENTATION_REPORT.md for the scenario-by-scenario walkthrough."
+  },
+  "Regressions": {
+    "DBM17": "99/99 PASS, exit 0",
+    "DBM20": "149/149 PASS, exit 0",
+    "DBM21": "74/74 PASS, exit 0",
+    "DBM26": "381/382 PASS, exit 1 -- SINGLE external failure S41: recorded workbook authority hash F520060C vs live 6D42C3BF (post DB-M12.4 closure), reported separately",
+    "DBM28": "359/359 PASS, exit 0",
+    "Note": "DB-M16/M24/M25 and the DB-M21Fingerprints/M22Health nested suites are covered by the DB-M26 child regression run (all 0 failures). DB-M18.1 is NOT invoked by DB-M29; its frozen files (DependencyLineage.ps1 + Test-DbM181DependencyLineage.ps1) are re-verified byte-identical by S55 and its R45 external drift remains reported separately."
+  },
+  "ExternalDrift": [
+    "M26 S41 workbook-authority drift: DB-M26 freezes recorded authority hash F520060C; live workbook is 6D42C3BF6D3307B4B1A45870CE12F41E403DFED412E59F33D7B487E93A83E4F5 after DB-M12.4 live trial-cycle closure 2026-08-31. DB-M29 S52 independently proves the workbook byte-identical across its own run."
+  ],
+  "FilesCreated": [
+    "design/DB-M29_TASK_ATTEMPT_ESCALATION_HISTORY_UI.md",
+    "scripts/ai-routing/task-history/HistoryContracts.ps1",
+    "scripts/ai-routing/task-history/HistoryEngine.ps1",
+    "scripts/ai-routing/task-history/HistoryRender.ps1",
+    "scripts/ai-routing/task-history/Test-DbM29TaskHistory.ps1",
+    "state/db-m29-result.json",
+    "state/db-m29-test-run.log",
+    "tasks/DB-M29_IMPLEMENTATION_REPORT.md"
+  ],
+  "FilesModified": [],
+  "DBM16Overlap": {
+    "Overlap": "NONE",
+    "Details": "AiPricingContracts.ps1 / PricingCatalogue.ps1 consumed READ-ONLY. Every cost figure resolves via Resolve-DbM25RecordCost (DB-M16 authority): ActualCost preferred -> ACTUAL, EstimatedCost only with AllowEstimatedFallback -> ESTIMATED, currency matched. DB-M29 never recomputes a cost formula (S43 forbidden-token scan)."
+  },
+  "DBM17Overlap": {
+    "Overlap": "NONE",
+    "Details": "AttemptStore.ps1 consumed READ-ONLY via the DB-M17 query layer (Get-AiAttemptsAll / Get-AiAttemptsForTask etc.) -- the ONLY attempt-history source. DB-M29 never writes an attempt record (S44); the on-disk store is EMPTY today and the UI shows an honest empty state (S2/S3) rather than inventing history."
+  },
+  "DBM19Overlap": {
+    "Overlap": "NONE",
+    "Details": "Router.ps1 / RoutingEligibility.ps1 untouched. Routing eligibility vocabulary is NOT invoked -- history is display-only; the hard capability gate is untouched."
+  },
+  "DBM20Overlap": {
+    "Overlap": "NONE",
+    "Details": "escalation/* untouched. New-EscalationChain + EscalationDecision/Input contracts + Get-DbM20Actions/ReasonCodes/FailureCategories vocabularies consumed READ-ONLY as the timeline's WHY-RETRY/ESCALATE evidence; no decision-write token in the library (S50)."
+  },
+  "DBM21Overlap": {
+    "Overlap": "NONE",
+    "Details": "budget/* + failure-fingerprints/* untouched. Budget decision vocab + FailureFingerprint v1 + recurrence vocab consumed READ-ONLY as display evidence (failure-fingerprint + budget-stop markers); no fingerprint-write token; budget decisions display-only (S51)."
+  },
+  "DBM22Overlap": {
+    "Overlap": "NONE",
+    "Details": "provider-health/* untouched. OPTIONAL ProviderHealthEvidence (DB-M22 shape) consumed as per-attempt provider-failure context ('Provider failure evidence: <state> (retry after <ts>)' warning); no Set-ProviderHealth / Update-ProviderCircuitState token (S39)."
+  },
+  "DBM23Overlap": {
+    "Overlap": "NONE",
+    "Details": "providers/common/AdapterContracts.ps1 consumed READ-ONLY via the dot-source chain. Route identity never collapses GatewayProviderId vs UnderlyingModelId (S40)."
+  },
+  "DBM24Overlap": {
+    "Overlap": "NONE",
+    "Details": "performance/* untouched. Resolve-AiTaskChains / Resolve-AiChainFacts consumed READ-ONLY for task grouping, chain ordering (RetryNumber -> StartedAtUtc -> AttemptId) and task facts (first-attempt success, terminal attempt)."
+  },
+  "DBM25Overlap": {
+    "Overlap": "NONE",
+    "Details": "quality-cost/* untouched. Resolve-DbM25VerifiedSuccess (authoritative verified-success semantics) + Resolve-DbM25RecordCost (DB-M16 semantics) consumed READ-ONLY."
+  },
+  "DBM26Overlap": {
+    "Overlap": "NONE",
+    "Details": "dashboard/* untouched. DB-M26 is the CROSS-TASK aggregate dashboard; DB-M29 is the PER-TASK drilldown reusing the same record/chains/cost foundations -- no duplicate analytics. The DB-M26 suite is preserved (child regression) at its current external S41 signature."
+  },
+  "DBM27Overlap": {
+    "Overlap": "NONE",
+    "Details": "calculator/* untouched. Renderer pattern (self-contained HTML artifact; Export-DbM29TaskHistoryHtml WriteAllText UTF8 no-BOM is the ONLY library write) borrowed from DB-M27/DB-M28; no cost formula duplicated."
+  },
+  "DBM28Overlap": {
+    "Overlap": "NONE",
+    "Details": "model-config/* untouched. ReadOnlyGuard (AUTO_EXECUTION_ENABLED=FALSE, paid 0, network 0) + Test-DbM29SecretLeak + Out-DbM29Markers (backend always exits 0, outcomes via stdout markers) pattern borrowed from DB-M28; DB-M28 suite preserved 359/0 exit 0."
+  },
+  "DBGH01Overlap": {
+    "Overlap": "NONE",
+    "Details": "DB-GH01 (Lane A) owns lifecycle/governance scripts and the workbook; DB-M29 wrote ONLY under scripts/ai-routing/task-history/ + design/DB-M29_TASK_ATTEMPT_ESCALATION_HISTORY_UI.md + state/ (result + run log) + tasks/DB-M29_IMPLEMENTATION_REPORT.md. Grep-verified zero disk-write tokens in the library except Export-DbM29TaskHistoryHtml's WriteAllText of the operator-requested artifact (S44/S47-S51). NO PARALLEL_SCOPE_CONFLICT."
+  },
+  "WorkbookModified": "NO (by DB-M29; S52 canonical workbook SHA-256 byte-identical)",
+  "NexusRepositoriesModified": "NO",
+  "WorkbookSha256Current": "6D42C3BF6D3307B4B1A45870CE12F41E403DFED412E59F33D7B487E93A83E4F5",
+  "WorkbookSha256Note": "Canonical workbook C:\\Personal\\Nexus.Developer\\NEXUS_DEVELOPMENT_CONTROL.xlsx verified present and SHA-256 byte-identical across the DB-M29 run (S52). DB-M29 itself performed ZERO workbook writes.",
+  "DBM30Ready": "YES",
+  "NotesForNextMilestones": "DB-M29 delivers the operator-facing TASK COST, ATTEMPT & ESCALATION HISTORY UI: task history view (13 brief fields) + attempt timeline with transition arrows + terminal markers + per-attempt/cumulative/total cost + failure fingerprints + provider-failure context, consuming the DB-M14..M28 chain READ-ONLY as a PURE presentation engine with NO persistence and NO second attempt-history database. DB-M26 remains at its external S41 drift (reported separately); workbook 6D42C3BF untouched. Real Nexus restart rule still holds: after DevBridge validation, restore the pre-DevBridge workbook backup + Nexus source/Git baseline; DB-M29 is DevBridge-only, temporary, and NOT designed for Nexus migration. DB-M30 next."
+}

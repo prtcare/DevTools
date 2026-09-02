@@ -1,0 +1,22 @@
+{
+  "nodeId": "WI-07-0.2.4",
+  "changeId": "CHG-20260830-017",
+  "result": "SCOPE_CHANGE_CLEAR",
+  "generatedAt": "2026-08-31",
+  "workbookHash": "93d2620d919789d9c7199c417ff3a9fd5b09da0464f0d3800db0748e62772372",
+  "originalScope": "Nexus.Developer / Nexus.Developer.Core / src/Nexus.Developer.Core/DevelopmentControl/**",
+  "requestedScope": "Nexus.Developer.Core original scope + minimum Infrastructure integration",
+  "approvedScope": "Nexus.Developer / Nexus.Developer.Core / src/Nexus.Developer.Core/DevelopmentControl/** (original, unchanged; may gain IDevelopmentControlAtomicWorkUnitRunner + coordinator/guard routing as in-scope correction) + Nexus.Developer.Infrastructure / src/Nexus.Developer.Infrastructure/DevelopmentControl/ExcelDevelopmentControlStore.cs (single file, minimum)",
+  "addedProjects": [
+    "Nexus.Developer.Infrastructure"
+  ],
+  "addedFiles": [
+    "src/Nexus.Developer.Infrastructure/DevelopmentControl/ExcelDevelopmentControlStore.cs"
+  ],
+  "architectureResult": "PASS",
+  "conflictResult": "PASS",
+  "parallelResult": "PASS",
+  "parallelScopeCheck": "PASS",
+  "reason": "Genuine atomic multi-operation workbook save (N mutations -> one temp-write -> validate -> promote) is all-or-nothing and requires the adapter to accept a work unit over a single open workbook. Core-only coordinates and single-op atomic writes compose end-to-end today, but Core cannot collapse N saves into one atomic commit - a persistence-layer capability that the minimum adapter batch entry (single Infrastructure file) provides.",
+  "implementationEvidence": "9 Core files delivered under src/Nexus.Developer.Core/DevelopmentControl/**; 44/44 harness checks pass (incl. cross-process contention C1-C6, two-writer race D10, abandoned-mutex recovery); 199/199 repo tests green; full solution build 0 warnings / 0 errors; canonical NEXUS_DEVELOPMENT_CONTROL.xlsx SHA-256 byte-identical; Infrastructure files read-only and untouched; governance dump unchanged (GOVERNANCE-HASH-UNCHANGED: True)."
+}

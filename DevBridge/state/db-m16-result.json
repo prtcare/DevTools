@@ -1,0 +1,72 @@
+{
+  "Milestone": "DB-M16",
+  "Title": "Actual Cost Calculator + Currency Conversion",
+  "Lane": "B1",
+  "DateUtc": "2026-08-30T18:02:22Z",
+  "Implementation": "PASS",
+  "Summary": "Deterministic estimated/actual cost calculation consuming the DB-M15 pricing catalogue only (no embedded rates), plus effective-dated USD->INR exchange-rate evidence. CostCalculationInput/Result v1, ExchangeRateRecord v1, CostVariance v1. Cached/uncached split without double billing, cache-write 5m/1h, config-driven reasoning billing (INCLUDED_IN_OUTPUT default), tool/media/storage other-cost with PARTIAL on missing rates. Historic pricing + FX reproducible; later rate/price changes never rewrite historic costs. Zero paid/FX/network calls, zero credentials.",
+  "CostCalculationInputV1": "PASS",
+  "CostCalculationResultV1": "PASS",
+  "ExchangeRateRecordV1": "PASS",
+  "EffectiveDatedPriceUse": "PASS",
+  "EstimatedCost": "PASS",
+  "ActualCost": "PASS",
+  "CachedTokenHandling": "PASS",
+  "CacheWriteHandling": "PASS",
+  "OutputReasoningHandling": "PASS",
+  "ToolMediaStorageHandling": "PASS",
+  "CostVarianceV1": "PASS",
+  "USDToINRConversion": "PASS",
+  "HistoricFXReproducibility": "PASS",
+  "MissingFXHandling": "PASS",
+  "PartialMissingCostHandling": "PASS",
+  "PriceLookupDefence": "PASS",
+  "Tests": {
+    "Passed": 167,
+    "Failed": 0,
+    "Total": 167,
+    "PaidApiCalls": 0,
+    "NetworkCalls": 0,
+    "FxApiCalls": 0,
+    "Note": "Token-cost matrix (14 scenarios), effective dating, 6 time-band boundaries reusing DB-M15 resolver, cached split 1M/400K no double billing, USAGE_INCOMPLETE, FX decimal/reproducibility/missing/non-mutation, variance, PARTIAL, schema v1, no-network scan."
+  },
+  "SeedExchangeRates": {
+    "Records": 2,
+    "Pairs": "USD->INR",
+    "Note": "DEV fixtures (Source CONFIGURED, Notes 'DEV FIXTURE - not a live market rate.'): fx-usdinr-dev-v1 Rate 75.0 [2026-01-01, 2026-06-01), fx-usdinr-dev-v2 Rate 83.5 [2026-06-01, open). Historic evidence windows, never rewritten."
+  },
+  "FilesCreated": [
+    "scripts/ai-routing/AiCostContracts.ps1",
+    "scripts/ai-routing/AiExchangeRates.ps1",
+    "scripts/ai-routing/CostCalculator.ps1",
+    "scripts/ai-routing/AiRoutingCostFoundation.ps1",
+    "scripts/ai-routing/Test-AiCostCalculator.ps1",
+    "config/currency/exchange-rates.json",
+    "config/cost/cost-calculator.json",
+    "design/ai-routing/DB-M16_COST_CALCULATION.md",
+    "design/ai-routing/DB-M16_CURRENCY_CONVERSION.md",
+    "state/db-m16-result.json"
+  ],
+  "FilesModified": [],
+  "DBM14FrozenContractsModified": "NO",
+  "DBM15PricingCompatibility": {
+    "Status": "PASS",
+    "Details": "DB-M15 pricing catalogue consumed read-only via Get-AiPriceAt/Get-AiPricingRecord. Zero pricing records added, edited, or deleted. DB-M15 suite re-run: 71/71 pass."
+  },
+  "DBM17Overlap": {
+    "Overlap": "NONE",
+    "Details": "AttemptStore.ps1, Test-AttemptStore.ps1, state/attempts/ are DB-M17-owned and untouched. DB-M16 outputs EstimatedCost/ActualCost/CostCurrency/ExchangeRate/PricingRecordId on CostCalculationResult v1 so DB-M17 can populate its frozen DB-M14 attempt contract without schema edits."
+  },
+  "DBM12Overlap": {
+    "Overlap": "NONE",
+    "Details": "src/DevBridge.Engine, src/DevBridge.Tests, src/DevBridge.UI are DB-M12-owned; not touched by DB-M16."
+  },
+  "LaneCOverlap": {
+    "Overlap": "NONE",
+    "Details": "Lane C concurrency/workbook artifacts (logs/dbm04_*, logs/workbook-backups, logs/selftest) untouched by DB-M16; no overlap with scripts/ai-routing/ cost files or config/currency|cost/."
+  },
+  "WorkbookModified": "NO",
+  "NexusRepositoriesModified": "NO",
+  "DBM18_21CostFoundationReady": "YES",
+  "NotesForDBM18_21": "CostCalculationResult v1 exposes ProviderCurrencyTotal/ConvertedTotal/CostCurrency/ExchangeRateId + PricingRecordId for cost reconciliation (DB-M18/M21/M24/M25). Calculate-AiAttemptCost is a pure function of (Configuration, CostCalculationInput); deterministic historic reproducibility ready for audit/ledger features."
+}

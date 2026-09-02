@@ -1,0 +1,109 @@
+{
+    "milestone": "DB-M11",
+    "title": "Full Workbook Consistency Validator",
+    "nodeId": "WI-07-0.2.3",
+    "name": "Excel persistence adapter",
+    "changeId": "CHG-20260830-016",
+    "activityId": "ACT-20260830-017",
+    "validatedAtUtc": "2026-08-30T17:05:00Z",
+    "status": "CONTROL_VALIDATED",
+    "controlValidationResult": "PASS",
+    "authoritativeWorkbook": "C:\\Personal\\Nexus.Developer\\NEXUS_DEVELOPMENT_CONTROL.xlsx",
+    "workbookSha256": "24C8D3AF2210C0F1F61B10FB96019A8AC7C8D8BBC67263F1498C4A11B075297C",
+    "workbookSha256UnchangedSinceDbM10": true,
+    "readOnly": {
+        "workbookModified": false,
+        "nexusSourceModified": false,
+        "nextTaskReserved": false,
+        "nextTaskStarted": false
+    },
+    "structure": {
+        "sheetCount": 14,
+        "sheets": ["Control Center", "Master Roadmap", "Active Changes", "Audit Findings", "Session Protocol", "Version History", "Phase Plan", "Architecture Decisions", "Open Decisions", "Dependencies & Blockers", "Tool & Integration Registry", "Activity Log", "Development Guide", "Existing Assets"],
+        "duplicateSheetNames": false,
+        "allSheetsParsedOk": true,
+        "blankRowGaps": "Fully-blank spacer rows omitted from sheetData by the OOXML writer in 13 sheets (e.g. row 4 in MR/AC/VH/AF, row 3 in AL/TR/EA/OD/DB/ADR/PP/DG, rows 3/4 in AF); Session Protocol contiguous. No populated row missing; benign, pre-existing.",
+        "headIntegrity": "All 14 sheets parse cleanly; headers verified by DB-M06 WorkbookSchemaValidator (22/22) and DB-M10 post-write checks."
+    },
+    "parts": [
+        { "part": 1, "title": "Structural validity (14 sheets)", "verdict": "PASS", "note": "14 sheets, no dup names, no corruption, opens cleanly. Missing row elements are blank spacers only." },
+        { "part": 2, "title": "Current task consistency", "verdict": "PASS", "note": "MR R327 Complete/100; AC row 79 Terminal; AL reservation ACT-20260830-016 + completion ACT-20260830-017; VH rows 958/959; CHG-20260830-016 resolves across sheets; Claude PASS + DB-M06 reflected; no duplicate completion." },
+        { "part": 3, "title": "Master Roadmap <-> Version History", "verdict": "PASS", "note": "WI-07-0.2.3 MR(Complete/100) == VH958(Complete/100,IsCurrent=Yes); M-07-0.2 MR(In Progress/30) == VH959(In Progress/30,IsCurrent=Yes); prior VH preserved; one current version each; no deleted rows; no duplicate (node,version). MR Z = creation change ID (CHG-006), consistent with siblings; version change ID in VH AD." },
+        { "part": 4, "title": "Master Roadmap <-> Active Changes", "verdict": "PASS", "note": "Single CHG-20260830-016 row (79) and it is Terminal; result matches roadmap; evidence matches DB-M06/Claude PASS; no duplicate reservation; unrelated changes untouched." },
+        { "part": 5, "title": "Active Changes <-> Activity Log", "verdict": "PASS", "note": "Reservation + completion events exist for CHG-016; change ID and node refs match; result/evidence matches; human review state consistent; no duplicate completion event; AL append-only." },
+        { "part": 6, "title": "Master Roadmap <-> Dependencies", "verdict": "PASS", "note": "M-07-0.2 -> M-07-0.1 (Completed/100); WI-07-0.2.3 -> WI-07-0.2.2 (Complete). WI-07-0.2.4 (row 328, J=WI-07-0.2.3) now eligible: recorded as candidate only, NOT reserved." },
+        { "part": 7, "title": "Master Roadmap <-> Development Guide", "verdict": "PASS", "note": "KNOWN_MIRROR_GAP: no M-07-0.2 row in Development Guide. NON_BLOCKING (pre-existing, known from DB-M06 Part 11 / DB-M10)." },
+        { "part": 8, "title": "Master Roadmap <-> Phase Plan", "verdict": "PASS", "note": "No Phase Plan row references M-07-0.2; governance keeps it outside Phase Plan (P0/GATE_A roadmap node). No contradiction." },
+        { "part": 9, "title": "Architecture Decisions", "verdict": "PASS", "note": "ADR-003 Approved governs append-only Version History - honored. ADR-005 Approved; no roadmap contradiction introduced. No ADR modified by DB-M10; no fresh code review." },
+        { "part": 10, "title": "Open Decisions", "verdict": "PASS", "note": "No decision referenced by completion evidence; DB-M10 did not close unrelated decisions. Pre-existing DEC-003 duplicate ID noted (non-blocking)." },
+        { "part": 11, "title": "Audit Findings", "verdict": "PASS", "note": "No unrelated finding closed; no CHG-016/MutationEnvelope references; AF-010 (High, Documentation truth) status/evidence consistent and untouched." },
+        { "part": 12, "title": "Tool & Integration Registry", "verdict": "PASS", "note": "Exactly one ClosedXML record (row 16); name/ownership conventions followed; evidence-based; no invented approval; matches NuGet dependency in implementation." },
+        { "part": 13, "title": "Existing Assets", "verdict": "PASS", "note": "Exactly one 'Development control service (Excel-backed)' record (row 16); what-exists-now accurate; concurrency/locking correctly deferred to WI-07-0.2.4; repo/project refs correct." },
+        { "part": 14, "title": "Control Center", "verdict": "PASS", "note": "A2 changelog Workbook v3.27 * CHG-20260830-016 consistent with actual state; prior v3.26 preserved. Manual L12-L17 summary cells known-stale (pre-existing, informational)." },
+        { "part": 15, "title": "Parent/child progress", "verdict": "PASS", "note": "M-07-0.2 has 10 children, 3 Complete (30%); Manual Progress 30 = 3/10 children per workbook-native rule; U/V blank per sibling convention; status In Progress consistent." },
+        { "part": 16, "title": "Sort/hierarchy integrity", "verdict": "PASS", "note": "663 node IDs, 0 dupes; 142 work items, 0 orphan parent refs; 646 sort keys, 0 dupes; beyond-table row 675 (WI-12-0.4.2) clean." },
+        { "part": 17, "title": "Change ID relationship integrity", "verdict": "PASS", "note": "CHG-20260830-016 traced: AC 79 (Terminal), AL 53/54, VH 958/959 (AD), CC A2, TR 16 note, MR 327 evidence/notes. All references resolve; none dangling." },
+        { "part": 18, "title": "Activity ID / Record ID integrity", "verdict": "PASS", "note": "Activity Log ACT- IDs unique; Audit Finding IDs unique (18); VH (node,record-version) pairs unique; Change IDs unique. Pre-existing DEC-003 duplicate is a controlled-sheet identifier note, not an introduced defect." },
+        { "part": 19, "title": "Append-only protection", "verdict": "PASS", "note": "VH rows 1-957 preserved, 958/959 appended once; AL rows 1-53 preserved, 54 appended once; Active Changes completed rows retained; Control Center changelog append-only." },
+        { "part": 20, "title": "All-14-sheet consistency matrix", "verdict": "PASS", "note": "All 14 sheets consistent with DB-M10 expected decisions. See WORKBOOK_CONSISTENCY_REPORT.md." },
+        { "part": 21, "title": "Pre-existing vs introduced issues", "verdict": "PASS", "note": "0 issues introduced by DB-M10. Pre-existing warnings non-blocking; KNOWN_MIRROR_GAP non-blocking; informational notes recorded." },
+        { "part": 22, "title": "Control result", "verdict": "CONTROL_VALIDATION_PASSED", "note": "No condition unsafe for the next cycle." },
+        { "part": 23, "title": "Next governed candidate", "verdict": "RECORDED_ONLY", "note": "WI-07-0.2.4 (Concurrency, locking and atomic writes). Dependency satisfied. NOT reserved or started." },
+        { "part": 24, "title": "State transition", "verdict": "DONE", "note": "status=CONTROL_VALIDATED, nextAllowedAction=START_NEW_PREFLIGHT, controlValidationResult=PASS." },
+        { "part": 25, "title": "Outputs", "verdict": "DONE", "note": "tasks\\WORKBOOK_CONSISTENCY_REPORT.md + state\\workbook-consistency.json; preserved under logs\\tasks\\WI-07-0.2.3\\CHG-20260830-016\\." },
+        { "part": 26, "title": "Idempotency", "verdict": "PASS", "note": "Read-only; safely rerunnable; equivalent findings; no duplicate workbook evidence; workbook hash unchanged." }
+    ],
+    "sheetResults": [
+        { "index": 1, "sheet": "Control Center", "structural": "OK", "crossSheet": "OK", "dbM10Expected": "UPDATE_EXISTING", "observed": "A2 v3.27 * CHG-016 present; v3.26 preserved", "issues": "Manual L12-L17 summary cells known-stale", "blocking": false },
+        { "index": 2, "sheet": "Master Roadmap", "structural": "OK", "crossSheet": "OK", "dbM10Expected": "UPDATE_EXISTING", "observed": "R327 Complete/100; R324 In Progress/30; Z=CHG-006 (creation, consistent)", "issues": "none", "blocking": false },
+        { "index": 3, "sheet": "Active Changes", "structural": "OK", "crossSheet": "OK", "dbM10Expected": "UPDATE_EXISTING", "observed": "Row 79 Terminal; single CHG-016 row", "issues": "Sibling rows 75-78 read Open (pre-existing classification defect)", "blocking": false },
+        { "index": 4, "sheet": "Audit Findings", "structural": "OK", "crossSheet": "OK", "dbM10Expected": "NO_CHANGE", "observed": "No finding created/closed; AF-010 untouched", "issues": "none", "blocking": false },
+        { "index": 5, "sheet": "Session Protocol", "structural": "OK", "crossSheet": "OK", "dbM10Expected": "NO_CHANGE", "observed": "Untouched", "issues": "none", "blocking": false },
+        { "index": 6, "sheet": "Version History", "structural": "OK", "crossSheet": "OK", "dbM10Expected": "APPEND", "observed": "Rows 958/959 appended once; prior rows preserved; no duplicate version", "issues": "Planned nodes still lack baseline VH records (pre-existing gap)", "blocking": false },
+        { "index": 7, "sheet": "Phase Plan", "structural": "OK", "crossSheet": "OK", "dbM10Expected": "NO_CHANGE", "observed": "No M-07-0.2 ref; no phase transition", "issues": "none", "blocking": false },
+        { "index": 8, "sheet": "Architecture Decisions", "structural": "OK", "crossSheet": "OK", "dbM10Expected": "NO_CHANGE", "observed": "ADR-003/005 Approved; no modification", "issues": "MR WorkItem terminology predates ADR-005 (informational)", "blocking": false },
+        { "index": 9, "sheet": "Open Decisions", "structural": "OK", "crossSheet": "OK", "dbM10Expected": "NO_CHANGE", "observed": "No decision closed; none referenced by completion", "issues": "DEC-003 duplicate ID (rows 7,8) pre-existing", "blocking": false },
+        { "index": 10, "sheet": "Dependencies & Blockers", "structural": "OK", "crossSheet": "OK", "dbM10Expected": "NO_CHANGE", "observed": "No M-07 chain entry; graph satisfied", "issues": "none", "blocking": false },
+        { "index": 11, "sheet": "Tool & Integration Registry", "structural": "OK", "crossSheet": "OK", "dbM10Expected": "APPEND", "observed": "Exactly one ClosedXML row (16)", "issues": "none", "blocking": false },
+        { "index": 12, "sheet": "Activity Log", "structural": "OK", "crossSheet": "OK", "dbM10Expected": "APPEND", "observed": "Rows 53/54 present once; IDs unique; append-only", "issues": "none", "blocking": false },
+        { "index": 13, "sheet": "Development Guide", "structural": "OK", "crossSheet": "GAP", "dbM10Expected": "NO_CHANGE", "observed": "No M-07-0.2 mirror row exists", "issues": "KNOWN_MIRROR_GAP (non-blocking)", "blocking": false },
+        { "index": 14, "sheet": "Existing Assets", "structural": "OK", "crossSheet": "OK", "dbM10Expected": "APPEND", "observed": "Exactly one asset row (16)", "issues": "none", "blocking": false }
+    ],
+    "nextGovernedCandidate": {
+        "nodeId": "WI-07-0.2.4",
+        "name": "Concurrency, locking and atomic writes",
+        "reason": "Dependency WI-07-0.2.3 now Complete; natural successor under M-07-0.2 (GATE_A).",
+        "reserved": false,
+        "started": false
+    },
+    "issues": {
+        "introducedByDbM10": [],
+        "preExisting": [
+            "Active Changes rows 75-78 (CHG-20260830-012..015) classify as Open under the leading-keyword status rule though their work is completed (pre-existing classification defect; DB-M10 closed only its own row 79 correctly).",
+            "Open Decisions DEC-003 appears twice (rows 7 and 8, different subjects) - pre-existing duplicate governed identifier.",
+            "Some Planned roadmap nodes lack Version History baseline records (pre-existing data gap, DB-M06 Part 11).",
+            "MR node type 'WorkItem' terminology predates ADR-005 (WorkItem retired into Task) - informational.",
+            "Control Center manual L12-L17 summary cells are known-stale - informational."
+        ],
+        "knownMirrorGaps": [
+            "Development Guide has no M-07-0.2 (Development Control Service) row; KNOWN_MIRROR_GAP, NON_BLOCKING."
+        ],
+        "informational": [
+            "MR column Z holds the creation change ID (CHG-20260830-006 for the M-07 chain); completion change ID lives in Version History AD (CHG-20260830-016). Convention confirmed consistent.",
+            "Fully-blank spacer rows are omitted from sheetData by the OOXML writer in 13 sheets (benign).",
+            "MR column D (sort key) is populated for a subset of nodes (P1 layer); M-07 chain uses row order - consistent pre-existing convention."
+        ]
+    },
+    "stateTransition": {
+        "status": "CONTROL_VALIDATED",
+        "nextAllowedAction": "START_NEW_PREFLIGHT",
+        "controlValidationResult": "PASS"
+    },
+    "stopTriggered": "CONTROL_VALIDATION_FAILED was NOT triggered",
+    "idempotency": {
+        "readOnly": true,
+        "safelyRerunnable": true,
+        "equivalentFindings": true,
+        "workbookEvidenceDuplicated": false
+    }
+}

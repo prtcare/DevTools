@@ -1,0 +1,75 @@
+{
+    "Milestone":  "DB-M32",
+    "Title":  "ESSENTIAL SAFETY, RECOVERY & OPERATIONAL HARDENING",
+    "DateUtc":  "2026-09-01T12:12:59.945953Z",
+    "Implementation":  "PASS",
+    "RequiredCapabilities":  {
+                                  "StartupStateReconciliation":  "PASS",
+                                  "InterruptedOperationDetection":  "PASS",
+                                  "RecoveryClassification":  "PASS",
+                                  "IdempotentGovernedCommands":  "PASS",
+                                  "OperationIdentity":  "PASS",
+                                  "WorkbookRecovery":  "PASS",
+                                  "WriterLockRecovery":  "PASS",
+                                  "GitRecovery":  "PASS",
+                                  "OperatorRecoveryPanel":  "PASS",
+                                  "SafeRetry":  "PASS",
+                                  "BackendStateMismatchPreserved":  "PASS",
+                                  "StaleGovernancePreserved":  "PASS",
+                                  "LoggingAndDiagnostics":  "PASS",
+                                  "SecretRedaction":  "PASS",
+                                  "CrashRestartFixtureTests":  "PASS",
+                                  "NoAutomaticRollback":  "PASS",
+                                  "PreDevBridgeBaselineReadOnly":  "PASS",
+                                  "NoAutonomyExpansion":  "PASS"
+                              },
+    "Invariants":  {
+                       "InterruptedOperationTokens":  "6/6 detected (RESERVATION_STARTED_BUT_UNVERIFIED / WORKBOOK_WRITE_STARTED_BUT_READBACK_MISSING / VERIFICATION_STARTED_BUT_RESULT_MISSING / CLAUDE_RESULT_RECORDING_INTERRUPTED / TRIAL_CLOSURE_STARTED_BUT_UNVERIFIED / COMPLETION_STARTED_BUT_UNVERIFIED)",
+                       "RecoveryClassifications":  "7/7 (SAFE_TO_RESUME / SAFE_TO_RETRY / REFRESH_REQUIRED / READBACK_RECONCILIATION_REQUIRED / HUMAN_REVIEW_REQUIRED / GOVERNANCE_REVIEW_REQUIRED / DO_NOT_RETRY)",
+                       "IdempotentGovernedCommands":  "12/12 catalog offered RETRY only when proven safe",
+                       "OperationIdentities":  "5/5 (same-op-retried / new / stale / wrong-task / completed)",
+                       "WorkbookVerdicts":  "WRITE_CONFIRMED / WRITE_NOT_APPLIED / WRITE_STATE_AMBIGUOUS -> HUMAN_REVIEW_REQUIRED, no auto overwrite",
+                       "WriterLockStates":  "ACTIVE_WRITER / STALE_WRITER_RECORD / UNKNOWN_WRITER_STATE / NO_WRITER; lock never deleted on restart",
+                       "RecoveryPanelFields":  "SYSTEM RECOVERY STATUS / LAST OPERATION / EXPECTED STATE / OBSERVED STATE / RECOVERY CLASSIFICATION / RECOMMENDED HUMAN ACTION (specific, never generic)",
+                       "BackendStateMismatch":  "PASS (BACKEND_STATE_MISMATCH preserved verbatim, REFRESH STATE guidance)",
+                       "StaleGovernanceState":  "PASS (STALE_GOVERNANCE_STATE preserved, no silent overwrite)",
+                       "SecretRedaction":  "PASS (CONFIGURED/NOT_CONFIGURED only; L1 secret-scan PASS, L2 secret-like value -> SECRET_SCAN FAIL still exit 0, L3 SHA/recorded values exempt)",
+                       "Diagnostics":  "PASS (essential diagnostics, 12 fields, no secret, K1)",
+                       "GitRecovery":  "PASS (read-only refresh, git HEAD never inferred; F1 drift -> REVIEW GIT STATE, F2 consistent -> SAFE_TO_RESUME)"
+                   },
+    "NoMarkers":  {
+                      "AutomaticRollbackCapability":  "NO",
+                      "AutomaticWorkbookOverwrite":  "NO",
+                      "WriterLockDeletedOnRestart":  "NO",
+                      "GitWriteCapability":  "NO",
+                      "AutoAiExecution":  "NO",
+                      "AutonomousDevelopmentCycle":  "NO",
+                      "AutomaticBaselineRestore":  "NO",
+                      "LiveCanonicalWorkbookModifiedDuringTests":  "NO",
+                      "LiveStateModifiedDuringTests":  "NO",
+                      "GitModifiedDuringTests":  "NO"
+                  },
+    "Tests":  {
+                  "Passed":  127,
+                  "Failed":  0,
+                  "Total":  127,
+                  "Scenarios":  49,
+                  "ScenarioCount":  "49/49",
+                  "Matrix":  "A1-N4",
+                  "Note":  "49-scenario matrix A1-N4 run via powershell -File under Windows PowerShell 5.1; scenario details in state/db-m32-test-run.log"
+              },
+    "Build":  {
+                  "Status":  "PASS",
+                  "Engine":  "PowerShell 5.1",
+                  "ParseCheck":  "passes under powershell -File (no -Command/dot-source dependency)",
+                  "Warnings":  0,
+                  "Errors":  0
+              },
+    "PreservedOutputs":  {
+                             "DBM31Result":  "YES",
+                             "DesignDoc":  "YES (design/DB-M32_ESSENTIAL_SAFETY_RECOVERY_HARDENING.md)",
+                             "CanonicalWorkbookSha":  "6D42C3BF6D3307B4B1A45870CE12F41E403DFED412E59F33D7B487E93A83E4F5 (unchanged)"
+                         },
+    "ReadyForDbM33":  "YES",
+    "StopAfter":  "DB-M32"
+}

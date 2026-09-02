@@ -1,0 +1,6 @@
+<Solution>
+  <Project Path="DevBridge.Engine/DevBridge.Engine.csproj" />
+  <Project Path="DevBridge.Tests/DevBridge.Tests.csproj" />
+  <Project Path="DevBridge.UI/DevBridge.UI.csproj" />
+  <Project Path="DevBridge.UITests/DevBridge.UITests.csproj" />
+</Solution>

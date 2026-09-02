@@ -1,0 +1,21 @@
+=== DB-M02.1 FINAL VALIDATION ===
+Map declared governedDataRange: A6:AG675 start=6 end=675 count=659 within=625 beyond=34
+Map declared formalExcelTableRange: A5:AG630
+
+Independent rescan results:
+  records=659 firstRow=6 lastRow=675
+  withinTable=625 beyondTable=34
+  beyond-table IDs: F-06-8, F-07-10, F-12-10, F-12-11, F-12-12, F-12-13, F-12-14, F-12-15, F-12-16, F-12-4, F-12-5, F-12-6, F-12-7, F-12-8, F-12-9, M-04-3.3, M-06-8.1, M-07-10.1, M-07-10.2, M-07-10.3, M-07-10.4, M-12-0.4, WI-04-3.3.1, WI-04-3.3.2, WI-06-8.1.1, WI-07-10.1.1, WI-07-10.1.2, WI-07-10.1.3, WI-07-10.2.1, WI-07-10.3.1, WI-07-10.3.2, WI-07-10.4.1, WI-12-0.4.1, WI-12-0.4.2
+
+Duplicate Node IDs: NONE
+Broken parent references / orphans: NONE
+Sort key prefix violations: NONE
+
+Recovered nodes resolvable as Master Roadmap records: 34 of 34
+  Active reservations targeting them (evidence): CHG-20260830-004/-005 -> M-07-10.3; CHG-20260830-008/-011/-012 -> M-04-3.3; CHG-20260830-004 -> F-07-10 subtree, F-06-8, M-12-0.4
+
+Workbook SHA256: E866D3C4D260031D3C067F4C9C272A497FD913AD7C8D0CBFD0BF42F76BCD2941
+Baseline       : E866D3C4D260031D3C067F4C9C272A497FD913AD7C8D0CBFD0BF42F76BCD2941
+Unchanged: True
+
+DB-M02.1 VALIDATION: PASS

@@ -1,0 +1,254 @@
+=== NON-TERMINAL ACTIVE CHANGES (full scope columns) ===
+--- CHG-20260829-002 | class=Blocked | node=M-12-0.1 | worker=DeepSeek (via Claude Code CLI) -- supervised/verified by Claude (Cowork) | verdict=CLEAR | status=Blocked -- environment SQL configuration issue (port drift 1433->1434, Windows-auth-only mode), no code change made, awaiting Durai's decision on which fix to apply before re-running the browser pass. All three services (Intelligence :5000, Chat.Api :7205, Vite :5173) left running for the re-run once approved.
+    Repositories: Nexus.Experience
+    Projects: None -- verification only, zero files modified (confirmed directly: git diff --ignore-all-space against HEAD is empty; the only git diff --stat output was the known pre-existing CRLF/LF line-ending phantom noise across 69 files, zero real content change)
+    Files/Globs: None modified. Read only: Nexus.Products.Chat.Api's connection string (via user secrets, not reproduced), SQL Server instance registry config (TcpPort), SQL Server auth mode, NexusDevUser login state.
+    Schema: None -- no schema/persistence change attempted
+    Contracts/APIs: None -- no API contract change; this exercised the existing chat/workspace/project API surface only
+    DependencyOn: CHG-20260828-008 (Subproject API, unrelated -- this verification predates needing it) | P1-3_LIVE_VERIFICATION_PROMPT.md (this session, the prompt this change executes)
+    AffectedNodes: F-12-0 | M-12-0.1 | WI-12-0.1.1
+    Risk: Low code risk (nothing was changed), but the underlying finding is a real Medium-severity environment blocker -- P1-3's exit test cannot pass until the local SQL Server's listening port and/or auth mode is reconciled with the app's connection string. Verified directly, not trusted from the report: git diff --ignore-all-space HEAD in Nexus.Experience is empty (zero real content change, confirming DeepSeek's 'I did not modify any config, secret, or SQL setting' claim). Could not independently curl the three claimed-running services or inspect the Windows SQL Server registry/auth-mode directly -- the device bridge's shell is an isolated Linux VM on the user's device, not the Windows host itself, so it cannot reach Windows localhost ports or the registry. The Intelligence/OpenAI live-reply claim and the exact SQL port/auth diagnosis are taken from the DeepSeek report and screenshot, not independently re-run -- flagged rather than silently assumed, same as every other live-service claim this session that Claude (Cowork) cannot reach directly.
+    StartedAt: 2026-08-29 00:00:00
+    Notes: P1-3 is NOT yet verified end-to-end -- still an open item, but now with a precise, actionable root cause instead of an unknown. Once Durai approves a fix (restore the SQL listener to 1433, or enable mixed-mode auth and repoint the connection string at 1434, or switch to Integrated Security), DeepSeek can re-run the same browser pass immediately -- all three services are already up. Logged as REL-011 in Dependencies & Blockers.
+--- CHG-20260829-005 | class=Open | node=M-12-0.1 | worker=DeepSeek (via Claude Code CLI) -- supervised/verified by Claude (Cowork) | verdict=CLEAR | status=Verified locally, PASSES end-to-end -- but the code fix that made it pass (Nexus.Developer.Api CORS) is NOT yet committed/merged to main. Follow-up prompt delivered (COMMIT_CORS_HEALTH_FIX_PROMPT.md): commit the fix + add a matching /health route (also found missing) via the normal branch/PR/CI-green workflow, do not push directly.
+    Repositories: Nexus.Developer (CORS fix, currently UNCOMMITTED -- see follow-up COMMIT_CORS_HEALTH_FIX_PROMPT.md) + Nexus.Experience (browser verification only, zero content change)
+    Projects: Nexus.Developer: src/Nexus.Developer.Api/Program.cs, src/Nexus.Developer.Api/appsettings.json (28 lines added, uncommitted on the local machine -- confirmed directly via git diff). Nexus.Experience: zero real content change (confirmed: git diff --ignore-all-space --stat HEAD is empty; git status --short shows 386 files only because of the known pre-existing CRLF/LF phantom-noise pattern already established earlier this session, not new changes).
+    Files/Globs: src/Nexus.Developer.Api/Program.cs | src/Nexus.Developer.Api/appsettings.json
+    Schema: No schema/migration change.
+    Contracts/APIs: No API contract change -- the CORS fix makes an already-correct API endpoint reachable from the browser; it does not change any request/response shape.
+    DependencyOn: CHG-20260829-003/004 (P1-3 pass + M-12-0.1 self-correction, this same thread) | P1-7_PHASE1_EXIT_TEST_PROMPT.md (this session, the prompt this change executes) | CHG-20260827-005/006/007/008 (Nexus.Developer, the ObjectChatLink + convert-conversation backend this test proved live for the first time)
+    AffectedNodes: F-12-0 | M-12-0.1 | M-12-0.4
+    ADR: ADR-005 (Phase 1/2 redefinition, node origin)
+    Risk: Low-Medium -- the CORS policy added is intentionally scoped to one dev-only origin (http://localhost:5173) via config, not a wildcard, and mirrors an already-reviewed pattern in Chat.Api verbatim (confirmed directly: read both Program.cs files, same policy name 'NexusWebDevelopment', same config key, same AllowAnyHeader/AllowAnyMethod shape). Independently verified, not trusted wholesale: git diff on Nexus.Developer confirmed the fix is exactly as described; git diff --ignore-all-space --stat HEAD on Nexus.Experience is empty (zero real content change there). Independently viewed 3 of the report's screenshots directly (b1-chat-with-reply.png, c4-feature-detail.png, d3-task-detail.png) via the device bridge -- Nexus.Experience is a connected folder, so its .claude/e2e/screenshots directory was directly reachable, unlike prior passes' evidence which lived in an unreachable %TEMP% path. All three confirm the report's claims exactly, including the honest in-product caveat text about the linked-conversation deep link gap. Could NOT independently complete a fresh dotnet build of Nexus.Developer.Api itself: the live Nexus.Developer.Api process (still running from the P1-7 pass) holds a file lock on its own output DLLs, so MSBuild's copy-to-output step failed with 'Access is denied' (3 MSB3021 errors, 0 real compile errors) -- the three OTHER touched-adjacent projects (Core, Application, Infrastructure, none of which were modified) built and compiled clean, confirming nothing else broke, but the Api project's own compile-completion was not independently confirmed this pass. Flagged rather than silently assumed; the commit-workflow follow-up prompt asks DeepSeek to run dotnet build/test themselves as part of committing, which will close this gap. DB-level proof (3 Features/1 Task/3 ObjectChatLinks) and the CORS-blocked-then-fixed diagnosis itself are taken from the report, same standing limitation as every SQL/live-service claim this whole engagement -- the device bridge cannot reach Windows SQL Server or localhost ports.
+    StartedAt: 2026-08-29 00:00:00
+    Notes: P1-7 (the actual Phase 1 exit test) genuinely passes end-to-end for two target types, with real, independently-viewed evidence -- not the P1-3 sub-slice CHG-20260829-003 wrongly treated as the whole thing. M-12-0.1 moves 85% -> 95% (not 100% -- the CORS fix that made this pass is still uncommitted, so the milestone cannot be called fully closed until it's merged to main). Two real, previously-unknown friction items surfaced and are logged as backlog candidates in Master Roadmap notes, not fixed silently: manual raw-GUID paste for Subproject ID / Feature ID in the convert forms (the UI itself labels this 'Temporary manual entry... expected, not a bug'), and the linked-conversation display lacking a click-through deep link (the UI itself explains why: the ObjectChatLink record doesn't carry a project ID). The four previously-known friction items were re-checked: WorkspaceSelector double-render and the Dashboard's /api/v1/health 404 are STILL PRESENT (confirmed in the report, not independently re-verified in source this pass since nothing changed there); the 'no visible Create workspace entry point' finding was partially addressed (a Dashboard 'New workspace' button exists, but /workspaces itself still has no create entry, only Edit); the 'long hang before errors' finding could not be reproduced this pass since the CORS error surfaced immediately instead. Immediate follow-up delivered: COMMIT_CORS_HEALTH_FIX_PROMPT.md -- get the CORS fix (+ a companion /health route, also found missing) through the normal branch/PR/CI-green workflow. Once merged, M-12-0.1 moves to genuinely, fully Completed and Phase Plan's P1-7 row moves to Completed.
+--- CHG-20260829-006 | class=Open | node=M-12-0.1 | worker=DeepSeek (via Claude Code CLI) -- supervised/verified by Claude (Cowork) | verdict=CLEAR | status=PR #5 open, reviewed and approved by Durai (manual review, no CI exists on this repo) -- NOT YET MERGED. The device bridge cannot authenticate to GitHub to push/merge (standing limitation this whole engagement); merging PR #5 (or pushing origin/main forward) remains Durai's or DeepSeek's manual action on the actual machine.
+    Repositories: Nexus.Developer
+    Projects: src/Nexus.Developer.Api/Program.cs + appsettings.json (the previously-uncommitted CORS fix, now committed as-is) + src/Nexus.Developer.Api/Endpoints/HealthEndpoint.cs (new)
+    Files/Globs: src/Nexus.Developer.Api/Program.cs | src/Nexus.Developer.Api/appsettings.json | src/Nexus.Developer.Api/Endpoints/HealthEndpoint.cs
+    Schema: No schema/migration change.
+    Contracts/APIs: Adds GET /health to Nexus.Developer.Api (previously missing, 404). No other API contract change.
+    DependencyOn: CHG-20260829-005 (the P1-7 pass + fix this PR closes out) | COMMIT_CORS_HEALTH_FIX_PROMPT.md (this session, the prompt this change executes)
+    AffectedNodes: F-12-0 | M-12-0.1
+    ADR: ADR-005 (Phase 1/2 redefinition, node origin)
+    Risk: Low -- the diff is small, scoped, and already independently verified twice (as an uncommitted local diff in CHG-20260829-005, now as a committed, pushed, PR'd diff here). The two real findings (no CI on this repo; 8 extra commits riding in the PR) are process gaps, not code risk, and were surfaced to Durai rather than resolved unilaterally. Independently confirmed: diff content (exact match, twice), dotnet test (79/79, matches PR body's own claim exactly), PR #5's existence and description (via GitHub's public API, no auth needed since the repo is public), the pushed branch head SHA matching local exactly (via git fetch), and that a fast-forward merge is clean with zero conflicts. Could NOT independently confirm a complete Nexus.Developer.Api build (blocked by a live-process file lock, same known limitation as before) or push/merge to origin (no GitHub credentials on the device bridge, a standing limitation noted since early in this engagement).
+    StartedAt: 2026-08-29 00:00:00
+    Notes: The CORS + /health fix is committed, pushed, PR'd, independently verified, and approved by Durai for merge -- but not yet actually merged to origin/main, since neither Claude (Cowork) nor this workbook can push to GitHub. M-12-0.1 stays at 95%, not 100%, until the merge actually happens -- the next session/check-in should confirm PR #5 is merged (git log origin/main should include 2a02fff) before moving M-12-0.1 to 100%/Completed and Phase Plan's P1-7 row to Completed. Also worth deciding, separately and not urgently: whether Nexus.Developer should get a CI workflow at all, matching Nexus.Experience's build.yml -- flagged as a real gap, not fixed here since Durai chose to merge manually reviewed rather than block on setting one up first.
+--- CHG-20260830-001 | class=Open | node=M-12-0.4 | worker=DeepSeek (via Claude Code CLI) -- supervised/verified by Claude (Cowork) | verdict=CLEAR | status=PR #2 open, CI genuinely green (independently confirmed via the GitHub API) -- NOT YET MERGED. As with PR #5 on Nexus.Developer, the device bridge cannot push/merge to GitHub; merging remains Durai's manual action.
+    Repositories: Nexus.Experience
+    Projects: src/Nexus.Experience.Client/src/features/system/systemApi.ts + src/Nexus.Experience.Client/src/pages/WorkspacesPage.tsx + nuget.config
+    Files/Globs: src/Nexus.Experience.Client/src/features/system/systemApi.ts | src/Nexus.Experience.Client/src/pages/WorkspacesPage.tsx | nuget.config
+    Schema: No schema/migration change.
+    Contracts/APIs: No API contract change -- both fixes are frontend-side; the /health route itself was already correct on both backends.
+    DependencyOn: CHG-20260829-005 (the P1-7 pass that surfaced these two defects) | UI_HARDENING_WORKSPACESELECTOR_HEALTH_PROMPT.md (this session, the prompt this executes)
+    AffectedNodes: F-12-0 | M-12-0.4
+    ADR: ADR-005 (Phase 1/2 redefinition, node origin)
+    Risk: Low -- both fixes are small, scoped, and already fully diagnosed before the prompt was written (Claude (Cowork) had already pinned the exact root cause of each in CHG-20260829-005). The nuget.config fix, while not originally scoped, is explained clearly in its own commit and is itself low-risk (removes a source, adds nothing). Independently verified: diff content (exact match to what was asked), PR #2's real existence and mergeable state, and -- for the first time this engagement -- actual GitHub Actions check-run results fetched directly rather than taken from a report, confirming CI is genuinely green, not just claimed. Could not independently run the frontend test suite or a live browser check against the Dashboard (no Node/browser tooling exercised this pass) -- the CI green result stands in for that, since Nexus.Experience's pipeline includes typecheck/build/lint for the frontend half.
+    StartedAt: 2026-08-30 00:00:00
+    Notes: Two of the five P1-7 backlog items are fixed, verified, and ready to merge (PR #2, CI green). The CI-pipeline prompt for Nexus.Developer, run in the same batch, is NOT actually complete: the workflow file exists on disk but was never committed, branched, or pushed -- no red/green proof exists yet. Flagged to Durai directly rather than assumed done because 'both are ready'. Remaining backlog after PR #2 merges: manual raw-GUID paste UX, no click-through deep link on linked conversations, and the still-incomplete Nexus.Developer CI pipeline.
+--- CHG-20260830-002 | class=Open | node=M-12-0.4 | worker=DeepSeek (via Claude Code CLI) -- supervised/verified by Claude (Cowork) | verdict=CLEAR | status=Nexus.Experience: Completed, merged, confirmed. Nexus.Developer: In Progress -- CI pipeline genuinely proven green on a real commit, but the red-gate demonstration is unfinished (no revert commit, run still in_progress at last check) and no PR has been opened.
+    Repositories: Nexus.Experience (merged, confirmed) + Nexus.Developer (in progress, not yet PR'd)
+    Projects: Nexus.Experience: src/Nexus.Experience.Client/src/features/system/systemApi.ts + src/Nexus.Experience.Client/src/pages/WorkspacesPage.tsx + nuget.config (all already verified in CHG-20260830-001, now confirmed merged). Nexus.Developer: .github/workflows/build.yml (new, committed) + a still-in-place deliberate test break pending revert.
+    Files/Globs: N/A for the merge confirmation (no new diff). Nexus.Developer's in-progress branch: .github/workflows/build.yml | tests/Nexus.Developer.Core.Tests/FeatureTests.cs (currently holding the deliberate break, unreverted).
+    Schema: No schema/migration change.
+    Contracts/APIs: No API contract change.
+    DependencyOn: CHG-20260830-001 (the P1-7 backlog fixes this confirms merged, and the Nexus.Developer CI work this flags as incomplete) | CI_PIPELINE_PROMPT_NEXUS_DEVELOPER.md (the prompt still in progress)
+    AffectedNodes: F-12-0 | M-12-0.4
+    ADR: ADR-005 (Phase 1/2 redefinition, node origin)
+    Risk: None for the confirmed merge. For Nexus.Developer's in-progress work: low risk so far (a real green run already proven on 4afaa72), but leaving a deliberately-broken test uncommitted-reverted on a shared branch is exactly the kind of loose end this engagement's discipline exists to catch before it's mistaken for finished. Independently confirmed: PR #2's merge (GitHub API, not report text), commit 4afaa72's real green CI run (GitHub API), and that 1667e89 (the break) is genuinely still HEAD with its own check run incomplete and no revert or PR yet (also GitHub API, not assumed).
+    StartedAt: 2026-08-30 00:00:00
+    Notes: Two P1-7 backlog items closed for real (WorkspaceSelector double-render, health-route 404). The Nexus.Developer CI pipeline is real, substantial work with a genuine green proof already on record -- but is NOT finished: the red-gate demonstration needs its revert commit, and a PR needs to be opened before this can be recorded as complete. Told Durai directly rather than recording it as done. Remaining P1-7 backlog: manual raw-GUID paste UX in convert forms, no click-through deep link on linked conversations.
+--- CHG-20260830-003 | class=Open | node=M-12-0.4 | worker=DeepSeek (via Claude Code CLI) -- supervised/verified by Claude (Cowork) | verdict=CLEAR | status=PR #6 open, CI genuinely green (independently confirmed via the GitHub API), mergeable, clean -- NOT YET MERGED. Same standing limitation: the device bridge cannot push/merge to GitHub, so merging remains Durai's manual action.
+    Repositories: Nexus.Developer
+    Projects: .github/workflows/build.yml (new) + nuget.config (dropped the machine-local source, same fix pattern as Nexus.Experience) + a proven-and-reverted test break in tests/Nexus.Developer.Core.Tests/FeatureTests.cs (net content change: none)
+    Files/Globs: .github/workflows/build.yml | nuget.config | tests/Nexus.Developer.Core.Tests/FeatureTests.cs (temporarily, now reverted)
+    Schema: No schema/migration change.
+    Contracts/APIs: No API contract change -- CI-only.
+    DependencyOn: CHG-20260830-001/002 (this closes out the gap flagged in 002) | CI_PIPELINE_PROMPT_NEXUS_DEVELOPER.md (this session, the prompt this completes)
+    AffectedNodes: F-12-0 | M-12-0.4
+    ADR: ADR-005 (Phase 1/2 redefinition, node origin)
+    Risk: None -- CI-only change, no application code touched, and the one file that was temporarily modified (a test assertion, deliberately, to prove the gate) is confirmed genuinely reverted with zero net content change. Independently verified every claim rather than trusting the PR body: the red run's failure, the green runs' success, PR #6's real existence and mergeability, and the reverted test file's actual pass/fail state via an independent dotnet test run (79/79).
+    StartedAt: 2026-08-30 00:00:00
+    Notes: Nexus.Developer now has a real, proven CI pipeline -- the gap flagged in CHG-20260830-002 is closed. Once PR #6 merges, every future PR on this repo has an actual, enforceable 'CI green' gate for the first time this whole engagement. Remaining P1-7 backlog after PR #6 merges: manual raw-GUID paste UX in convert forms, no click-through deep link on linked conversations. Worth a later, separate conversation on whether to also bring Nexus.Developer up to the M-08-1.3/1.4 standard (machine-readable result artifacts, architecture-test gate, branch protection) the other three repos have.
+--- CHG-20260830-004 | class=Open | node=F-07-6 | M-07-6.1 | M-07-6.2 | M-07-6.3 | M-07-3.1 | M-07-3.2 | M-07-4.1 | M-07-5.1 | M-07-5.3 | M-07-10.3 | DEC-002 | worker=Claude (Cowork) -- roadmap governance, no code changes | verdict=CLEAR | status=Comparison report delivered; Master Roadmap and Open Decisions edits applied as the minimal changes identified. No code built by this change -- it is a sequencing/priority correction, not an implementation.
+    Repositories: N/A (workbook/roadmap governance change only, no repository touched)
+    Projects: NEXUS_DEVELOPMENT_CONTROL.xlsx (Master Roadmap, Open Decisions) | AUTONOMOUS_DEV_LOOP_COMPARISON_REPORT.md (new)
+    Files/Globs: Master Roadmap: F-07-6/M-07-6.1/M-07-6.2/M-07-6.3 Priority Medium->Critical + notes; M-07-3.1/M-07-5.3 notes only (sequencing clarified, no field change); M-07-4.1/M-07-5.1 Priority High->Critical + notes; M-07-10.3 notes (DevelopmentRun field spec recorded); new row WI-07-3.2.3 (bounded retry/fix loop). Open Decisions: DEC-002 Options/Constraints cell extended with a narrowed Phase-1 exception.
+    Schema: No schema/migration change -- workbook governance only.
+    Contracts/APIs: No API contract change.
+    DependencyOn: AUTONOMOUS_DEV_LOOP_COMPARISON_REPORT.md (this change's own required predecessor document) | ADR-005 / CHG-20260826-003 (the Phase 1/2 redefinition this change builds on, unchanged) | DEC-002 (narrowed, not resolved)
+    AffectedNodes: F-07-6 | F-07-3 | F-07-4 | F-07-5 | F-07-10 | DEC-002
+    ADR: ADR-005 (Phase 1/2 redefinition, still the operative baseline this change extends)
+    Risk: Low -- no code touched, no existing completed work altered, no dependency broken. Verified directly against the live Master Roadmap header and rows (read via openpyxl) before editing, not assumed from the architecture docs alone -- this caught that the docs used descriptive names (F-07-B/C/D/E) that do not match the workbook's actual node IDs (F-07-2..F-07-10), which would have been a real error if edits had targeted the doc names instead of the real IDs.
+    StartedAt: 2026-08-30 00:00:00
+    Notes: Comparison-then-minimal-change discipline applied to a 27-section strategic prompt: produced the required A-G comparison report first, then made only the reprioritization/extension edits the report itself recommended. No parallel roadmap created, no existing IDs changed, no completed work touched. First next work item (per the report): M-07-10.3's own remaining Application/API layer (WI-07-10.3.1/10.3.2, still 35-50%) and F-07-10's other incomplete children -- more fundamental than any pipeline capability, per the requesting prompt's own instruction not to jump to DevelopmentRun/DevelopmentPackage work while something more fundamental is incomplete.
+--- CHG-20260830-005 | class=Open | node=M-07-10.3 | WI-07-3.2.3 | worker=Claude (Cowork) -- roadmap governance, no code changes | verdict=CLEAR | status=Spec precision only -- confirms CHG-20260830-004's direction, adds no new scope.
+    Repositories: N/A (workbook/roadmap governance change only)
+    Projects: NEXUS_DEVELOPMENT_CONTROL.xlsx (Master Roadmap notes only)
+    Files/Globs: M-07-10.3 Notes extended; WI-07-3.2.3 Notes extended. No field/Priority/Status/Dependency change on either row.
+    Schema: No schema/migration change.
+    Contracts/APIs: No API contract change.
+    DependencyOn: CHG-20260830-004 (the change this refines) | AUTONOMOUS_DEV_LOOP_COMPARISON_REPORT.md
+    AffectedNodes: F-07-10 | F-07-3
+    ADR: ADR-005 (unchanged baseline)
+    Risk: None -- notes-only edit, verified read back after write.
+    StartedAt: 2026-08-30 00:00:00
+    Notes: Sections A-H final output (exact changes, critical path, parallelizable work, first next item, next 5 items, autonomy checkpoints, manual-work-disappearance map, validation) delivered alongside this change in chat, per Durai's request. No code implementation begun -- Durai asked to review the queue first.
+--- CHG-20260830-006 | class=Open | node=M-07-0.2 | WI-07-0.2.1..10 | T-07-6.2.1.2 | worker=Claude (Cowork) -- roadmap governance, no code changes | verdict=CLEAR | status=Both new capability areas are Planned/0% -- nothing implemented, no claim of progress. Verified directly against Nexus.Developer source (no IDevelopmentControlStore code, no GitHub-push-capable adapter code exists) before adding these rows, not assumed from the architecture doc alone.
+    Repositories: N/A (workbook/roadmap governance change only, no repository touched)
+    Projects: NEXUS_DEVELOPMENT_CONTROL.xlsx (Master Roadmap) | CRITICAL_PATH_DEPENDENCY_ANALYSIS.md (new)
+    Files/Globs: Master Roadmap: 11 new rows added (M-07-0.2 + WI-07-0.2.1..10) under F-07-0; 1 new row added (T-07-6.2.1.2) under WI-07-6.2.1. No existing row's fields altered except normal row-shift from insertion (verified: all pre-existing IDs re-found at their new row numbers with unchanged content).
+    Schema: No schema/migration change -- workbook governance only.
+    Contracts/APIs: No API contract change.
+    DependencyOn: DEVELOPMENT_CONTROL_SERVICE_ARCHITECTURE.md (source of the M-07-0.2 design, now finally reflected in the roadmap) | CHG-20260830-004/005 (the critical path this analysis corrects) | CRITICAL_PATH_DEPENDENCY_ANALYSIS.md (this change's own deliverable)
+    AffectedNodes: F-07-0 | F-07-6
+    ADR: ADR-005 (unchanged baseline) | DEVELOPMENT_CONTROL_SERVICE_ARCHITECTURE.md (2026-08-25, now reflected in the roadmap for the first time)
+    Risk: Low -- additive only, no existing row's Status/Priority/Dependencies altered, verified by re-reading every previously-existing ID after the inserts to confirm row-shift did not corrupt content.
+    StartedAt: 2026-08-30 00:00:00
+    Notes: Both gaps were designed-but-untracked, not net-new scope -- M-07-0.2 was already written down in an architecture doc and simply never promoted to the roadmap; the GitHub adapter gap was already implied by the Tool & Integration Registry's own 'PRs, history / Required' row. Adding them closes the doc-vs-roadmap mismatch pattern found twice now this engagement (previously with F-07-B/C/D/E naming). No M0 created, no existing milestone restructured.
+--- CHG-20260830-007 | class=Open | node=WI-07-3.2.4 | DEC-002 | worker=Claude (Cowork) -- roadmap governance, no code changes | verdict=CLEAR | status=Both edits are additive/clarifying only -- one new Planned/0% WorkItem, one clarifying note on an already-open decision. Verified against source and the existing roadmap before adding (no existing work item found that already owned Plan/package generation).
+    Repositories: N/A (workbook/roadmap governance change only, no repository touched)
+    Projects: NEXUS_DEVELOPMENT_CONTROL.xlsx (Master Roadmap, Open Decisions) | CRITICAL_PATH_FINAL_ANALYSIS.md (new)
+    Files/Globs: Master Roadmap: 1 new row (WI-07-3.2.4) under M-07-3.2. Open Decisions: DEC-002 Options/Constraints cell extended with the GitHub-scope note. No existing row's Status/Priority/Dependencies altered.
+    Schema: No schema/migration change.
+    Contracts/APIs: No API contract change.
+    DependencyOn: CHG-20260830-004/005/006 (unchanged, this builds on them) | CRITICAL_PATH_FINAL_ANALYSIS.md
+    AffectedNodes: F-07-3 | DEC-002
+    ADR: ADR-005 (unchanged) | CHG-20260830-004/005/006 (unchanged, extended)
+    Risk: Low -- one new node, one decision-note amendment, nothing existing altered.
+    StartedAt: 2026-08-30 00:00:00
+    Notes: Closes the last functional gap in the first-closed-loop critical path (Plan/package generation) and one real wording gap (DEC-002 silent on GitHub). Final first-loop dependency graph and 12-item queue delivered as CRITICAL_PATH_FINAL_ANALYSIS.md. No code implemented.
+--- CHG-20260830-008 | class=Open | node=M-04-3.3 | WI-07-6.2.1 | WI-07-3.2.4 | worker=Claude (Cowork) -- roadmap governance, no code changes | verdict=CLEAR | status=Additive acceptance-criteria only, on work items that are still 100% unbuilt (Planned/0%) -- zero risk to anything already implemented. Verified the cited existing abstractions (RoutingModelGateway, ModelCapabilities, Nexus.Delivery.Contracts SchemaVersion, DevelopmentRun's Guid-referenced fields) directly against project docs and source before citing them as already-correct, rather than assuming.
+    Repositories: N/A (workbook/roadmap governance change only, no repository touched)
+    Projects: NEXUS_DEVELOPMENT_CONTROL.xlsx (Master Roadmap) | AUTONOMOUS_LOOP_ARCHITECTURE_REVIEW.md (new)
+    Files/Globs: Master Roadmap: M-04-3.3, WI-07-6.2.1, WI-07-3.2.4 -- Acceptance Criteria and/or Notes cells extended. No Status/Priority/Dependencies changed on any row. No new row added.
+    Schema: No schema/migration change.
+    Contracts/APIs: No API contract change -- this change defines contract-design GUIDANCE, doesn't implement any contract.
+    DependencyOn: CHG-20260830-004/005/006/007 (unchanged, this only adds acceptance-criteria detail) | AUTONOMOUS_LOOP_ARCHITECTURE_REVIEW.md
+    AffectedNodes: F-04-3 | F-07-6 | F-07-3
+    ADR: ADR-005 (unchanged) | CHG-20260830-004/005/006/007 (unchanged, extended)
+    Risk: None -- clarifying acceptance criteria on unbuilt work items carries no execution risk.
+    StartedAt: 2026-08-30 00:00:00
+    Notes: The autonomous-development critical path (CHG-004 through 007) is architecturally sound -- this review found no coupling risk serious enough to warrant a new roadmap node, only three acceptance-criteria expansions on work that hasn't been built yet. Full A-J review delivered as AUTONOMOUS_LOOP_ARCHITECTURE_REVIEW.md. No code implemented.
+--- CHG-20260830-009 | class=Open | node=WI-07-3.2.4 | M-07-2.1 | WI-07-2.2.2 | M-07-3.1 | WI-07-3.2.1 | WI-07-3.2.3 | M-07-5.1 | worker=Claude (Cowork) -- roadmap governance, no code changes | verdict=CLEAR | status=Additive acceptance-criteria only, on work items that are still 100% unbuilt (Planned/0%) -- zero risk to anything already implemented. Verified Layer 05 Automation's actual current scope (F-05-1/F-05-2/F-05-5) and F-07-2's actual existing rules/acceptance criteria directly via project search before citing them as the reuse target, rather than assuming.
+    Repositories: N/A (workbook/roadmap governance change only, no repository touched)
+    Projects: NEXUS_DEVELOPMENT_CONTROL.xlsx (Master Roadmap) | DEVELOPMENT_FLOW_MODULARITY_AND_PARALLEL_SAFETY_REVIEW.md (new)
+    Files/Globs: Master Roadmap: WI-07-3.2.4, M-07-2.1, WI-07-2.2.2, M-07-3.1, WI-07-3.2.1, WI-07-3.2.3, M-07-5.1 -- Acceptance Criteria and/or Notes cells extended (11 edits total). No Status/Priority/Dependencies changed on any row. No new row added.
+    Schema: No schema/migration change.
+    Contracts/APIs: No API contract change -- this change defines process/scheduling-design GUIDANCE, doesn't implement any contract.
+    ConflictsWith: None
+    DependencyOn: CHG-20260830-004/005/006/007/008 (unchanged, this only adds acceptance-criteria detail) | DEVELOPMENT_FLOW_MODULARITY_AND_PARALLEL_SAFETY_REVIEW.md
+    Branch: None
+    Worktree: None
+    AffectedNodes: F-07-3 | F-07-2 | F-05-1 | F-05-2
+    ADR: ADR-005 (unchanged) | CHG-20260830-004/005/006/007/008 (unchanged, extended)
+    Risk: None -- clarifying acceptance criteria on unbuilt work items carries no execution risk.
+    StartedAt: 46264
+    Notes: The development process itself now goes through explicit profile resolution (defaulting to one built-in profile in V1) instead of being hardwired, and parallel execution now requires an explicit safety decision instead of being assumed safe -- both achieved by generalizing existing, still-unbuilt work items rather than building a second workflow engine or a second scheduler. Full A-J/O-T review delivered as DEVELOPMENT_FLOW_MODULARITY_AND_PARALLEL_SAFETY_REVIEW.md. No code implemented.
+--- CHG-20260830-010 | class=Open | node=WI-07-10.3.1 | worker=Claude (Cowork) -- prompt generation and independent verification; DeepCode (Claude Code CLI, device-local) -- implementation | verdict=CLEAR | status=First real code change of the autonomous-development critical path. Independently verified against the prompt's own acceptance criteria via direct source inspection before being accepted, not merely trusted from the agent's report -- this is the review discipline CHG-020's implementation-strategy rule requires going forward.
+    Repositories: Nexus.Developer
+    Projects: src/Nexus.Developer.Application/DevelopmentRuns/** (new) | src/Nexus.Developer.Api/Endpoints/DevelopmentRuns/** (new) | src/Nexus.Developer.Application/ServiceCollectionExtensions.cs | src/Nexus.Developer.Api/Program.cs | tests/Nexus.Developer.Core.Tests/DevelopmentRunHandlerTests.cs (new)
+    Files/Globs: Master Roadmap: WI-07-10.3.1 Status -> Complete, Manual Progress -> 100.
+    Schema: No schema/migration change -- DevelopmentRun's persistence (EF configuration, computed Ref column) was already migration-verified prior to this change.
+    Contracts/APIs: New API contract: POST /api/v1/development-runs, GET /api/v1/development-runs/{id} -- additive, no existing contract modified.
+    ConflictsWith: None
+    DependencyOn: WI-07-10-3-1_DEVELOPMENTRUN_APPLICATION_API_PROMPT.md | WI-07-10-3-1_VERIFICATION_AND_CORRECTION.md | CHG-20260830-004 through 009 (unchanged, this is their first implementation)
+    Branch: None
+    Worktree: None
+    AffectedNodes: F-07-10
+    ADR: CHG-20260830-004/005/006/007/008/009 (unchanged) | WI-07-10-3-1_DEVELOPMENTRUN_APPLICATION_API_PROMPT.md | WI-07-10-3-1_VERIFICATION_AND_CORRECTION.md
+    Risk: None -- Phase-1 passive record, additive endpoints, not committed/merged/pushed.
+    StartedAt: 46264
+    Notes: WI-07-10.3.1 is complete: DevelopmentRun can be created and read through a real HTTP API, target-validated against local Feature/Task/Issue repositories, with the six Phase-2 placeholder fields correctly kept off the API surface. This is the first item of the approved 12-item critical-path queue (CHG-20260830-007) actually implemented.
+--- CHG-20260830-011 | class=Open | node=M-04-3.3 | worker=Claude (Cowork) -- prompt generation and independent verification; DeepCode (Claude Code CLI, device-local) -- implementation | verdict=CLEAR | status=Second real code change of the autonomous-development critical path, in a second repository. Same independent-verification discipline applied as WI-07-10.3.1 (CHG-20260830-010): read the actual diff and files, not the agent's report, before accepting.
+    Repositories: Nexus.Intelligence
+    Projects: src/Nexus.Intelligence.Core/Roles/** (new) | src/Nexus.Intelligence.Core/Turns/TurnPipeline.cs | src/Nexus.Intelligence.Api/DependencyInjection/IntelligenceServiceCollectionExtensions.cs | tests/Nexus.Intelligence.Tests/Roles/AiRoleResolverTests.cs (new) | tests/Nexus.Intelligence.Tests/Nexus.Intelligence.Tests.csproj (added Core project reference)
+    Files/Globs: Master Roadmap: M-04-3.3 Status -> In Progress, Manual Progress -> 75 (pending correction).
+    Schema: No schema/migration change -- in-memory store only, per this repo's existing Phase-1 persistence idiom (no SQL/EF exists in Nexus.Intelligence).
+    Contracts/APIs: No API contract change -- internal DI-resolved service, not exposed over HTTP.
+    ConflictsWith: None
+    DependencyOn: M-04-3-3_AIROLE_MODEL_ABSTRACTION_PROMPT.md | M-04-3-3_VERIFICATION_AND_CORRECTION.md | CHG-20260830-004 through 010 (unchanged)
+    Branch: None
+    Worktree: None
+    AffectedNodes: F-04-3
+    ADR: CHG-20260830-004 through 010 (unchanged) | M-04-3-3_AIROLE_MODEL_ABSTRACTION_PROMPT.md | M-04-3-3_VERIFICATION_AND_CORRECTION.md
+    Risk: None -- Phase-1 additive, in-memory only, not committed/merged/pushed.
+    StartedAt: 46264
+    Notes: M-04-3.3's core mechanism (assignment persistence, capability-gated resolution, ModelHint-based fallback-preserving integration into TurnPipeline) is correct and well-tested. Two completeness gaps against the written acceptance criteria found and a narrow correction issued; milestone not yet Complete.
+--- CHG-20260830-012 | class=Open | node=M-04-3.3 | WI-07-6.1.1 | WI-07-2.1.1 | worker=Claude (Cowork) -- verification and roadmap governance, no code changes | verdict=CLEAR | status=Applying the standing rule that a discovered invalid/stale dependency justifies a minimal correction, not a redesign -- both corrections here are single-field fixes on existing nodes, not restructuring.
+    Repositories: Nexus.Intelligence (verification only) | Nexus.Developer (roadmap correction only, no code touched)
+    Projects: NEXUS_DEVELOPMENT_CONTROL.xlsx (Master Roadmap)
+    Files/Globs: Master Roadmap: M-04-3.3 Status -> Complete, 100%. WI-07-6.1.1 Dependencies corrected M-07-1.2->F-07-10. WI-07-2.1.1 Projects corrected Nexus.Developer.Graph->Nexus.Developer, Status -> In Progress.
+    Schema: No schema/migration change.
+    Contracts/APIs: No API contract change -- roadmap governance only.
+    ConflictsWith: None
+    DependencyOn: CHG-20260830-004 through 011 (unchanged) | M-04-3-3_VERIFICATION_AND_CORRECTION.md | ADR-005 / CHG-20260826-003 (cited, unchanged)
+    Branch: None
+    Worktree: None
+    AffectedNodes: F-04-3 | F-07-6 | F-07-2
+    ADR: CHG-20260830-004 through 011 (unchanged, two field-level corrections applied on top)
+    Risk: None -- field corrections only, no code or contract risk.
+    StartedAt: 46264
+    Notes: M-04-3.3 complete and independently verified. The critical-path queue's next item is corrected from an implied-but-stale WI-07-6.1.1 to its actual genuine prerequisite, WI-07-2.1.1 (Dependency model and traversal) -- discovered via real dependency-chain inspection, not queue position alone.
+--- CHG-20260830-013 | class=Open | node=WI-07-2.1.1 | M-07-2.1 | WI-07-6.1.1 | M-07-6.1 | M-07-10.3 | worker=Claude (Cowork) -- verification, git catch-up, roadmap governance, no product code written | verdict=CLEAR | status=Applying the standing rule that a discovered invalid/stale dependency justifies a minimal correction -- the M-07-6.1 fix mirrors the WI-07-6.1.1 fix already applied under CHG-012 for consistency. WI-07-2.1.1/M-07-2.1 Complete reflects a clean, independently-verified implementation with zero deviations.
+    Repositories: Nexus.Developer
+    Projects: NEXUS_DEVELOPMENT_CONTROL.xlsx (Master Roadmap, Active Changes, Activity Log, Control Center)
+    Files/Globs: Master Roadmap: WI-07-2.1.1 Status->Complete/100%. M-07-2.1 Status->Complete/100%, Dependencies M-07-1.1->F-07-10. M-07-6.1 Dependencies M-07-1.2->F-07-10. WI-07-6.1.1 Next Action updated. M-07-10.3 Manual Progress 35->70.
+    Schema: No schema/migration change from this change record itself (the migration was already applied/verified as part of WI-07-2.1.1).
+    Contracts/APIs: No API contract change -- verification, git catch-up, and roadmap governance only.
+    ConflictsWith: None
+    DependencyOn: CHG-20260830-004 through 012 (unchanged) | WI-07-2.1.1 development prompt (WI-07-2-1-1_DEPENDENCY_MODEL_AND_TRAVERSAL_PROMPT.md) | ADR-005 / CHG-20260826-003 (cited, unchanged)
+    Branch: feature/m-08-1-2-ci-pipeline
+    Worktree: None
+    AffectedNodes: F-07-2 | F-07-6 | F-07-10
+    ADR: CHG-20260830-004 through 012 (unchanged, two field-level corrections applied on top)
+    Risk: None -- verification, git catch-up, and field-level roadmap corrections only, no code or contract risk.
+    StartedAt: 46264
+    Notes: WI-07-2.1.1 complete and independently verified with zero deviations -- the cleanest implementation pass so far this sequence. Git-commit gap (self-identified process error, not a DeepCode defect) closed. Next development prompt: WI-07-6.1.1 (Resolve governed development context), now genuinely unblocked.
+--- CHG-20260830-014 | class=Open | node=WI-07-0.2.1 | M-07-0.2 | worker=Claude (Cowork) -- verification and roadmap governance, no product code written | verdict=CLEAR | status=Clean implementation verified against every written acceptance criterion; no correction needed.
+    Repositories: Nexus.Developer
+    Projects: NEXUS_DEVELOPMENT_CONTROL.xlsx (Master Roadmap, Active Changes, Activity Log, Control Center)
+    Files/Globs: Master Roadmap: WI-07-0.2.1 Status->Complete/100%. M-07-0.2 Status->In Progress/10%.
+    Schema: No schema/migration change -- this work item is contracts-only, zero I/O.
+    Contracts/APIs: No public API/contract exposed yet -- IDevelopmentControlStore has no implementation and is not wired into DI.
+    ConflictsWith: None
+    DependencyOn: CHG-20260830-013 (unchanged) | WI-07-0-2-1_DEVELOPMENT_CONTROL_CONTRACTS_PROMPT.md | DEVELOPMENT_CONTROL_SERVICE_ARCHITECTURE.md (cited, unchanged)
+    Branch: feature/m-08-1-2-ci-pipeline
+    Worktree: None
+    AffectedNodes: F-07-0 | M-07-0.2
+    ADR: CHG-20260830-013 (unchanged)
+    Risk: None -- verification and roadmap update only.
+    StartedAt: 46264
+    Notes: WI-07-0.2.1 complete and independently verified with zero deviations -- second consecutive clean pass. Next development prompt: WI-07-0.2.2 (Canonical workbook migration and Activity Log schema).
+--- CHG-20260830-015 | class=Open | node=WI-07-0.2.2 | M-07-0.2 | worker=Claude (Cowork) -- verification and roadmap governance, no product code written | verdict=CLEAR | status=Clean implementation verified against every written acceptance criterion, including confirming the live-file effect (not just tests) directly; no correction needed.
+    Repositories: Nexus.Developer
+    Projects: NEXUS_DEVELOPMENT_CONTROL.xlsx (Master Roadmap, Active Changes, Activity Log widened to 34 cols by the verified change itself, Control Center)
+    Files/Globs: Master Roadmap: WI-07-0.2.2 Status->Complete/100%. M-07-0.2 Manual Progress 10->20%. Activity Log sheet widened 11->34 columns (by the verified DeepCode change, applied to the live file).
+    Schema: No DbContext/EF schema change. The Activity Log worksheet's own column schema is what widened (11->34).
+    Contracts/APIs: No public API/contract exposed -- WorkbookSchemaValidator and ActivityLogMigration are internal Infrastructure tooling, not wired into IDevelopmentControlStore (still unimplemented, WI-07-0.2.3).
+    ConflictsWith: None
+    DependencyOn: CHG-20260830-014 (unchanged) | WI-07-0-2-2_WORKBOOK_SCHEMA_VALIDATION_AND_ACTIVITY_LOG_MIGRATION_PROMPT.md
+    Branch: feature/m-08-1-2-ci-pipeline
+    Worktree: None
+    AffectedNodes: F-07-0 | M-07-0.2
+    ADR: CHG-20260830-014 (unchanged)
+    Risk: None -- verification and roadmap update only. The live-file migration itself was reviewed and confirmed safe (dry-run tested first by the test suite, self-verifying, all 47 rows preserved) before being accepted as Complete.
+    StartedAt: 46264
+    Notes: WI-07-0.2.2 complete and independently verified with zero deviations -- third consecutive clean pass. The Activity Log sheet this very row lives in is now 34 columns; future Activity Log rows in this workbook must use the new schema. Next development prompt: WI-07-0.2.3 (Excel persistence adapter).
+
+=== F-12-0 SUBTREE (nodes under Developer Chat) ===
+  F-12-0             Feature    P1   Developer Chat       status=In Progress prio=High row=617
+  M-12-0.1           Milestone  P1   Developer Chat MVP   status=Completed prio=High row=618
+  WI-12-0.1.1        WorkItem   P1   Compose Developer Chat application status=Completed prio=Critical row=619
+  M-12-0.2           Milestone  P2   Integrated development toolchain status=Planned prio=High row=621
+  WI-12-0.2.1        WorkItem   P2   Tool invocation and evidence surface status=Planned prio=Critical row=622
+  M-12-0.3           Milestone  P2   Nexus develops Nexus gate status=Planned prio=High row=623
+  WI-12-0.3.1        WorkItem   P2   End-to-end self-development proof status=Planned prio=Critical row=624
+  M-12-0.4           Milestone  P1   General Developer UI shell status=In Progress prio=Critical row=673
+  WI-12-0.4.1        WorkItem   P1   Navigation shell and routing status=Planned prio=Critical row=674
+  WI-12-0.4.2        WorkItem   P1   Work item detail page status=Planned prio=Critical row=675
+
+=== Nodes referenced by REL-006/007/008 (F-12-0 explicit deps) ===
+  M-06-7.5: status=Planned phase=P1 layer=06 PRODUCT CORE row=310
+  M-07-6.3: status=Planned phase=P2 layer=07 DEVELOPER row=431
+  M-11-1.2: status=In Progress phase=P1 layer=11 EXPERIENCE row=590

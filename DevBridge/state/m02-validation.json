@@ -1,0 +1,95 @@
+{
+    "gate": "DB-G02",
+    "result": "PASS",
+    "rerunAfter": "DB-M02.1",
+    "rerunNote": "Full re-run of all 16 validations against the corrected mappings (development-control-map.json v2.1, sheet-governance.json). Critical issue C-1 from the prior run is resolved; all remaining items are SAFE_WARNING.",
+    "criticalIssues": [],
+    "warnings": [
+        {
+            "id": "W-1",
+            "title": "Active Changes Preflight Verdict column uses narrative variants beyond the protocol verdict enum",
+            "detail": "Observed values include 'CLEAR', 'CLEAR -- one flagged pre-existing...', 'CLEAR, with one recorded exception', 'FLAGGED -- non-blocking', 'N/A (governance change, not a code change)'. Protocol Step 6 verdicts are CLEAR/DEPENDENCY FOUND/OVERLAP FOUND/CONFLICT FOUND/ARCHITECTURE CONFLICT. DevBridge must write the protocol vocabulary; existing human rows are readable."
+        },
+        {
+            "id": "W-2",
+            "title": "DEC-003 duplicated on Open Decisions",
+            "detail": "Two rows share Decision ID DEC-003 with different content: one Decided (Developer Chat packaging, resolves to ADR-005), one Open (Azure SQL migration / local dev database, links ADR-014, M-02-1.2). Decision ID uniqueness violated. Key decisions by (ID + content) or renumber."
+        },
+        {
+            "id": "W-3",
+            "title": "Control Center manual summary drift",
+            "detail": "Observed Workbook version 1.8 vs narrative v3.26; Roadmap nodes 624 vs 659 actual. Handled by recompute-rather-than-trust rule; surfaced as a governance gap for the workbook owner."
+        },
+        {
+            "id": "W-4",
+            "title": "Textual vs explicit dependency graph discrepancies",
+            "detail": "D-1 M-02-1.2 textDep M-02-1.1 (no REL row); D-2 M-01-1.1 textDep M-02-1.4 (no REL row; echoed by Development Guide); D-3 M-07-1.2 textDep M-07-1.1 (no REL row); D-4 M-07-1.2 is Superseded yet is a blocking-Open target of REL-003. Reported per V7, not resolved. Explicit graph remains authoritative."
+        },
+        {
+            "id": "W-5",
+            "title": "Control Center dashboard uses 13 columns vs 10 mapped governed cells",
+            "detail": "Three additional columns are ungoverned dashboard labels; no schema defect."
+        }
+    ],
+    "unresolvedItems": [
+        {
+            "id": "U-1",
+            "title": "Master Roadmap Column1/Column2/Column3 (AE:AG) present but empty",
+            "classification": "SAFE_WARNING",
+            "evidence": "Confirmed empty; no impact on reads."
+        },
+        {
+            "id": "U-3",
+            "title": "Active Changes columns Z:AD outside the Excel table (A5:Y8)",
+            "classification": "SAFE_WARNING",
+            "evidence": "Map explicitly reads the full used range A5:AD78; Z:AD advisory and sparsely populated. Handled."
+        },
+        {
+            "id": "U-4",
+            "title": "Control Center manual summary drift",
+            "classification": "SAFE_WARNING",
+            "evidence": "Observed version/metric drift; handled by the recompute-rather-than-trust rule (see W-3)."
+        },
+        {
+            "id": "U-5",
+            "title": "Identifier linkage by naming convention (no enforced foreign keys)",
+            "classification": "SAFE_WARNING",
+            "evidence": "Value-matching validation confirmed against the full 659-node universe; resolution improved (V6): Active Changes 98%, ADR 80%, Open Dec 100%, Audit 100%, Phase Plan 84%, D&B From 100%, Dev Guide 100%, Master Roadmap Parent 100%."
+        },
+        {
+            "id": "U-6",
+            "title": "Active Changes Status is free-form narrative",
+            "classification": "SAFE_WARNING",
+            "evidence": "Keyword classification re-verified this run: 49/49 rows classified cleanly into Terminal(31)/Open(17)/Blocked(1)."
+        },
+        {
+            "id": "U-7",
+            "title": "Status vocabulary split (Complete vs Completed)",
+            "classification": "SAFE_WARNING",
+            "evidence": "Both forms observed on Master Roadmap; treated as equivalent for eligibility."
+        },
+        {
+            "id": "U-8",
+            "title": "Version History versioning semantics not a closed algorithm",
+            "classification": "SAFE_WARNING",
+            "evidence": "Preflight only needs Is Current=Yes marker (readable); write-side versioning algorithm derivable from Session Protocol append rules + ADR-003 and only matters later."
+        },
+        {
+            "id": "U-9",
+            "title": "Activity Log Human Review Status sparsely populated",
+            "classification": "SAFE_WARNING",
+            "evidence": "DevBridge populates it on every appended record."
+        }
+    ],
+    "resolvedItems": [
+        {
+            "id": "U-2",
+            "title": "Master Roadmap rows beyond the Excel table (631-675, 34 content rows)",
+            "classification": "RESOLVED",
+            "resolvedBy": "DB-M02.1",
+            "evidence": "development-control-map.json v2.1 governs the full structurally valid used range A6:AG675 (governedDataRange: recordCount 659, withinTableRecordCount 625, beyondTableRecordCount 34; formalExcelTableRange A5:AG630 retained as metadata with the note that the table boundary is not the governance boundary). Detection rule documented (RoadmapNode ID + Node Type vocabulary). 34/34 recovered nodes resolve to governed records; open Active Changes reservations to them (CHG-20260830-004/-005 -> M-07-10.3; -008/-011/-012 -> M-04-3.3) now resolve; ADR-005 and Phase Plan links resolve; hierarchy over the full set valid (0 dups, 0 broken parents, 0 orphans, sort keys consistent); workbook hash unchanged."
+        }
+    ],
+    "validatedAt": "2026-08-30T12:19:15Z",
+    "safeToProceedToM03": true
+}

@@ -1,0 +1,9 @@
+{
+    "version": "0.1",
+    "mode": "TRIAL",
+    "retirement": "ACTIVE_TEMPORARY_BRIDGE",
+    "developmentControlWorkbook": "C:\\Personal\\Nexus.Developer\\NEXUS_DEVELOPMENT_CONTROL.xlsx",
+    "repositories": [],
+    "defaultBuildCommands": [],
+    "defaultTestCommands": []
+}

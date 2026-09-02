@@ -1,0 +1,42 @@
+{
+    "schemaVersion": 1,
+    "fingerprintAlgorithm": "SHA-256",
+    "comment": "DB-GH01 PROTECTED ROADMAP FINGERPRINT — deterministic structural fingerprint over the PROTECTED roadmap surface only. Covers phase/milestone identity, hierarchy, goals/outcomes, acceptance criteria, dependencies, sequencing/structure, and architecture references. Explicitly NOT a whole-workbook hash and NOT execution-state columns (Status, Progress, Owner, Current Evidence, Next Action, Notes, Source). Any before/after change to this surface blocks the governed write (ROADMAP_STRUCTURE_WRITE_PROHIBITED). Columns verified against config/development-control-map.json.",
+    "sheets": [
+        {
+            "sheet": "Master Roadmap",
+            "headerRow": "5",
+            "identityColumns": ["A", "B", "C", "D", "E", "F", "G"],
+            "structureColumns": ["H", "I", "J", "K", "L", "M", "N", "O", "P", "Q", "X", "Y", "AB", "AE", "AF", "AG"],
+            "architectureColumns": []
+        },
+        {
+            "sheet": "Phase Plan",
+            "headerRow": "4",
+            "identityColumns": ["A", "B", "C"],
+            "structureColumns": ["D", "E", "F", "H"],
+            "architectureColumns": []
+        },
+        {
+            "sheet": "Architecture Decisions",
+            "headerRow": "4",
+            "identityColumns": ["A"],
+            "structureColumns": ["B", "C", "D", "E", "F", "G", "H", "I", "J"],
+            "architectureColumns": []
+        },
+        {
+            "sheet": "Dependencies & Blockers",
+            "headerRow": "4",
+            "identityColumns": ["A", "B", "C", "D"],
+            "structureColumns": ["E", "G", "H", "I", "J"],
+            "architectureColumns": []
+        },
+        {
+            "sheet": "Open Decisions",
+            "headerRow": "4",
+            "identityColumns": ["A", "B", "C"],
+            "structureColumns": ["D", "E", "F", "G", "H", "J"],
+            "architectureColumns": []
+        }
+    ]
+}

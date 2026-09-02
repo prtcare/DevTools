@@ -1,0 +1,99 @@
+SCENARIO|E|Evidence: acceptance Areas 1-13
+TEST|E|area1-config-temporary|PASS|config mode=TRIAL retirement=ACTIVE_TEMPORARY_BRIDGE
+TEST|E|area1-engine-retirement-token|PASS|engine has ACTIVE_TEMPORARY_BRIDGE + READY_FOR_REAL_NEXUS_SUPPORT
+TEST|E|area1-no-nexus-runtime-using|PASS|no src/*.cs references a Nexus.* runtime namespace
+TEST|E|area2-m30-record|PASS|db-m30 314/0 39 scenarios
+TEST|E|area2-human-gate-keys|PASS|M30 HumanActionStages present
+TEST|E|area3-m181-record|PASS|db-m18-1 63 passed / 1 failed (R45 recorded)
+TEST|E|area3-m181-capabilities|PASS|M18.1 M05/M07/M09 integration capabilities present
+TEST|E|area4-fingerprint-record|PASS|roadmap fingerprint 25BBECA4..BE057
+TEST|E|area4-fingerprint-coverage|PASS|protected rows 715 cells 9161
+TEST|E|area4-protection-config|PASS|roadmap-protection config present
+TEST|E|area5-canonical-path|PASS|canonical workbook path is authority
+TEST|E|area5-reconciliation-record|PASS|workbook-authority reconciliation present
+TEST|E|area6-m032-ttr|PASS|db-m03-2 TrialToRealCompletionCapability recorded
+TEST|E|area6-m33-overlay-hardening|PASS|DB-M33 overlay Gate 1 hardening recorded
+TEST|E|area7-git-human-only|PASS|db-m31 AutomaticPr/AutomaticMerge NO (human git gates)
+TEST|E|area8-verify-claude-key|PASS|M30 correction/claude keys present
+TEST|E|area9-m32-record|PASS|db-m32 127/0 49 scenarios
+TEST|E|area9-recovery-suite-exists|PASS|recovery suite exists
+TEST|E|area10-db-m27-record|PASS|db-m27 recorded PASS
+TEST|E|area10-db-m28-record|PASS|db-m28 recorded PASS
+TEST|E|area10-db-m29-record|PASS|db-m29 recorded PASS
+TEST|E|area10-routing-manual|PASS|routing executionMode MANUAL, enabled false
+TEST|E|area11-no-secret-values|PASS|no secret values stored in config
+TEST|E|area11-no-auto-exe-model|PASS|M26 auto-execution disabled
+TEST|E|area12-fix-governance-key|PASS|M30 correction + git-gate keys present
+TEST|E|area13-m33-external-drifts|PASS|db-m33 records both external drifts as EXTERNAL_PRE_EXISTING_DRIFT
+TEST|E|area13-m26-signature|PASS|db-m26 clean 382/0 + recorded F520060C authority (S41 drift is re-run-only external)
+TEST|E|area13-m181-r45-record|PASS|db-m18-1 R45 single recorded failure
+SCENARIO|N|No autonomy
+TEST|N|auto-execution-disabled-config|PASS|ai-routing executionMode MANUAL
+TEST|N|mode-trial-config|PASS|devbridge mode TRIAL
+TEST|N|no-autonomy-tokens|PASS|production autonomy-enabler scan found=0
+TEST|N|no-scheduler-artifact|PASS|no scheduler/autonomous-loop artifacts
+SCENARIO|D|Documentation outputs Areas 15-20
+TEST|D|d-DEVBRIDGE_OPERATOR_GUIDE|PASS|DEVBRIDGE_OPERATOR_GUIDE.md present
+TEST|D|d-DEVBRIDGE_HUMAN_ACTION_REFERENCE|PASS|DEVBRIDGE_HUMAN_ACTION_REFERENCE.md present
+TEST|D|d-DEVBRIDGE_ERROR_RECOVERY_REFERENCE|PASS|DEVBRIDGE_ERROR_RECOVERY_REFERENCE.md present
+TEST|D|d-DEVBRIDGE_TRIAL_VS_REAL|PASS|DEVBRIDGE_TRIAL_VS_REAL.md present
+TEST|D|d-DEVBRIDGE_PRE_REAL_TRANSITION_PLAN|PASS|DEVBRIDGE_PRE_REAL_TRANSITION_PLAN.md present
+TEST|D|d-DEVBRIDGE_FIRST_REAL_RUN_CHECKLIST|PASS|DEVBRIDGE_FIRST_REAL_RUN_CHECKLIST.md present
+TEST|D|d-DEVBRIDGE_RETIREMENT_PLAN|PASS|DEVBRIDGE_RETIREMENT_PLAN.md present
+TEST|D|area15-operator-guide|PASS|operator guide 1..20 operating order
+TEST|D|area16-human-action-ref|PASS|human-action reference 11 actions + Trial/Real
+TEST|D|area17-error-ref|PASS|error-reference 12 canonical tokens missing=
+TEST|D|area-trial-real-guide|PASS|trial-vs-real guide covers TRIAL + REAL tokens
+TEST|D|area18-transition-plan|PASS|transition plan 11 steps + baseline identities
+TEST|D|area19-checklist|PASS|first-real-run checklist required items
+TEST|D|area20-retirement|PASS|retirement plan RETIREMENT_ELIGIBLE + no Nexus dependency
+SCENARIO|BUILD|Solution build
+TEST|BUILD|build-exit-zero|PASS|exit=0
+TEST|BUILD|build-zero-warnings|PASS|0 Warning(s)
+TEST|BUILD|build-zero-errors|PASS|0 Error(s)
+SCENARIO|R|Area 14 final clean regression
+TEST|R|area14-m30-exit|PASS|exit=0 all-pass=True
+TEST|R|area14-m30-zero-failed|PASS|summary failed=0
+TEST|R|area14-m31-exit|PASS|exit=0
+TEST|R|area14-m31-zero-failed|PASS|summary failed=0
+TEST|R|area14-m31-scenarios|PASS|scenarios=54/54
+TEST|R|area14-m32-exit|PASS|exit=0
+TEST|R|area14-m32-outcome|PASS|DB32_TEST_OUTCOME: PASS
+TEST|R|area14-m33crit-exit|PASS|exit=0
+TEST|R|area14-m33crit-outcome|PASS|DB33_TEST_OUTCOME: PASS
+TEST|R|area14-m33crit-clean|PASS|failed=0
+TEST|R|area14-m124-exit|PASS|exit=0 all-pass=True
+TEST|R|area14-m124-zero-failed|PASS|summary failed=0
+TEST|R|area14-m181-recorded-r45|PASS|exit=1 sig63/1 fail-lines=1 r45only=True
+TEST|R|area14-m032-exit|PASS|exit=0 suite-pass=True
+TEST|R|area14-m032-zero-failed|PASS|summary failed=0
+TEST|R|area14-gh01-exit|PASS|exit=0
+TEST|R|area14-gh01-all-pass|PASS|Tests console RESULT : ALL PASS
+SCENARIO|LIVE|Live safety
+TEST|LIVE|live-guard-unchanged|PASS|guard files changed=
+TEST|LIVE|live-workbook-recorded-sha|PASS|canonical workbook SHA matches recorded 6D42C3BF (6D42C3BF)
+TEST|LIVE|live-git-head-unchanged|PASS|Nexus git HEAD=ea39db910a6e3b00bff880316996a696ae7460dc
+TEST|LIVE|live-mode-trial|PASS|mode still TRIAL after regression
+TEST|LIVE|live-current-task-blocked|PASS|current task M-07-0.2 PREFLIGHTED (container, no real work)
+TEST|LIVE|m10-not-executed-live|PASS|no M10 executed against live TRIAL state (TRIAL_COMPLETION_NOT_APPLICABLE); no completion evidence written
+TEST|LIVE|m31-result-regenerated-pass|PASS|db-m31 result regenerated by its own suite still PASS
+TEST|LIVE|live-fingerprint-value-unchanged|PASS|protected-roadmap fingerprint value still 25BBECA4 after regression
+
+DB34_CHILD: DB-M30: 318 passed / 0 failed, exit 0
+DB34_CHILD: DB-M31: 191 passed / 0 failed, exit 0
+DB34_CHILD: DB-M32: 127 passed / 0 failed, exit 0
+DB34_CHILD: DB-M33 critical: 8 scenarios, 64/0, exit 0
+DB34_CHILD: DB-M12.4: 54/54 passed, exit 0
+DB34_CHILD: DB-M18.1: 63 passed / 1 failed (R45 recorded, exit 1)
+DB34_CHILD: DB-M03.2: 46/46 passed, exit 0
+DB34_CHILD: DB-GH01: console passed, exit 0
+
+DB34_TEST_SCENARIOS_RUN: 6
+DB34_TEST_ASSERTIONS_PASSED: 74
+DB34_TEST_ASSERTIONS_FAILED: 0
+DB34_TEST_ASSERTIONS_TOTAL: 74
+DB34_TEST_OUTCOME: PASS
+DB34_BUILD_WARNINGS: 0
+DB34_BUILD_ERRORS: 0
+DB34_DISPOSITION_M26_S41: ACCEPTED_NON_BLOCKING_TEST_DRIFT
+DB34_DISPOSITION_M181_R45: ACCEPTED_NON_BLOCKING_TEST_DRIFT

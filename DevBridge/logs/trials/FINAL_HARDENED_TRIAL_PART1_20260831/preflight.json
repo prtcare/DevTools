@@ -1,0 +1,469 @@
+{
+    "taskId":  "WI-07-0.2.4",
+    "nodeId":  "WI-07-0.2.4",
+    "name":  "Concurrency, locking and atomic writes",
+    "nodeType":  "WorkItem",
+    "phase":  "P0",
+    "layer":  "07",
+    "parentNodeId":  "M-07-0.2",
+    "currentWorkNodeId":  "M-07-0.2",
+    "featureNodeId":  "F-07-0",
+    "status":  "PREFLIGHTED",
+    "selectedAt":  "2026-08-31T14:05:22Z",
+    "selectionReason":  "NEXT WORK drill-down: within M-07-0.2 (Development Control Service (Excel-backed, Azure-SQL-ready)), the only planned child whose declared dependencies are satisfied is WI-07-0.2.4 (Concurrency, locking and atomic writes, deps satisfied: WI-07-0.2.3). | CURRENT WORK FIRST: M-07-0.2 (Development Control Service (Excel-backed, Azure-SQL-ready)) has Status \u0027In Progress\u0027 and is named by 4 open reservation(s) in the Active Changes ledger; its freshest open reservation is CHG-20260830-017 (row 80) — the workbook\u0027s most recent governed activity. Per the rule it is NOT skipped for higher-priority Planned work.",
+    "repositories":  [
+                         "Nexus.Developer"
+                     ],
+    "projects":  [
+                     "Nexus.Developer.Infrastructure"
+                 ],
+    "filesGlobs":  [
+                       "src/Nexus.Developer.Infrastructure/DevelopmentControl/**"
+                   ],
+    "schemaContexts":  [
+
+                       ],
+    "contractsApis":  [
+                          "IDevelopmentControlAtomicWorkUnitRunner",
+                          "IDevelopmentControlStore"
+                      ],
+    "affectedNodes":  [
+                          "F-07-0",
+                          "M-07-0.2",
+                          "WI-07-0.2.1",
+                          "WI-07-0.2.10",
+                          "WI-07-0.2.2",
+                          "WI-07-0.2.3",
+                          "WI-07-0.2.4",
+                          "WI-07-0.2.5",
+                          "WI-07-0.2.6",
+                          "WI-07-0.2.7",
+                          "WI-07-0.2.8",
+                          "WI-07-0.2.9"
+                      ],
+    "scopeSource":  "derived-from-governance",
+    "scopeEvidence":  [
+                          "Node next action: Build after its declared dependency.",
+                          "Reservation CHG-20260830-006 notes: Both gaps were designed-but-untracked, not net-new scope -- M-07-0.2 was already written down in an architecture doc and simply never promoted to the roadmap; the GitHub adapter gap was already implied by the Tool \u0026 Integration Registry\u0027s own \u0027PRs, history / Required\u0027 row. Adding them closes the doc-vs-roadmap mismatch pattern found twice now this engagement (previously with F-07-B/C/D/E naming). No M0 created, no existing milestone restructured.",
+                          "Reservation CHG-20260830-014 notes: WI-07-0.2.1 complete and independently verified with zero deviations -- second consecutive clean pass. Next development prompt: WI-07-0.2.2 (Canonical workbook migration and Activity Log schema).",
+                          "Reservation CHG-20260830-015 notes: WI-07-0.2.2 complete and independently verified with zero deviations -- third consecutive clean pass. The Activity Log sheet this very row lives in is now 34 columns; future Activity Log rows in this workbook must use the new schema. Next development prompt: WI-07-0.2.3 (Excel persistence adapter).",
+                          "Reservation CHG-20260830-017 notes: WI-07-0.2.4 reserved by DB-M04 governed reservation with preflight CLEAR. Workbook backup NEXUS_DEVELOPMENT_CONTROL_20260830_225830.xlsx; git baseline captured at HEAD ea39db910a6e3b00bff880316996a696ae7460dc on feature/m-08-1-2-ci-pipeline; no Nexus source modified. Implementation not started; next allowed action CHATGPT_HANDOFF (DB-M05). | SCOPE-AMENDED 2026-08-31: SCOPE_CHANGE_CLEAR preflight (state/scope-change-preflight.json) approved adding Nexus.Developer.Infrastructure project + single file src/Nexus.Developer.Infrastructure/DevelopmentControl/ExcelDevelopmentControlStore.cs. Original Core-only reservation preserved (DB-M04). Pre-amendment backup NEXUS_DEVELOPMENT_CONTROL_20260830_184615.xlsx. Lifecycle unchanged: IMPLEMENTATION BLOCKED / SCOPE CHANGE REQUIRED; next allowed action CONTINUE_DEEPSEEK_IMPLEMENTATION.",
+                          "WI-07-0.2.3 evidence: Implemented and governed-verified 2026-08-30: ExcelWorkbookColumnMap (workbook column map; Required() throws on a missing required column), DevelopmentControlCellCodec (record-version parse/next, status/actor-type text codecs, sort-key compare, activity-id generator, node summarizer) and ExcelDevelopmentControlStore (ClosedXML-backed IDevelopmentControlStore; full 22-op contract; every mutating op takes a MutationEnvelope and returns MutationResult\u003cT\u003e; read + one safe mutation end-to-end, atomically; temp-file write + atomic replace; append-only Version History and 34-column Activity Log; idempotency via Activity Log scan; structural validation). DB-M06 verification: VERIFICATION_PASSED 22/22 parts; 8/8 acceptance criteria; 4 src projects build 0 warnings/0 errors; 199/199 tests + 32/32 harness checks; canonical workbook hash unchanged. DB-M08 Claude focused review: PASS, 0 blocking issues, 1 residual non-blocking observation (MutationEnvelope validation on no-op AddDependencyAsync/RemoveDependencyAsync paths) carried forward per Claude classification (MINOR, NON-BLOCKING, DOES NOT WARRANT FIX REQUIRED). No git commit (reviewed delta is untracked; the governed workbook write is the completion record). Zero deviations.",
+                          "WI-07-0.2.1 evidence: Implemented and independently verified file-by-file on 2026-08-30: all 18 DTO/enum files under Nexus.Developer.Core/DevelopmentControl/ (Node, NodeId as a validated string not a Guid, ActiveChange 30-field/AuditFinding 13-field shapes sourced by direct workbook inspection, ActivityLogEntry with the full 34 fields, ActorRef/ActorType, MutationEnvelope/MutationResult\u003cT\u003e, ControlState/NodeSearchCriteria/PreflightDeclaration/PreflightResult/ValidationResult), IDevelopmentControlStore with all 22 named operations (every mutating operation takes a MutationEnvelope and returns MutationResult\u003cT\u003e), and two new test files -- one proving zero I/O via an assembly-reference check (no Excel/OpenXML/EF/SQL assembly referenced), one locking DTO field counts, enum membership, and interface shape by reflection. Zero deviations. No implementation, nothing wired into DI or any existing handler/endpoint -- confirmed via git diff showing only new files, no existing file touched.",
+                          "WI-07-0.2.2 evidence: Implemented and independently verified 2026-08-30: WorkbookSchemaValidator (reflection-based, compares live sheet headers against the WI-07-0.2.1 contract types, informational report not pass/fail) and ActivityLogMigration (widens Activity Log 11-\u003e34 columns in place, dry-run by default, idempotent, self-verifying byte-exact after write) added under Nexus.Developer.Infrastructure/DevelopmentControl/, with ClosedXML added to Infrastructure only. Thorough test coverage (dry-run leaves file untouched, commit mode widens and maps every field exactly, idempotent re-run, blank rows survive, actor-type inference, unknown-schema and missing-sheet error paths). Migration actually run in commit mode against the live workbook: Activity Log widened 11-\u003e34 columns, all 47 existing rows preserved with zero data loss (Version/ADR and Notes folded into Reason rather than dropped), verified against the live file directly. Schema validator confirmed Active Changes (30/30) and Audit Findings (13/13) map cleanly; Master Roadmap has the expected, now-documented gap (Simple Goal/Current Evidence/Next Action/Column1-3 present-but-unmapped; RowVersion/IsDeleted/CreatedAt/UpdatedAt are store-managed, not sheet columns) -- reported, not closed, per this work item\u0027s scope. Zero deviations.",
+                          "WI-07-0.2.3 evidence: Implemented and governed-verified 2026-08-30: ExcelWorkbookColumnMap (workbook column map; Required() throws on a missing required column), DevelopmentControlCellCodec (record-version parse/next, status/actor-type text codecs, sort-key compare, activity-id generator, node summarizer) and ExcelDevelopmentControlStore (ClosedXML-backed IDevelopmentControlStore; full 22-op contract; every mutating op takes a MutationEnvelope and returns MutationResult\u003cT\u003e; read + one safe mutation end-to-end, atomically; temp-file write + atomic replace; append-only Version History and 34-column Activity Log; idempotency via Activity Log scan; structural validation). DB-M06 verification: VERIFICATION_PASSED 22/22 parts; 8/8 acceptance criteria; 4 src projects build 0 warnings/0 errors; 199/199 tests + 32/32 harness checks; canonical workbook hash unchanged. DB-M08 Claude focused review: PASS, 0 blocking issues, 1 residual non-blocking observation (MutationEnvelope validation on no-op AddDependencyAsync/RemoveDependencyAsync paths) carried forward per Claude classification (MINOR, NON-BLOCKING, DOES NOT WARRANT FIX REQUIRED). No git commit (reviewed delta is untracked; the governed workbook write is the completion record). Zero deviations."
+                      ],
+    "dependencies":  [
+                         {
+                             "dependencyId":  "WI-07-0.2.3",
+                             "type":  "Textual (node Dependencies)",
+                             "state":  "SATISFIED",
+                             "status":  "Complete",
+                             "detail":  "Excel persistence adapter"
+                         },
+                         {
+                             "dependencyId":  "REL-001..011",
+                             "type":  "Explicit D\u0026B",
+                             "state":  "NOT_APPLICABLE",
+                             "status":  null,
+                             "detail":  "No Dependencies \u0026 Blockers row references the target or its chain"
+                         }
+                     ],
+    "activeChangeConflicts":  [
+                                  {
+                                      "check":  "node",
+                                      "status":  "PASS",
+                                      "detail":  "No open reservation names WI-07-0.2.4 as a target node"
+                                  },
+                                  {
+                                      "check":  "repository",
+                                      "status":  "WARN",
+                                      "detail":  "Same repository, different node: CHG-20260829-005-\u003eM-12-0.1; CHG-20260829-006-\u003eM-12-0.1; CHG-20260830-002-\u003eM-12-0.4; CHG-20260830-003-\u003eM-12-0.4; CHG-20260830-010-\u003eWI-07-10.3.1; CHG-20260830-012-\u003eM-04-3.3 | WI-07-6.1.1 | WI-07-2.1.1; CHG-20260830-013-\u003eWI-07-2.1.1 | M-07-2.1 | WI-07-6.1.1 | M-07-6.1 | M-07-10.3. Scope checked at file/project level below."
+                                  },
+                                  {
+                                      "check":  "project",
+                                      "status":  "PASS",
+                                      "detail":  "No open implementation reservation targets the same project (Nexus.Developer.Infrastructure)"
+                                  },
+                                  {
+                                      "check":  "file-glob",
+                                      "status":  "PASS",
+                                      "detail":  "No open reservation lists files overlapping src/Nexus.Developer.Infrastructure/DevelopmentControl/**"
+                                  },
+                                  {
+                                      "check":  "schema-dbcontext",
+                                      "status":  "PASS",
+                                      "detail":  "Target declares no schema mutation (Excel persistence adapter; workbook Activity Log schema already widened by WI-07-0.2.2). Workbook writes follow Session Protocol append-only rules."
+                                  },
+                                  {
+                                      "check":  "shared-contract",
+                                      "status":  "PASS",
+                                      "detail":  "Target IMPLEMENTS IDevelopmentControlStore (defined by WI-07-0.2.1, not wired); no reservation mutates the interface"
+                                  },
+                                  {
+                                      "check":  "api-surface",
+                                      "status":  "PASS",
+                                      "detail":  "Target exposes no public API (internal Infrastructure adapter implementing IDevelopmentControlStore)"
+                                  },
+                                  {
+                                      "check":  "architecture-boundary",
+                                      "status":  "PASS",
+                                      "detail":  "Core contract (IDevelopmentControlStore) + Infrastructure adapter (ClosedXML-backed) conforms to the clean-architecture / layer model in the workbook; no boundary violation"
+                                  },
+                                  {
+                                      "check":  "dependency-overlap",
+                                      "status":  "PASS",
+                                      "detail":  "No open reservation depends on WI-07-0.2.2 / M-07-0.1 in a conflicting way"
+                                  },
+                                  {
+                                      "check":  "affected-node",
+                                      "status":  "PASS",
+                                      "detail":  "No open implementation reservation lists the target\u0027s affected nodes"
+                                  },
+                                  {
+                                      "check":  "parallel-safety",
+                                      "status":  "PASS",
+                                      "detail":  "Target is P0 baseline (closed world, outside the parallel Phase 1 product sequence); no parallel-safety violation"
+                                  },
+                                  {
+                                      "check":  "high-risk-concurrent",
+                                      "status":  "PASS",
+                                      "detail":  "No high-risk concurrent implementation on the target\u0027s area"
+                                  }
+                              ],
+    "architectureDecisions":  [
+                                  {
+                                      "adrId":  "ADR-001",
+                                      "relation":  "NOT_APPLICABLE",
+                                      "conflict":  false,
+                                      "detail":  "No link to target chain: F-06-7 | F-11-1 | F-11-2"
+                                  },
+                                  {
+                                      "adrId":  "ADR-002",
+                                      "relation":  "NOT_APPLICABLE",
+                                      "conflict":  false,
+                                      "detail":  "No link to target chain: F-12-0 | M-12-0.1..3"
+                                  },
+                                  {
+                                      "adrId":  "ADR-003",
+                                      "relation":  "GOVERNS_SUBSTRATE",
+                                      "conflict":  false,
+                                      "detail":  "Master Roadmap / Version History governance — the Development Control workbook is the authoritative control substrate"
+                                  },
+                                  {
+                                      "adrId":  "ADR-004",
+                                      "relation":  "NOT_APPLICABLE",
+                                      "conflict":  false,
+                                      "detail":  "No link to target chain: M-12-0.3"
+                                  },
+                                  {
+                                      "adrId":  "ADR-005",
+                                      "relation":  "NOT_APPLICABLE",
+                                      "conflict":  false,
+                                      "detail":  "No link to target chain: F-07-10 | F-06-8 | M-04-3.3 | M-12-0.1 | M-12-0.4 | M-07-5.3 (reclassified)"
+                                  }
+                              ],
+    "openDecisions":  [
+                          {
+                              "decisionId":  "DEC-001",
+                              "blocking":  false,
+                              "neededBefore":  "M-06-7.1",
+                              "detail":  "Confirm the exact physical schema/table placement for Conversation, Message, Session, Branch and attachment metadata after the ownership move to Product Core."
+                          },
+                          {
+                              "decisionId":  "DEC-002",
+                              "blocking":  false,
+                              "neededBefore":  "M-07-6.2",
+                              "detail":  "Choose the first minimum tool adapters required for Developer Chat MVP and their approval levels."
+                          },
+                          {
+                              "decisionId":  "DEC-003",
+                              "blocking":  false,
+                              "neededBefore":  "Before Stage 4 (Azure hardening) at the latest; mandatory before Stage 5 (vector retrieval)",
+                              "detail":  "When to move off SQL Server LocalDB onto a Docker-hosted full SQL Server instance (or straight to real Azure SQL) for local development/testing."
+                          }
+                      ],
+    "auditFindings":  [
+                          {
+                              "findingId":  "AF-001",
+                              "severity":  "Critical",
+                              "classification":  "informational",
+                              "status":  "Open",
+                              "dueGate":  "GATE_A",
+                              "detail":  "Authentication | M-01-1.1 / M-01-1.2 / M-01-3.1"
+                          },
+                          {
+                              "findingId":  "AF-002",
+                              "severity":  "Critical",
+                              "classification":  "informational",
+                              "status":  "Open",
+                              "dueGate":  "GATE_A",
+                              "detail":  "Tenant isolation | M-01-1.1 / M-01-2.1"
+                          },
+                          {
+                              "findingId":  "AF-003",
+                              "severity":  "Critical",
+                              "classification":  "informational",
+                              "status":  "Open",
+                              "dueGate":  "GATE_A",
+                              "detail":  "Service trust | M-01-3.2"
+                          },
+                          {
+                              "findingId":  "AF-004",
+                              "severity":  "High",
+                              "classification":  "informational",
+                              "status":  "Open",
+                              "dueGate":  "P0",
+                              "detail":  "Persistence | M-02-1.2 to M-02-1.4"
+                          },
+                          {
+                              "findingId":  "AF-005",
+                              "severity":  "High",
+                              "classification":  "informational",
+                              "status":  "Open",
+                              "dueGate":  "P0",
+                              "detail":  "AI durability | M-04-1.1"
+                          },
+                          {
+                              "findingId":  "AF-006",
+                              "severity":  "High",
+                              "classification":  "informational",
+                              "status":  "Open",
+                              "dueGate":  "GATE_A/B",
+                              "detail":  "Governance durability | M-01-4.1 / M-01-4.2"
+                          },
+                          {
+                              "findingId":  "AF-007",
+                              "severity":  "High",
+                              "classification":  "informational",
+                              "status":  "Open",
+                              "dueGate":  "P0",
+                              "detail":  "Frontend health | M-08-1.2"
+                          },
+                          {
+                              "findingId":  "AF-008",
+                              "severity":  "High",
+                              "classification":  "informational",
+                              "status":  "In Progress",
+                              "dueGate":  "P0",
+                              "detail":  "Package reproducibility | M-08-1.1 / M-08-1.3"
+                          },
+                          {
+                              "findingId":  "AF-009",
+                              "severity":  "High",
+                              "classification":  "informational",
+                              "status":  "Open",
+                              "dueGate":  "GATE_A",
+                              "detail":  "Test depth | M-08-1.2 / M-09-1.1"
+                          },
+                          {
+                              "findingId":  "AF-010",
+                              "severity":  "High",
+                              "classification":  "constrains",
+                              "status":  "Open",
+                              "dueGate":  "P0",
+                              "detail":  "Documentation truth | M-07-0.1"
+                          },
+                          {
+                              "findingId":  "AF-011",
+                              "severity":  "High",
+                              "classification":  "informational",
+                              "status":  "Open",
+                              "dueGate":  "GATE_A+",
+                              "detail":  "Layer transition | M-06-1.1 / M-07-1.1 / later moves"
+                          },
+                          {
+                              "findingId":  "AF-012",
+                              "severity":  "High",
+                              "classification":  "informational",
+                              "status":  "In Progress",
+                              "dueGate":  "GATE_A",
+                              "detail":  "Developer layer | M-07-1.1 to M-07-5.3"
+                          },
+                          {
+                              "findingId":  "AF-013",
+                              "severity":  "Medium",
+                              "classification":  "informational",
+                              "status":  "Open",
+                              "dueGate":  "GATE_A",
+                              "detail":  "Architecture guards | M-09-1.1"
+                          },
+                          {
+                              "findingId":  "AF-014",
+                              "severity":  "Medium",
+                              "classification":  "informational",
+                              "status":  "Open",
+                              "dueGate":  "GATE_B",
+                              "detail":  "Cost accuracy | M-01-4.2 / M-04-4.1"
+                          },
+                          {
+                              "findingId":  "AF-015",
+                              "severity":  "Medium",
+                              "classification":  "informational",
+                              "status":  "Open",
+                              "dueGate":  "P2",
+                              "detail":  "Reliability | M-04-1.1 / M-11-2.1"
+                          },
+                          {
+                              "findingId":  "AF-016",
+                              "severity":  "Medium",
+                              "classification":  "informational",
+                              "status":  "Open",
+                              "dueGate":  "P2",
+                              "detail":  "Production hardening | M-01-3.1 / M-10-1.1"
+                          },
+                          {
+                              "findingId":  "AF-017",
+                              "severity":  "Medium",
+                              "classification":  "informational",
+                              "status":  "Open",
+                              "dueGate":  "P0",
+                              "detail":  "Repository hygiene | M-08-2.1"
+                          },
+                          {
+                              "findingId":  "AF-018",
+                              "severity":  "Medium",
+                              "classification":  "informational",
+                              "status":  "Open",
+                              "dueGate":  "GATE_B",
+                              "detail":  "Autonomy | M-07-2.2 / M-07-3.2 / M-07-5.1"
+                          }
+                      ],
+    "existingAssets":  [
+                           {
+                               "asset":  "Architecture split",
+                               "state":  "Existing",
+                               "classification":  "INFORMATIONAL",
+                               "detail":  "Repo/files: Nexus.Platform | Nexus.Intelligence | Nexus.Experience"
+                           },
+                           {
+                               "asset":  "Model gateway",
+                               "state":  "Working foundation",
+                               "classification":  "INFORMATIONAL",
+                               "detail":  "Repo/files: Nexus.Platform.Core/Models | Nexus.Platform.Providers.OpenAI"
+                           },
+                           {
+                               "asset":  "Tool contracts",
+                               "state":  "Contract only",
+                               "classification":  "INFORMATIONAL",
+                               "detail":  "Repo/files: Nexus.Platform.Contracts/Tools"
+                           },
+                           {
+                               "asset":  "Intelligence turn pipeline",
+                               "state":  "Working foundation",
+                               "classification":  "INFORMATIONAL",
+                               "detail":  "Repo/files: Nexus.Intelligence.Core/Turns"
+                           },
+                           {
+                               "asset":  "Developer agent shell",
+                               "state":  "Stub",
+                               "classification":  "INFORMATIONAL",
+                               "detail":  "Repo/files: Nexus.Intelligence.Agents/BuiltIn/DeveloperAgent.cs"
+                           },
+                           {
+                               "asset":  "Chat API/domain",
+                               "state":  "Working prototype",
+                               "classification":  "INFORMATIONAL",
+                               "detail":  "Repo/files: Nexus.Products.Chat.*"
+                           },
+                           {
+                               "asset":  "Chat web UI",
+                               "state":  "Working prototype",
+                               "classification":  "INFORMATIONAL",
+                               "detail":  "Repo/files: Nexus.Experience.Client"
+                           },
+                           {
+                               "asset":  "SQL Stage 1b",
+                               "state":  "Implemented - Verify",
+                               "classification":  "INFORMATIONAL",
+                               "detail":  "Repo/files: Nexus.Products.Chat.Infrastructure/Sql | api_run.log"
+                           },
+                           {
+                               "asset":  "CI workflows",
+                               "state":  "Implemented - Verify",
+                               "classification":  "INFORMATIONAL",
+                               "detail":  "Repo/files: Each repo .github/workflows/build.yml"
+                           },
+                           {
+                               "asset":  "Developer control",
+                               "state":  "Working",
+                               "classification":  "REUSE",
+                               "detail":  "Repo/files: Nexus.Developer"
+                           },
+                           {
+                               "asset":  "Developer desktop tools",
+                               "state":  "Source available",
+                               "classification":  "INFORMATIONAL",
+                               "detail":  "Repo/files: DevTools.zip"
+                           },
+                           {
+                               "asset":  "Development control service (Excel-backed)",
+                               "state":  "Working foundation",
+                               "classification":  "INFORMATIONAL",
+                               "detail":  "Repo/files: Nexus.Developer | src/Nexus.Developer.Infrastructure/DevelopmentControl/** and src/Nexus.Developer.Core/DevelopmentControl/**"
+                           },
+                           {
+                               "asset":  "IDevelopmentControlStore contracts",
+                               "state":  "Complete",
+                               "classification":  "REUSE",
+                               "detail":  "Defined by WI-07-0.2.1 under Nexus.Developer.Core/DevelopmentControl (22 named operations, all mutating ops take MutationEnvelope and return MutationResult\u003cT\u003e)"
+                           },
+                           {
+                               "asset":  "WorkbookSchemaValidator + ActivityLogMigration",
+                               "state":  "Complete",
+                               "classification":  "REUSE_EXTEND",
+                               "detail":  "WI-07-0.2.2 under Nexus.Developer.Infrastructure/DevelopmentControl (ClosedXML in Infrastructure only)"
+                           },
+                           {
+                               "asset":  "ClosedXML",
+                               "state":  "Integrated (WI-07-0.2.2)",
+                               "classification":  "REUSE",
+                               "detail":  "Already added to Nexus.Developer.Infrastructure; the persistence adapter\u0027s engine"
+                           },
+                           {
+                               "asset":  "Excel persistence adapter",
+                               "state":  "Missing",
+                               "classification":  "MISSING",
+                               "detail":  "This work item\u0027s deliverable — implement IDevelopmentControlStore against the canonical workbook"
+                           }
+                       ],
+    "toolIntegration":  {
+                            "newToolApprovalRequested":  false,
+                            "observations":  [
+                                                 "No new external tool approval is requested by this preflight. ClosedXML is already integrated in Nexus.Developer.Infrastructure (WI-07-0.2.2) but is not yet recorded in the Tool \u0026 Integration Registry — the implementing change should record it under governance. Preflight never approves tools; approval belongs to the governed change process."
+                                             ],
+                            "phase1RequiredTools":  [
+                                                        "OpenAI / model gateway",
+                                                        "Claude",
+                                                        "DeepSeek",
+                                                        "Git / GitHub",
+                                                        "Terminal / PowerShell",
+                                                        "Docker",
+                                                        "SQL Server / Azure SQL",
+                                                        "Development Control workbook",
+                                                        "Nexus DevTools shell",
+                                                        "ClosedXML"
+                                                    ]
+                        },
+    "risk":  "Low",
+    "parallelSafe":  true,
+    "repositoryGovernance":  {
+                                 "source":  "Development Control workbook — Session Protocol sheet (authoritative governance protocol for Nexus development)",
+                                 "repositoriesIdentified":  [
+                                                                "Nexus.Developer"
+                                                            ],
+                                 "limitation":  "Physical Nexus repository files (AGENTS.md / CURRENT_STATE) were not read: they live outside the DevBridge working boundary. The Development Control workbook is the designated authoritative CURRENT_STATE source for this control substrate (Session Protocol Step 2 + governance statement).",
+                                 "complete":  true
+                             },
+    "verdict":  "CLEAR",
+    "blockingReasons":  [
+
+                        ],
+    "workbookSha256":  "F520060CB753EC8EC96B44BCBD193BDAB69CA68D4CC27198663665D5FE63F884",
+    "sourceReferences":  [
+                             "Master Roadmap row 328: WI-07-0.2.4",
+                             "Active Changes CHG-20260830-015 (row 78): next development prompt WI-07-0.2.3",
+                             "Active Changes CHG-20260830-014 (row 77): WI-07-0.2.1 verified complete",
+                             "Development Control workbook (read-only) SHA256 F520060CB753EC8EC96B44BCBD193BDAB69CA68D4CC27198663665D5FE63F884"
+                         ]
+}

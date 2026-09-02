@@ -1,0 +1,158 @@
+{
+  "Milestone": "WORKBOOK AUTHORITY RECONCILIATION",
+  "Lane": "C",
+  "Kind": "READ-ONLY investigation evidence only. No workbook write, no state mutation, no lifecycle progression. Historical reports not overwritten.",
+  "DateUtc": "2026-08-31T07:12:00Z",
+  "Investigation": {
+    "CanonicalPath": "C:\\Personal\\Nexus.Developer\\NEXUS_DEVELOPMENT_CONTROL.xlsx",
+    "CanonicalPathIdentity": "PASS",
+    "CanonicalExists": true,
+    "CanonicalSize": 583522,
+    "CanonicalCreatedUtc": "2026-08-30T10:58:47Z",
+    "CanonicalLastWriteUtc": "2026-08-30T18:51:46Z",
+    "CanonicalLastAccessUtc": "2026-08-31T07:08:33Z",
+    "CanonicalReadOnlyOpen": true,
+    "CanonicalSha256": "F520060CB753EC8EC96B44BCBD193BDAB69CA68D4CC27198663665D5FE63F884"
+  },
+  "Sheets": {
+    "GovernedSheetCount": 14,
+    "LoadErrors": 0,
+    "GovernedSheets": [
+      "Control Center",
+      "Master Roadmap",
+      "Active Changes",
+      "Audit Findings",
+      "Session Protocol",
+      "Version History",
+      "Phase Plan",
+      "Architecture Decisions",
+      "Open Decisions",
+      "Dependencies & Blockers",
+      "Tool & Integration Registry",
+      "Activity Log",
+      "Development Guide",
+      "Existing Assets"
+    ],
+    "LoadResult": "PASS",
+    "MappingValidation": "PASS",
+    "CorruptionDetected": false
+  },
+  "HashHistory": {
+    "RecordedHashes": [
+      { "Source": "DB-M12.1", "Prefix": "93D2620D", "MatchesFile": "logs/workbook-backups/..._184615.xlsx" },
+      { "Source": "preflight.json", "Prefix": "24C8D3AF", "MatchesFile": "logs/workbook-backups/..._225830.xlsx" },
+      { "Source": "DB-M22", "Prefix": "F520060C", "MatchesFile": "canonical (authoritative)" },
+      { "Source": "DB-GH01 baseline", "Prefix": "F520060C", "MatchesFile": "canonical (authoritative)" },
+      { "Source": "DB-GH01 live", "Prefix": "F520060C", "MatchesFile": "canonical (authoritative)" },
+      { "Source": "DB-M12.2", "Prefix": "F520060C", "MatchesFile": "canonical (authoritative)" },
+      { "Source": "Current reconciliation", "Prefix": "F520060C", "MatchesFile": "canonical (authoritative)" },
+      { "Source": "DB-M23", "Prefix": "E866D3C4", "MatchesFile": "backup/NEXUS_DEVELOPMENT_CONTROL.xlsx AND _190528.xlsx" }
+    ],
+    "OnDiskWorkbookFiles": [
+      { "Path": "backup/NEXUS_DEVELOPMENT_CONTROL.xlsx", "Sha256": "E866D3C4D260031D3C067F4C9C272A497FD913AD7C8D0CBFD0BF42F76BCD2941", "Size": 549324, "CreatedUtc": "2026-08-30T13:14:37Z", "LastWriteUtc": "2026-08-30T10:58:47Z" },
+      { "Path": "logs/workbook-backups/..._184615.xlsx", "Sha256": "93D2620D919789D9C7199C417FF3A9FD5B09DA0464F0D3800DB0748E62772372", "Size": 582711, "CreatedUtc": "2026-08-30T18:46:15Z", "LastWriteUtc": "2026-08-30T17:28:31Z" },
+      { "Path": "logs/workbook-backups/..._190528.xlsx", "Sha256": "E866D3C4D260031D3C067F4C9C272A497FD913AD7C8D0CBFD0BF42F76BCD2941", "Size": 549324, "CreatedUtc": "2026-08-30T13:35:28Z", "LastWriteUtc": "2026-08-30T10:58:47Z" },
+      { "Path": "logs/workbook-backups/..._220538.xlsx", "Sha256": "F52A1A8FE491B6C91809EAC92DB2F0DCCD43FF7C5C80BA2618E19B64D3FDD4F7", "Size": 550536, "CreatedUtc": "2026-08-30T16:35:38Z", "LastWriteUtc": "2026-08-30T13:35:29Z" },
+      { "Path": "logs/workbook-backups/..._225830.xlsx", "Sha256": "24C8D3AF2210C0F1F61B10FB96019A8AC7C8D8BBC67263F1498C4A11B075297C", "Size": 584525, "CreatedUtc": "2026-08-30T17:28:30Z", "LastWriteUtc": "2026-08-30T16:46:13Z" },
+      { "Path": "logs/selftest/T2_reserve/.../NEXUS_DEVELOPMENT_CONTROL_20260831_095700.xlsx", "Sha256": "C8D6813BE06A6B3570E75E28B5CCF6EEEAEDD0DC5A97C5EB6E3B4C9C4F61446E", "Size": 582957, "CreatedUtc": "2026-08-31T04:27:00Z", "LastWriteUtc": "2026-08-31T04:26:49Z" },
+      { "Path": "logs/selftest/T5_scope/.../NEXUS_DEVELOPMENT_CONTROL_20260831_095727.xlsx", "Sha256": "F5F0B84897E61E2EBBCAC69D299618121C44E254EA89F29A3D3E104C9F60D0A3", "Size": 582957, "CreatedUtc": "2026-08-31T04:27:27Z", "LastWriteUtc": "2026-08-31T04:27:15Z" }
+    ],
+    "BackupComparison": {
+      "DBM12_1_Matches": "_184615 = 93D2620D",
+      "PreflightMatches": "_225830 = 24C8D3AF",
+      "StaleSnapshotPair": "backup\\ copy = _190528 = E866D3C4",
+      "DBM23ObservedMatches": "E866D3C4 = stale backup copy (backup\\ + _190528), NOT canonical"
+    }
+  },
+  "WriteTimeline": {
+    "CanonicalLastWriteUtc": "2026-08-30T18:51:46Z",
+    "PredatesAllRelevantMilestones": true,
+    "MilestoneDateUtcs": {
+      "DBM22": "2026-08-31T05:10:36Z",
+      "DBGH01": "2026-08-31T05:17:07Z",
+      "DBM12_2": "2026-08-31T06:15:42Z",
+      "DBM23": "2026-08-31T11:20:00Z"
+    },
+    "Conclusion": "Canonical workbook was NOT written during the discrepancy window. Hash stable at F520060C throughout.",
+    "CauseOfM23Observation": "PROVEN - DB-M23 hashed a different file (stale backup copy backup\\NEXUS_DEVELOPMENT_CONTROL.xlsx / _190528, E866D3C4). No invention."
+  },
+  "DbGh01Claim": {
+    "Verdict": "GH01_CONFIRMED_NO_WORKBOOK_WRITE",
+    "Evidence": [
+      "DB-GH01 recorded LiveWorkbookSha256 F520060C == current canonical",
+      "Canonical LastWriteUtc (2026-08-30T18:51:46Z) predates DB-GH01 run (2026-08-31T05:17Z); LastWriteTimeUtc is physical evidence no write occurred during/after GH01",
+      "DB-GH01 result records WorkbookModified: NO"
+    ]
+  },
+  "DbM23Attribution": {
+    "Verdict": "NOT_SUPPORTED",
+    "Rationale": "DB-M23 attributed the hash difference to external Lane A (DB-GH01) activity. DB-GH01 reported WorkbookModified=NO and its own hash equals the unchanged canonical F520060C. DB-M23's observed hash exactly equals the stale backup copy (E866D3C4). DB-M23 hashed a DIFFERENT file, not the authoritative workbook. The attribution was an inference, not authoritative evidence.",
+    "HistoricalResultModified": false
+  },
+  "GovernanceConsistency": {
+    "FourteenSheetLoad": "PASS",
+    "MappingValidation": "PASS",
+    "TrialNodePresent": "PASS - WI-07-0.2.4 in Master Roadmap row 328 (WorkItem, Concurrency, locking and atomic writes, Planned)",
+    "ChangePresent": "PASS - CHG-20260830-017 in Active Changes row 80 (node WI-07-0.2.4, M-07-0.2, Open - reserved via DB-M04; pending CHATGPT handoff)",
+    "TrialLifecycleCoherent": "PASS - live current-task = WI-07-0.2.4 / CLAUDE_REVIEW_PASSED_TRIAL / TRIAL_CYCLE_SAFE_STOP / CHG-20260830-017; claude-review.json + verification.json hold PREVIOUS cycle (WI-07-0.2.3 / CHG-20260830-016) via stale-cycle protection",
+    "Corruption": "NONE"
+  },
+  "ProtectedRoadmapFingerprint": {
+    "BaselineFromGh01": "25BBECA448CC83B76F9A639BBF5A3E4A1599FDE536938A413FBE9DB5D67BE057",
+    "CurrentComputedReadOnly": "25BBECA448CC83B76F9A639BBF5A3E4A1599FDE536938A413FBE9DB5D67BE057",
+    "Identical": true,
+    "ProtectedRows": 715,
+    "ProtectedCells": 9161,
+    "Coverage": "Master Roadmap;Phase Plan;Architecture Decisions;Dependencies & Blockers;Open Decisions",
+    "StructureVerdict": "PROTECTED_STRUCTURE_UNCHANGED",
+    "Method": "Replicated Get-ProtectedRoadmapFingerprint.ps1 inline READ-ONLY (no state write); state/roadmap-fingerprint.json untouched"
+  },
+  "Classification": {
+    "HashDrift": "HASH_DRIFT_DIFFERENT_FILE_REFERENCE",
+    "WholeFileHashChange": "YES (legitimate, pre-window): 93D2620D (DB-M12.1) -> F520060C via governed preflight/reservation writes BEFORE the DB-M22/M23 window; does NOT explain DB-M23 value",
+    "ProtectedRoadmapStructureChange": "NO"
+  },
+  "AuthorityDecision": {
+    "Verdict": "WORKBOOK_AUTHORITY_CONFIRMED",
+    "ConditionsMet": [
+      "Canonical path known and correct (CANONICAL_PATH_IDENTITY PASS)",
+      "Workbook opens read-only; 14/14 governed sheets load; mappings valid",
+      "Trial governance coherent (WI-07-0.2.4 / CHG-20260830-017 present and consistent)",
+      "Protected roadmap structure unchanged (fingerprint identical)",
+      "Discrepancy explained (different-file-reference, evidence-backed)"
+    ]
+  },
+  "Step12NoMutation": {
+    "WorkbookModified": "NO",
+    "NexusSourceModified": "NO",
+    "LifecycleStateModified": "NO",
+    "GitModified": "NO"
+  },
+  "Result": {
+    "CanonicalWorkbook": "C:\\Personal\\Nexus.Developer\\NEXUS_DEVELOPMENT_CONTROL.xlsx",
+    "CanonicalPathIdentity": "PASS",
+    "CurrentSha256": "F520060CB753EC8EC96B44BCBD193BDAB69CA68D4CC27198663665D5FE63F884",
+    "CurrentLastWriteTimeUtc": "2026-08-30T18:51:46Z",
+    "DbM22RecordedSha": "F520060CB753EC8EC96B44BCBD193BDAB69CA68D4CC27198663665D5FE63F884",
+    "DbM23ObservedSha": "E866D3C4D260031D3C067F4C9C272A497FD913AD7C8D0CBFD0BF42F76BCD2941",
+    "DbGh01RecordedObservedSha": "F520060CB753EC8EC96B44BCBD193BDAB69CA68D4CC27198663665D5FE63F884",
+    "DbM12_2ObservedSha": "F520060CB753EC8EC96B44BCBD193BDAB69CA68D4CC27198663665D5FE63F884",
+    "RelevantBackupHashes": "93D2620D (DB-M12.1/_184615), 24C8D3AF (preflight/_225830), F52A1A8F (_220538), E866D3C4 (backup\\ + _190528 = DB-M23 observed)",
+    "Gh01Claim": "GH01_CONFIRMED_NO_WORKBOOK_WRITE",
+    "M23Attribution": "NOT_SUPPORTED",
+    "HashDriftClassification": "HASH_DRIFT_DIFFERENT_FILE_REFERENCE",
+    "FourteenSheetLoad": "PASS (14/14, 0 errors)",
+    "MappingValidation": "PASS",
+    "TrialGovernanceConsistency": "PASS",
+    "ProtectedRoadmapFingerprint": "25BBECA448CC83B76F9A639BBF5A3E4A1599FDE536938A413FBE9DB5D67BE057",
+    "ProtectedRoadmapStructure": "PROTECTED_STRUCTURE_UNCHANGED",
+    "WorkbookModifiedDuringReconciliation": "NO",
+    "NexusSourceModified": "NO",
+    "LifecycleStateModified": "NO",
+    "GitModified": "NO",
+    "Verdict": "WORKBOOK_AUTHORITY_CONFIRMED",
+    "WorkbookSensitiveLifecycleMayResume": "YES",
+    "LaneCNewTaskMayStart": "NO",
+    "NextAction": "DB-M12.3 / FINAL HARDENED TRIAL PLANNING (when authorized)"
+  }
+}

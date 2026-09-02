@@ -1,0 +1,235 @@
+Full governed set: 659 records (rows 6-675)
+
+=== DUPLICATE NODE IDs ===
+  NONE
+
+=== PARENT REFERENCE CHECK ===
+  OK: every non-Layer record's Parent ID resolves; every Layer is a root.
+  OK: all Layer records have empty Parent ID (true roots).
+
+=== HIERARCHY PATH CONSISTENCY (reconstructed vs stored, full set) ===
+  Records with empty stored Hierarchy Path: 14
+    M-07-0.2, WI-07-0.2.1, WI-07-0.2.2, WI-07-0.2.3, WI-07-0.2.4, WI-07-0.2.5, WI-07-0.2.6, WI-07-0.2.7, WI-07-0.2.8, WI-07-0.2.9, WI-07-0.2.10, WI-07-3.2.3, WI-07-3.2.4, T-07-6.2.1.2
+  MISMATCH: M-07-0.1 (R314): stored='07 DEVELOPER > M-07-0.1 Versioned roadmap and simultaneous-development control' expected='07 DEVELOPER > F-07-0 Development Control Baseline > M-07-0.1 Versioned roadmap and simultaneous-development control'
+  MISMATCH: WI-07-0.1.1 (R315): stored='07 DEVELOPER > WI-07-0.1.1 Architecture audit and roadmap baseline' expected='07 DEVELOPER > F-07-0 Development Control Baseline > M-07-0.1 Versioned roadmap and simultaneous-development control > WI-07-0.1.1 Architecture audit and roadmap baseline'
+  MISMATCH: T-07-0.1.1.1 (R316): stored='07 DEVELOPER > T-07-0.1.1.1 Inspect Platform, Intelligence and Experience' expected='07 DEVELOPER > F-07-0 Development Control Baseline > M-07-0.1 Versioned roadmap and simultaneous-development control > WI-07-0.1.1 Architecture audit and roadmap baseline > T-07-0.1.1.1 Inspect Platform, Intelligence and Experience'
+  MISMATCH: T-07-0.1.1.2 (R317): stored='07 DEVELOPER > T-07-0.1.1.2 Create control workbook v1.0' expected='07 DEVELOPER > F-07-0 Development Control Baseline > M-07-0.1 Versioned roadmap and simultaneous-development control > WI-07-0.1.1 Architecture audit and roadmap baseline > T-07-0.1.1.2 Create control workbook v1.0'
+  MISMATCH: WI-07-0.1.2 (R318): stored='07 DEVELOPER > WI-07-0.1.2 Active change ledger and preflight enforcement' expected='07 DEVELOPER > F-07-0 Development Control Baseline > M-07-0.1 Versioned roadmap and simultaneous-development control > WI-07-0.1.2 Active change ledger and preflight enforcement'
+  MISMATCH: T-07-0.1.2.1 (R319): stored='07 DEVELOPER > T-07-0.1.2.1 Define five preflight verdicts' expected='07 DEVELOPER > F-07-0 Development Control Baseline > M-07-0.1 Versioned roadmap and simultaneous-development control > WI-07-0.1.2 Active change ledger and preflight enforcement > T-07-0.1.2.1 Define five preflight verdicts'
+  MISMATCH: T-07-0.1.2.2 (R320): stored='07 DEVELOPER > T-07-0.1.2.2 Create machine-readable mirrors and scripts' expected='07 DEVELOPER > F-07-0 Development Control Baseline > M-07-0.1 Versioned roadmap and simultaneous-development control > WI-07-0.1.2 Active change ledger and preflight enforcement > T-07-0.1.2.2 Create machine-readable mirrors and scripts'
+  MISMATCH: WI-07-0.1.3 (R321): stored='07 DEVELOPER > WI-07-0.1.3 Nexus.Developer bootstrap and DevTools migration' expected='07 DEVELOPER > F-07-0 Development Control Baseline > M-07-0.1 Versioned roadmap and simultaneous-development control > WI-07-0.1.3 Nexus.Developer bootstrap and DevTools migration'
+  MISMATCH: T-07-0.1.3.1 (R322): stored='07 DEVELOPER > T-07-0.1.3.1 Create Nexus.Developer bootstrap' expected='07 DEVELOPER > F-07-0 Development Control Baseline > M-07-0.1 Versioned roadmap and simultaneous-development control > WI-07-0.1.3 Nexus.Developer bootstrap and DevTools migration > T-07-0.1.3.1 Create Nexus.Developer bootstrap'
+  MISMATCH: T-07-0.1.3.2 (R323): stored='07 DEVELOPER > T-07-0.1.3.2 Import and rework C:\Personal\DevTools' expected='07 DEVELOPER > F-07-0 Development Control Baseline > M-07-0.1 Versioned roadmap and simultaneous-development control > WI-07-0.1.3 Nexus.Developer bootstrap and DevTools migration > T-07-0.1.3.2 Import and rework C:\Personal\DevTools'
+  MISMATCH: WI-07-10.1.1 (R657): stored='07 DEVELOPER > ... > WI-07-10.1.1 Feature, Task and Subtask aggregates' expected='07 DEVELOPER > F-07-10 Developer Domain Foundation > M-07-10.1 Developer hierarchy > WI-07-10.1.1 Feature, Task and Subtask aggregates'
+  MISMATCH: WI-07-10.1.2 (R658): stored='07 DEVELOPER > ... > WI-07-10.1.2 Milestone grouping object and MilestoneLink' expected='07 DEVELOPER > F-07-10 Developer Domain Foundation > M-07-10.1 Developer hierarchy > WI-07-10.1.2 Milestone grouping object and MilestoneLink'
+  MISMATCH: WI-07-10.1.3 (R659): stored='07 DEVELOPER > ... > WI-07-10.1.3 Issue aggregate and IssueLink' expected='07 DEVELOPER > F-07-10 Developer Domain Foundation > M-07-10.1 Developer hierarchy > WI-07-10.1.3 Issue aggregate and IssueLink'
+  MISMATCH: WI-07-10.2.1 (R661): stored='07 DEVELOPER > ... > WI-07-10.2.1 Map WorkItem rows to Task, preserve traceability' expected='07 DEVELOPER > F-07-10 Developer Domain Foundation > M-07-10.2 WorkItem retirement migration > WI-07-10.2.1 Map WorkItem rows to Task, preserve traceability'
+  MISMATCH: WI-07-10.3.1 (R663): stored='07 DEVELOPER > ... > WI-07-10.3.1 DevelopmentRun minimal aggregate and Ref allocation' expected='07 DEVELOPER > F-07-10 Developer Domain Foundation > M-07-10.3 Development Run placeholder > WI-07-10.3.1 DevelopmentRun minimal aggregate and Ref allocation'
+  MISMATCH: WI-07-10.3.2 (R664): stored='07 DEVELOPER > ... > WI-07-10.3.2 DEVELOP action UI location, Phase 2 labelled' expected='07 DEVELOPER > F-07-10 Developer Domain Foundation > M-07-10.3 Development Run placeholder > WI-07-10.3.2 DEVELOP action UI location, Phase 2 labelled'
+  MISMATCH: WI-07-10.4.1 (R666): stored='07 DEVELOPER > ... > WI-07-10.4.1 ObjectChatLink many-to-many model' expected='07 DEVELOPER > F-07-10 Developer Domain Foundation > M-07-10.4 Object Chat Link > WI-07-10.4.1 ObjectChatLink many-to-many model with message-range provenance'
+  MISMATCH: WI-06-8.1.1 (R669): stored='06 PRODUCT CORE > ... > WI-06-8.1.1 Subproject under Project, interim placement' expected='06 PRODUCT CORE > F-06-8 Scope Trunk - Subproject > M-06-8.1 Subproject aggregate > WI-06-8.1.1 Subproject under Project, interim placement'
+  MISMATCH: WI-04-3.3.1 (R671): stored='04 AI > ... > WI-04-3.3.1 AiRole and AiRoleAssignment model' expected='04 AI > F-04-3 Agents > M-04-3.3 AI Role, Provider and Model abstraction (minimal) > WI-04-3.3.1 AiRole and AiRoleAssignment model'
+  MISMATCH: WI-04-3.3.2 (R672): stored='04 AI > ... > WI-04-3.3.2 Wire Discussion role through RoutingModelGateway' expected='04 AI > F-04-3 Agents > M-04-3.3 AI Role, Provider and Model abstraction (minimal) > WI-04-3.3.2 Wire Discussion role through RoutingModelGateway'
+  ... and 2 more
+
+=== SORT KEY PREFIX CONSISTENCY ===
+  OK: every non-Layer SortKey starts with its parent's SortKey + '.'
+
+=== RECOVERED BEYOND-TABLE SET (34 nodes) ===
+Phases: P1, P2, P4, P5
+Layers: 04 AI, 06 PRODUCT CORE, 07 DEVELOPER, 12 PRODUCTS
+Statuses: Complete, Completed, Implemented - Verify, In Progress, Planned
+Active (non-terminal, non-Planned) beyond-table nodes: 10
+  F-07-10 (In Progress) R655 phase=P1
+  M-07-10.1 (Implemented - Verify) R656 phase=P1
+  WI-07-10.1.1 (In Progress) R657 phase=P1
+  WI-07-10.1.2 (In Progress) R658 phase=P1
+  WI-07-10.1.3 (In Progress) R659 phase=P1
+  M-07-10.3 (In Progress) R662 phase=P1
+  M-07-10.4 (In Progress) R665 phase=P1
+  F-06-8 (In Progress) R667 phase=P1
+  M-06-8.1 (Implemented - Verify) R668 phase=P1
+  M-12-0.4 (In Progress) R673 phase=P1
+
+=== CROSS-SHEET REFERENCES TO RECOVERED NODES ===
+  144 distinct reference(s) from other governed sheets to recovered nodes:
+    F-06-8 <- Active Changes Affected Nodes [AB=R56]
+    F-06-8 <- Active Changes Node ID [B=R33]
+    F-06-8 <- ADR Roadmap Links [F=R9]
+    F-06-8 <- Version History Node ID [A=R876]
+    F-06-8 <- Version History Node ID [A=R946]
+    F-07-10 <- Active Changes Affected Nodes [AB=R34]
+    F-07-10 <- Active Changes Affected Nodes [AB=R35]
+    F-07-10 <- Active Changes Affected Nodes [AB=R36]
+    F-07-10 <- Active Changes Affected Nodes [AB=R37]
+    F-07-10 <- Active Changes Affected Nodes [AB=R45]
+    F-07-10 <- Active Changes Affected Nodes [AB=R57]
+    F-07-10 <- Active Changes Affected Nodes [AB=R67]
+    F-07-10 <- Active Changes Affected Nodes [AB=R68]
+    F-07-10 <- Active Changes Affected Nodes [AB=R73]
+    F-07-10 <- Active Changes Affected Nodes [AB=R76]
+    F-07-10 <- Active Changes Node ID [B=R33]
+    F-07-10 <- Active Changes Node ID [B=R34]
+    F-07-10 <- Active Changes Node ID [B=R35]
+    F-07-10 <- Active Changes Node ID [B=R36]
+    F-07-10 <- Active Changes Node ID [B=R37]
+    F-07-10 <- ADR Roadmap Links [F=R9]
+    F-07-10 <- Version History Node ID [A=R864]
+    F-07-10 <- Version History Node ID [A=R886]
+    F-07-10 <- Version History Node ID [A=R895]
+    F-07-10 <- Version History Node ID [A=R902]
+    F-07-10 <- Version History Node ID [A=R907]
+    F-07-10 <- Version History Node ID [A=R929]
+    F-07-10 <- Version History Node ID [A=R948]
+    F-12-10 <- Version History Node ID [A=R624]
+    F-12-11 <- Version History Node ID [A=R625]
+    F-12-12 <- Version History Node ID [A=R626]
+    F-12-13 <- Version History Node ID [A=R627]
+    F-12-14 <- Version History Node ID [A=R628]
+    F-12-15 <- Version History Node ID [A=R629]
+    F-12-16 <- Version History Node ID [A=R630]
+    F-12-4 <- Version History Node ID [A=R618]
+    F-12-5 <- Version History Node ID [A=R619]
+    F-12-6 <- Version History Node ID [A=R620]
+    F-12-7 <- Version History Node ID [A=R621]
+    F-12-8 <- Version History Node ID [A=R622]
+    F-12-9 <- Version History Node ID [A=R623]
+    M-04-3.3 <- Active Changes Node ID [B=R33]
+    M-04-3.3 <- Active Changes Node ID [B=R71]
+    M-04-3.3 <- Active Changes Node ID [B=R74]
+    M-04-3.3 <- Active Changes Node ID [B=R75]
+    M-04-3.3 <- ADR Roadmap Links [F=R9]
+    M-04-3.3 <- Version History Node ID [A=R879]
+    M-06-8.1 <- Active Changes Affected Nodes [AB=R56]
+    M-06-8.1 <- Active Changes Node ID [B=R56]
+    M-06-8.1 <- Version History Node ID [A=R877]
+    M-06-8.1 <- Version History Node ID [A=R947]
+    M-07-10.1 <- Active Changes Affected Nodes [AB=R35]
+    M-07-10.1 <- Active Changes Affected Nodes [AB=R36]
+    M-07-10.1 <- Active Changes Affected Nodes [AB=R37]
+    M-07-10.1 <- Active Changes Affected Nodes [AB=R57]
+    M-07-10.1 <- Active Changes Node ID [B=R35]
+    M-07-10.1 <- Active Changes Node ID [B=R36]
+    M-07-10.1 <- Active Changes Node ID [B=R37]
+    M-07-10.1 <- Active Changes Node ID [B=R57]
+    M-07-10.1 <- Version History Node ID [A=R865]
+    M-07-10.1 <- Version History Node ID [A=R892]
+    M-07-10.1 <- Version History Node ID [A=R901]
+    M-07-10.1 <- Version History Node ID [A=R906]
+    M-07-10.1 <- Version History Node ID [A=R949]
+    M-07-10.2 <- Active Changes Affected Nodes [AB=R35]
+    M-07-10.2 <- Active Changes Node ID [B=R35]
+    M-07-10.2 <- Version History Node ID [A=R869]
+    M-07-10.3 <- Active Changes Affected Nodes [AB=R36]
+    M-07-10.3 <- Active Changes Affected Nodes [AB=R37]
+    M-07-10.3 <- Active Changes Node ID [B=R36]
+    M-07-10.3 <- Active Changes Node ID [B=R37]
+    M-07-10.3 <- Active Changes Node ID [B=R67]
+    M-07-10.3 <- Active Changes Node ID [B=R68]
+    M-07-10.3 <- Active Changes Node ID [B=R76]
+    M-07-10.3 <- Version History Node ID [A=R871]
+    M-07-10.3 <- Version History Node ID [A=R893]
+    M-07-10.4 <- Active Changes Affected Nodes [AB=R36]
+    M-07-10.4 <- Active Changes Affected Nodes [AB=R37]
+    M-07-10.4 <- Active Changes Affected Nodes [AB=R45]
+    M-07-10.4 <- Active Changes Node ID [B=R36]
+    M-07-10.4 <- Active Changes Node ID [B=R37]
+    M-07-10.4 <- Active Changes Node ID [B=R45]
+    M-07-10.4 <- Version History Node ID [A=R874]
+    M-07-10.4 <- Version History Node ID [A=R894]
+    M-07-10.4 <- Version History Node ID [A=R928]
+    M-12-0.4 <- Active Changes Affected Nodes [AB=R49]
+    M-12-0.4 <- Active Changes Affected Nodes [AB=R50]
+    M-12-0.4 <- Active Changes Affected Nodes [AB=R51]
+    M-12-0.4 <- Active Changes Affected Nodes [AB=R61]
+    M-12-0.4 <- Active Changes Affected Nodes [AB=R64]
+    M-12-0.4 <- Active Changes Affected Nodes [AB=R65]
+    M-12-0.4 <- Active Changes Affected Nodes [AB=R66]
+    M-12-0.4 <- Active Changes Node ID [B=R33]
+    M-12-0.4 <- Active Changes Node ID [B=R49]
+    M-12-0.4 <- Active Changes Node ID [B=R50]
+    M-12-0.4 <- Active Changes Node ID [B=R64]
+    M-12-0.4 <- Active Changes Node ID [B=R65]
+    M-12-0.4 <- Active Changes Node ID [B=R66]
+    M-12-0.4 <- ADR Roadmap Links [F=R9]
+    M-12-0.4 <- Version History Node ID [A=R882]
+    M-12-0.4 <- Version History Node ID [A=R939]
+    M-12-0.4 <- Version History Node ID [A=R940]
+    WI-04-3.3.1 <- Version History Node ID [A=R880]
+    WI-04-3.3.2 <- Version History Node ID [A=R881]
+    WI-06-8.1.1 <- Version History Node ID [A=R878]
+    WI-07-10.1.1 <- Active Changes Affected Nodes [AB=R34]
+    WI-07-10.1.1 <- Active Changes Node ID [B=R34]
+    WI-07-10.1.1 <- Version History Node ID [A=R866]
+    WI-07-10.1.1 <- Version History Node ID [A=R887]
+    WI-07-10.1.1 <- Version History Node ID [A=R896]
+    WI-07-10.1.1 <- Version History Node ID [A=R903]
+    WI-07-10.1.1 <- Version History Node ID [A=R908]
+    WI-07-10.1.2 <- Active Changes Affected Nodes [AB=R34]
+    WI-07-10.1.2 <- Active Changes Node ID [B=R34]
+    WI-07-10.1.2 <- Version History Node ID [A=R867]
+    WI-07-10.1.2 <- Version History Node ID [A=R888]
+    WI-07-10.1.2 <- Version History Node ID [A=R897]
+    WI-07-10.1.2 <- Version History Node ID [A=R904]
+    WI-07-10.1.2 <- Version History Node ID [A=R909]
+    WI-07-10.1.3 <- Active Changes Affected Nodes [AB=R34]
+    WI-07-10.1.3 <- Active Changes Node ID [B=R34]
+    WI-07-10.1.3 <- Version History Node ID [A=R868]
+    WI-07-10.1.3 <- Version History Node ID [A=R889]
+    WI-07-10.1.3 <- Version History Node ID [A=R898]
+    WI-07-10.1.3 <- Version History Node ID [A=R905]
+    WI-07-10.1.3 <- Version History Node ID [A=R910]
+    WI-07-10.2.1 <- Version History Node ID [A=R870]
+    WI-07-10.3.1 <- Active Changes Affected Nodes [AB=R34]
+    WI-07-10.3.1 <- Active Changes Node ID [B=R34]
+    WI-07-10.3.1 <- Active Changes Node ID [B=R73]
+    WI-07-10.3.1 <- Version History Node ID [A=R872]
+    WI-07-10.3.1 <- Version History Node ID [A=R890]
+    WI-07-10.3.1 <- Version History Node ID [A=R899]
+    WI-07-10.3.2 <- Version History Node ID [A=R873]
+    WI-07-10.4.1 <- Active Changes Affected Nodes [AB=R34]
+    WI-07-10.4.1 <- Active Changes Affected Nodes [AB=R45]
+    WI-07-10.4.1 <- Active Changes Node ID [B=R34]
+    WI-07-10.4.1 <- Active Changes Node ID [B=R45]
+    WI-07-10.4.1 <- Version History Node ID [A=R875]
+    WI-07-10.4.1 <- Version History Node ID [A=R891]
+    WI-07-10.4.1 <- Version History Node ID [A=R900]
+    WI-07-10.4.1 <- Version History Node ID [A=R927]
+    WI-12-0.4.1 <- Version History Node ID [A=R883]
+    WI-12-0.4.2 <- Version History Node ID [A=R884]
+
+  Referenced recovered nodes: 34 of 34
+    F-06-8
+    F-07-10
+    F-12-10
+    F-12-11
+    F-12-12
+    F-12-13
+    F-12-14
+    F-12-15
+    F-12-16
+    F-12-4
+    F-12-5
+    F-12-6
+    F-12-7
+    F-12-8
+    F-12-9
+    M-04-3.3
+    M-06-8.1
+    M-07-10.1
+    M-07-10.2
+    M-07-10.3
+    M-07-10.4
+    M-12-0.4
+    WI-04-3.3.1
+    WI-04-3.3.2
+    WI-06-8.1.1
+    WI-07-10.1.1
+    WI-07-10.1.2
+    WI-07-10.1.3
+    WI-07-10.2.1
+    WI-07-10.3.1
+    WI-07-10.3.2
+    WI-07-10.4.1
+    WI-12-0.4.1
+    WI-12-0.4.2

@@ -1,0 +1,1232 @@
+{
+    "schemaVersion": "2.1",
+    "generatedAtUtc": "2026-08-30T11:42:02.8713690Z",
+    "correctedAtUtc": "2026-08-30T12:05:00Z",
+    "correction": "DB-M02.1 Master Roadmap Full-Range Governance Correction: governed range extended from the formal Excel table (A5:AG630, 625 records) to the full structurally valid used range (A6:AG675, 659 records). Resolves DB-G02 critical issue C-1.",
+    "generator": "DevBridge DB-M02 Canonical Nexus Development Control Mapping (corrected in DB-M02.1)",
+    "sourceWorkbookSchema": "state/workbook-schema.json",
+    "sourceAnalysis": "tasks/WORKBOOK_ANALYSIS.md",
+
+    "workbook": {
+        "path": "C:\\Personal\\Nexus.Developer\\NEXUS_DEVELOPMENT_CONTROL.xlsx",
+        "sha256Before": "E866D3C4D260031D3C067F4C9C272A497FD913AD7C8D0CBFD0BF42F76BCD2941",
+        "isAuthoritative": true,
+        "modificationPolicy": "READ-ONLY by DevBridge. Never redesign, never rename sheets, never rename columns, never add columns, never delete records. Update only through the write triggers defined per sheet and only after approved completion.",
+        "governanceStatement": "The workbook is the authoritative governance system for Nexus development. Master Roadmap is current state; Version History and Activity Log are append-only; Active Changes is the concurrency ledger; Session Protocol is executable governance that DevBridge must not override."
+    },
+
+    "idSpaces": [
+        {
+            "space": "RoadmapNode",
+            "description": "Unique identity of every roadmap node (Layer, Feature, Milestone, WorkItem, Task, Subtask).",
+            "prefixes": ["01", "F-", "M-", "WI-", "T-", "S-"],
+            "formatNote": "Layers use numeric codes (01..12). Features F-<layer>-<seq>. Milestones M-<layer>-<seq>.<seq>. WorkItems WI-<layer>-<version>.<seq>. Tasks T-<layer>-<version>.<seq>.<seq>. Subtasks S-<layer>-<version>.<seq>.<seq>.<seq>.",
+            "producedBy": "Master Roadmap column A (Node ID)",
+            "consumedBy": [
+                "Master Roadmap (A Node ID, B Parent ID, J Dependencies)",
+                "Version History (A Node ID, B Parent ID)",
+                "Active Changes (B Node ID, AB Affected Nodes)",
+                "Audit Findings (H Roadmap Link)",
+                "Phase Plan (C Roadmap Link)",
+                "Architecture Decisions (F Roadmap Links)",
+                "Open Decisions (E Roadmap Links)",
+                "Dependencies & Blockers (B From Node, C Depends On / Blocks)",
+                "Development Guide (C Milestone ID)"
+            ]
+        },
+        {
+            "space": "ChangeId",
+            "description": "Unique identity of every development change / reservation.",
+            "prefixes": ["CHG-"],
+            "formatNote": "CHG-YYYYMMDD-NNN",
+            "producedBy": "Active Changes column A (Change ID)",
+            "consumedBy": [
+                "Active Changes (A Change ID, O Dependency On)",
+                "Version History (AD Change ID)",
+                "Activity Log (J Change ID)",
+                "Architecture Decisions (J Change ID)",
+                "Dependencies & Blockers (I Source Change)",
+                "Control Center (narrative changelog only)"
+            ]
+        },
+        {
+            "space": "AdrId",
+            "description": "Unique identity of approved architecture decision records.",
+            "prefixes": ["ADR-"],
+            "formatNote": "ADR-NNN",
+            "producedBy": "Architecture Decisions column A (ADR ID)",
+            "consumedBy": [
+                "Architecture Decisions (A ADR ID, G Supersedes / Related)",
+                "Open Decisions (J Resolution / ADR)",
+                "Active Changes (AA ADR ID)",
+                "Version History (AJ ADR / Decision Link)"
+            ]
+        },
+        {
+            "space": "DecisionId",
+            "description": "Unique identity of open/decided decision records.",
+            "prefixes": ["DEC-"],
+            "formatNote": "DEC-NNN",
+            "producedBy": "Open Decisions column A (Decision ID)",
+            "consumedBy": ["Open Decisions (A Decision ID)"]
+        },
+        {
+            "space": "ActivityId",
+            "description": "Unique identity of appended development events.",
+            "prefixes": ["ACT-"],
+            "formatNote": "ACT-YYYYMMDD-NNN",
+            "producedBy": "Activity Log column A (Activity ID)",
+            "consumedBy": []
+        },
+        {
+            "space": "FindingId",
+            "description": "Unique identity of audit findings.",
+            "prefixes": ["AF-"],
+            "formatNote": "AF-NNN",
+            "producedBy": "Audit Findings column A (Finding ID)",
+            "consumedBy": ["Audit Findings (A Finding ID)"]
+        },
+        {
+            "space": "RelationId",
+            "description": "Unique identity of explicit dependency/blocker relations.",
+            "prefixes": ["REL-"],
+            "formatNote": "REL-NNN",
+            "producedBy": "Dependencies & Blockers column A (Relation ID)",
+            "consumedBy": ["Dependencies & Blockers (A Relation ID)"]
+        },
+        {
+            "space": "PhaseStep",
+            "description": "Unique identity of phase-plan execution steps.",
+            "prefixes": ["P1-00", "P1-01", "P1-1", "P2-1"],
+            "formatNote": "P<phase>-<step>. 25 current rows across P1 and P2.",
+            "producedBy": "Phase Plan column A (Phase Step)",
+            "consumedBy": ["Phase Plan (E Depends On)"]
+        }
+    ],
+
+    "sheets": [
+        {
+            "name": "Control Center",
+            "index": 1,
+            "purpose": "High-level development/control summary and dashboard. Contains the workbook changelog narrative, headline metrics, roadmap distribution by phase, current control state, and release decision assessment.",
+            "layout": "dashboard",
+            "usedRange": "A1:M30",
+            "headerRow": null,
+            "labelsRow": 4,
+            "dataStartRow": 5,
+            "excelTable": null,
+            "governanceRole": "DERIVED_SUMMARY",
+            "uniqueKey": null,
+            "fieldStructure": {
+                "note": "Dashboard is a mix of formula-derived and manually-maintained cells. See contentZones.",
+                "formulaCells": [
+                    "R5: Current nodes = COUNTA(Master Roadmap A6:A661)",
+                    "D5: Milestones = COUNTIF(Master Roadmap C6:C661, Milestone)",
+                    "G5: Work items = COUNTIF(Master Roadmap C6:C661, WorkItem)",
+                    "J5: Blocked nodes = COUNTIF(Master Roadmap R6:R661, Blocked)",
+                    "I12:I17: Per-phase milestone counts = COUNTIFS(Master Roadmap C6:C629, Milestone, G6:G629, P0..P5)"
+                ],
+                "manualCells": [
+                    "L12: Open reservations (manual count)",
+                    "L13: Conflict verdicts (manual count)",
+                    "L14: Workbook version (manual; observed stale: value 1.8 while narrative states v3.26)",
+                    "L15: Roadmap version (manual)",
+                    "L16: Roadmap nodes (manual; observed stale: value 624 while Master Roadmap holds 659 rows)",
+                    "L17: History records (manual)",
+                    "I22:I26: Release decision verdicts and meanings (manual)"
+                ]
+            },
+            "contentZones": {
+                "row1": "Title: NEXUS DEVELOPMENT CONTROL",
+                "row2": "Workbook changelog narrative (merged cell, newest entry first). Authoritative record of workbook version progression.",
+                "row4-5": "Headline metrics: Current nodes / Milestones / Work items / Blocked nodes (labels row 4, formula values row 5).",
+                "row9": "Section headers: Roadmap distribution (A9), Current control state (H9).",
+                "row11": "Sub-header: Phase | Milestones | Control | Value | Rule.",
+                "row12-17": "Per-phase milestone counts (P0-P5) and control-state values (Open reservations, Conflict verdicts, Workbook version, Roadmap version, Roadmap nodes, History records) each with a governing rule text.",
+                "row19": "Section header: Release decision.",
+                "row21-26": "Release assessment: Assessment / Verdict / Meaning rows (Target architecture, Current implementation, Phase 1 product, Experience role, Implementation order).",
+                "row30": "Mandate text: use Development Guide for simple planning, Master Roadmap for detail, Version History/Activity Log for traceability; never call an implementation complete without acceptance evidence."
+            },
+            "columns": [
+                { "column": "A", "name": "Current nodes", "role": "metric", "required": false },
+                { "column": "D", "name": "Milestones", "role": "metric", "required": false },
+                { "column": "G", "name": "Work items", "role": "metric", "required": false },
+                { "column": "J", "name": "Blocked nodes", "role": "metric", "required": false },
+                { "column": "H", "name": "Phase", "role": "reference", "required": false },
+                { "column": "I", "name": "Milestones (per phase)", "role": "metric", "required": false },
+                { "column": "K", "name": "Control", "role": "reference", "required": false },
+                { "column": "L", "name": "Value", "role": "manual-summary", "required": false },
+                { "column": "M", "name": "Rule", "role": "governance-note", "required": false },
+                { "column": "H/I/J", "name": "Release decision assessment", "role": "narrative", "required": false }
+            ],
+            "relationships": [
+                { "to": "Master Roadmap", "via": "formulas referencing Master Roadmap columns A, C, G, R", "type": "DERIVED_FROM" },
+                { "to": "Version History", "via": "narrative changelog (CHG IDs, version numbers)", "type": "TRACES" },
+                { "to": "Active Changes", "via": "Open reservations / Conflict verdicts summary values", "type": "SUMMARIZES" }
+            ],
+            "mandatoryReadConditions": [
+                "Always read the R2 changelog narrative to determine current workbook version and recent governed changes before any write to any sheet.",
+                "Always read the headline metrics and control-state values to understand the summary view of current state.",
+                "NEVER trust manual summary values (column L) as ground truth for counts; compute counts from Master Roadmap and Active Changes directly. Manual values drift (observed: Workbook version 1.8 vs narrative v3.26; Roadmap nodes 624 vs 659 actual)."
+            ],
+            "relevanceRules": [
+                "Relevant on every task start (context) and whenever a workbook version, roadmap summary, control state, or major current-development narrative changes."
+            ],
+            "writeTriggers": [
+                "When workbook version increments (after approved changes), update the changelog narrative and Workbook version value.",
+                "When roadmap summary, control state, or release decision assessment materially changes, update the corresponding manual cells.",
+                "Only manual cells may be written by DevBridge. Formula cells are NEVER written (they are derived from Master Roadmap).",
+                "Any Control Center write must be accompanied by an Activity Log record and, where it reflects a governed change, a Version History record."
+            ],
+            "mutation": "UPDATE_EXISTING",
+            "appendUpdateBehavior": "Update manual summary/narrative cells in place. Never write formula cells. Never delete narrative history entries.",
+            "requiresHistory": true,
+            "requiresActivity": true,
+            "validationRequirements": [
+                "Before writing a manual count, recompute it from source sheets; record the recomputation in the activity record.",
+                "Do not change the R2 changelog format; prepend new entries, keep the newest first."
+            ],
+            "notes": [
+                "Dashboard cells are formulas with no cached values in the raw XML (computed by Excel at open time). DevBridge must not attempt to write them.",
+                "Observed stale manual values are a known governance gap; DevBridge reconciles against source sheets rather than propagating them."
+            ]
+        },
+        {
+            "name": "Master Roadmap",
+            "index": 2,
+            "purpose": "The authoritative current state of every roadmap node: Layer, Feature, Milestone, WorkItem, Task, Subtask. Holds identity, hierarchy, scope, dependencies, status, progress, ownership, risk, evidence, and next action. Source of truth for node identity and current status.",
+            "layout": "table",
+            "usedRange": "A1:AG675",
+            "headerRow": 5,
+            "dataStartRow": 6,
+            "excelTable": { "name": "MasterRoadmapTable", "ref": "A5:AG630", "columnCount": 33 },
+            "formalExcelTableRange": "A5:AG630",
+            "governedDataRange": {
+                "range": "A6:AG675",
+                "startRow": 6,
+                "endRow": 675,
+                "recordCount": 659,
+                "withinTableRecordCount": 625,
+                "beyondTableRecordCount": 34,
+                "detectionRule": "Structural validity scan (DB-M02.1): scan every row from dataStartRow 6 through the sheet used range (dimension A1:AG675). A row is a governed RoadmapNode record iff col A (Node ID) is non-empty and matches the RoadmapNode pattern (Layer \\d\\d | F-#-# | M-#-#.# | WI-#-#.#.# | T-#-#.#.#.# | S-#-#.#.#.#.#) AND col C (Node Type) is in {Layer, Feature, Milestone, WorkItem, Task, Subtask}. Truly blank rows and the title/header block (rows 1-5) are excluded. Any other row with content is reported as malformed/unresolved rather than silently classified. The formal Excel table boundary (A5:AG630) is metadata and is NOT the governance boundary; the 34 structurally valid records beyond it (rows 631-675) are governed current state.",
+                "note": "Corrected in DB-M02.1. The Excel table was not extended when ADR-005 (2026-08-26) appended the redefined Phase 1/2 node set below row 630; those records carry full governance fields and are referenced by Active Changes reservations, Version History and ADR-005, so they are authoritative current-state nodes."
+            },
+            "governanceRole": "CURRENT_STATE",
+            "uniqueKey": { "column": "A", "name": "Node ID", "space": "RoadmapNode" },
+            "columns": [
+                { "column": "A", "name": "Node ID", "role": "identity", "required": true, "unique": true },
+                { "column": "B", "name": "Parent ID", "role": "identity-hierarchy", "required": false, "references": "RoadmapNode" },
+                { "column": "C", "name": "Node Type", "role": "taxonomy", "required": true, "vocabulary": ["Layer", "Feature", "Milestone", "WorkItem", "Task", "Subtask"] },
+                { "column": "D", "name": "Sort Key", "role": "ordering", "required": false },
+                { "column": "E", "name": "Hierarchy Path", "role": "identity-hierarchy", "required": false },
+                { "column": "F", "name": "Layer", "role": "taxonomy", "required": false, "vocabulary": ["01 CORE", "02 DATA", "03 GOVERNANCE", "04 AI", "05 AUTOMATION", "06 PRODUCT CORE", "07 DEVELOPER", "08 DELIVERY", "09 ASSURANCE", "10 OPERATIONS", "11 EXPERIENCE", "12 PRODUCTS"] },
+                { "column": "G", "name": "Phase", "role": "taxonomy", "required": false, "vocabulary": ["P0", "P1", "P2", "P3", "P4", "P5"] },
+                { "column": "H", "name": "Name", "role": "naming", "required": true },
+                { "column": "I", "name": "Outcome / Purpose", "role": "narrative", "required": false },
+                { "column": "J", "name": "Dependencies", "role": "dependency", "required": false, "references": "RoadmapNode (free text, may list multiple Node IDs)" },
+                { "column": "K", "name": "Parallel Safe", "role": "governance", "required": false, "vocabulary": ["Yes", "No"] },
+                { "column": "L", "name": "Projects", "role": "scope", "required": false },
+                { "column": "M", "name": "Files / Globs", "role": "scope", "required": false },
+                { "column": "N", "name": "Schema Contexts", "role": "scope", "required": false },
+                { "column": "O", "name": "Contracts / APIs", "role": "scope", "required": false },
+                { "column": "P", "name": "Gate", "role": "gate", "required": false, "vocabulary": ["GATE_A", "GATE_B", "GATE_C", "P0", "P1", "P2", "P3", "P4", "P5"] },
+                { "column": "Q", "name": "Acceptance Criteria", "role": "verification", "required": false },
+                { "column": "R", "name": "Status", "role": "lifecycle", "required": true, "vocabulary": ["Planned", "In Progress", "Implemented - Verify", "Complete", "Completed", "Superseded"] },
+                { "column": "S", "name": "Breakdown Complete", "role": "lifecycle", "required": false, "vocabulary": ["Yes", "No"] },
+                { "column": "T", "name": "Manual Progress", "role": "progress", "required": false },
+                { "column": "U", "name": "Derived Progress", "role": "progress", "required": false },
+                { "column": "V", "name": "Reported Progress", "role": "progress", "required": false },
+                { "column": "W", "name": "Owner", "role": "ownership", "required": false },
+                { "column": "X", "name": "Priority", "role": "governance", "required": false, "vocabulary": ["Critical", "High", "Medium", "Low", "Backlog", "Not Assessed"] },
+                { "column": "Y", "name": "Risk", "role": "governance", "required": false, "vocabulary": ["High", "Medium", "Not Assessed"] },
+                { "column": "Z", "name": "Source", "role": "provenance", "required": false },
+                { "column": "AA", "name": "Notes", "role": "narrative", "required": false },
+                { "column": "AB", "name": "Simple Goal", "role": "narrative", "required": false },
+                { "column": "AC", "name": "Current Evidence", "role": "verification", "required": false },
+                { "column": "AD", "name": "Next Action", "role": "narrative", "required": false },
+                { "column": "AE", "name": "Column1", "role": "unmapped", "required": false },
+                { "column": "AF", "name": "Column2", "role": "unmapped", "required": false },
+                { "column": "AG", "name": "Column3", "role": "unmapped", "required": false }
+            ],
+            "relationships": [
+                { "to": "Version History", "via": "Node ID (A) <-> Version History Node ID (A); Master Roadmap is the current-state projection of Version History records", "type": "CURRENT_STATE_OF" },
+                { "to": "Active Changes", "via": "Node ID (A) <-> Active Changes Node ID (B) and Affected Nodes (AB); a node may have an active reservation", "type": "RESERVED_BY" },
+                { "to": "Dependencies & Blockers", "via": "Node ID (A) <-> From Node (B) / Depends On or Blocks (C); explicit graph is authoritative over textual Dependencies column", "type": "GRAPHED_BY" },
+                { "to": "Audit Findings", "via": "Node ID (A) <-> Roadmap Link (H)", "type": "AFFECTED_BY" },
+                { "to": "Architecture Decisions", "via": "Node ID (A) <-> Roadmap Links (F)", "type": "CONSTRAINED_BY" },
+                { "to": "Open Decisions", "via": "Node ID (A) <-> Roadmap Links (E)", "type": "RELATED_TO_DECISION" },
+                { "to": "Phase Plan", "via": "Node ID (A) <-> Roadmap Link (C)", "type": "EXECUTED_IN" },
+                { "to": "Development Guide", "via": "Milestone Node ID (A) <-> Milestone ID (C)", "type": "MIRRORED_BY" },
+                { "to": "Control Center", "via": "formulas count nodes by type/status/phase", "type": "SUMMARIZED_BY" }
+            ],
+            "mandatoryReadConditions": [
+                "Always read the full current node (the requested node) including Node ID, Parent ID, Node Type, Hierarchy Path, Dependencies, Status, Acceptance Criteria, Current Evidence, Next Action.",
+                "Always read the node's ancestry (Layer > Feature > Milestone > WorkItem > Task > Subtask) to resolve effective phase/gate/ownership inheritance.",
+                "When selecting or verifying work, cross-check the node against Dependencies & Blockers (explicit graph) rather than relying only on the textual Dependencies column.",
+                "Read the full governed data range (A6:AG675, 659 records): every row in the sheet used range with a valid RoadmapNode Node ID and a Node Type in the roadmap vocabulary is a governed current-state record, including the 34 records beyond the formal Excel table (A5:AG630). The Excel table boundary is metadata, not the governance boundary.",
+                "Detection rule (documented in governedDataRange): starting at dataStartRow 6, scan through the sheet used range; a row is a governed record iff col A (Node ID) matches the RoadmapNode pattern and col C (Node Type) is in {Layer, Feature, Milestone, WorkItem, Task, Subtask}. Truly blank rows and the title/header block (rows 1-5) are excluded; any other non-record row with content is reported as malformed/unresolved rather than silently classified."
+            ],
+            "relevanceRules": [
+                "Relevant to every task: identity, hierarchy, scope, dependencies, status, acceptance criteria, progress, owner, priority, risk, evidence, next action."
+            ],
+            "writeTriggers": [
+                "On approved completion: update Status, Current Evidence, Next Action, progress fields (Manual/Reported Progress), and any scope corrections (per Session Protocol step 14).",
+                "When a governed fact/concept/status/ownership changes: update the current row AND append a new record version to Version History (Session Protocol step 14 and Append-Only rule 'Change a governed fact').",
+                "New nodes (new Node ID) are appended as new rows within the table range.",
+                "A node superseded by another is marked Status=Superseded in the current state and its successor recorded; history is preserved in Version History."
+            ],
+            "mutation": "UPDATE_EXISTING",
+            "appendUpdateBehavior": "Update the current-state row for existing Node IDs in place. Append new rows for new Node IDs. Any status/scope/ownership change is mirrored by a new Version History record; Master Roadmap itself never rewrites the past.",
+            "requiresHistory": true,
+            "requiresActivity": true,
+            "validationRequirements": [
+                "Node ID must be unique and formatted per RoadmapNode prefixes.",
+                "Parent ID must resolve to an existing Node ID; Hierarchy Path must be consistent with Parent ID chain.",
+                "Status must be from the current-state vocabulary.",
+                "Before writing, verify no active (non-Completed/Cancelled) Active Changes reservation targets this node.",
+                "Progress honesty rule (Session Protocol): parents with incomplete breakdown report blank/not estimable rather than fabricated progress."
+            ],
+            "notes": [
+                "Column1/Column2/Column3 (AE:AG) are present in the table schema but observed empty; purpose unknown (unresolved).",
+                "Observed status vocabulary includes both Complete and Completed as current-state values; treat Completed as equivalent to Complete for eligibility checks.",
+                "DB-M02.1 (2026-08-30): governed range corrected to the full structurally valid used range A6:AG675 (659 records). The formal Excel table (A5:AG630) holds 625 records; 34 structurally valid records below it (rows 631-675) are now governed. See formalExcelTableRange / governedDataRange."
+            ]
+        },
+        {
+            "name": "Active Changes",
+            "index": 3,
+            "purpose": "Mandatory development reservation and concurrency-control ledger. Every change is reserved here before editing (Session Protocol step 7) and the reservation row tracks scope, worker, repositories, branch/worktree, timestamps, preflight verdict, and result/evidence until completion.",
+            "layout": "table",
+            "usedRange": "A1:AD78",
+            "headerRow": 5,
+            "dataStartRow": 6,
+            "excelTable": { "name": "ActiveChangesTable", "ref": "A5:Y8", "columnCount": 25 },
+            "governanceRole": "GOVERNANCE",
+            "uniqueKey": { "column": "A", "name": "Change ID", "space": "ChangeId" },
+            "columns": [
+                { "column": "A", "name": "Change ID", "role": "identity", "required": true, "unique": true },
+                { "column": "B", "name": "Node ID", "role": "identity", "required": true, "references": "RoadmapNode" },
+                { "column": "C", "name": "Milestone / Feature", "role": "identity-hierarchy", "required": false },
+                { "column": "D", "name": "Summary", "role": "narrative", "required": true },
+                { "column": "E", "name": "Requested By", "role": "ownership", "required": false },
+                { "column": "F", "name": "Worker", "role": "ownership", "required": true },
+                { "column": "G", "name": "Repositories", "role": "scope", "required": true },
+                { "column": "H", "name": "Projects", "role": "scope", "required": false },
+                { "column": "I", "name": "Files / Globs", "role": "scope", "required": true },
+                { "column": "J", "name": "Schema Contexts", "role": "scope", "required": false },
+                { "column": "K", "name": "Contracts / APIs", "role": "scope", "required": false },
+                { "column": "L", "name": "Status", "role": "lifecycle", "required": true, "vocabulary": "free-form narrative; classify by leading keyword (Open, In Progress, Blocked, Completed, Cancelled)" },
+                { "column": "M", "name": "Preflight Verdict", "role": "preflight", "required": false, "vocabulary": ["CLEAR", "DEPENDENCY FOUND", "OVERLAP FOUND", "CONFLICT FOUND", "ARCHITECTURE CONFLICT"] },
+                { "column": "N", "name": "Conflicts With", "role": "concurrency", "required": false },
+                { "column": "O", "name": "Dependency On", "role": "dependency", "required": false, "references": "ChangeId (free text)" },
+                { "column": "P", "name": "Risk", "role": "governance", "required": false },
+                { "column": "Q", "name": "Branch", "role": "concurrency", "required": false },
+                { "column": "R", "name": "Worktree", "role": "concurrency", "required": false },
+                { "column": "S", "name": "Started At", "role": "timestamp", "required": false },
+                { "column": "T", "name": "Last Heartbeat", "role": "timestamp", "required": false },
+                { "column": "U", "name": "Completed At", "role": "timestamp", "required": false },
+                { "column": "V", "name": "Result / Evidence", "role": "verification", "required": false },
+                { "column": "W", "name": "Change Version", "role": "version", "required": false },
+                { "column": "X", "name": "Session / Chat", "role": "trace", "required": false },
+                { "column": "Y", "name": "Notes", "role": "narrative", "required": false },
+                { "column": "Z", "name": "Version History ID", "role": "trace", "required": false, "note": "Outside the Excel table (beyond-column)", "references": "Version History record" },
+                { "column": "AA", "name": "ADR ID", "role": "trace", "required": false, "note": "Outside the Excel table (beyond-column)", "references": "AdrId" },
+                { "column": "AB", "name": "Affected Nodes", "role": "identity-hierarchy", "required": false, "note": "Outside the Excel table (beyond-column)", "references": "RoadmapNode (may list multiple)" },
+                { "column": "AC", "name": "Change Type", "role": "taxonomy", "required": false, "note": "Outside the Excel table (beyond-column)" },
+                { "column": "AD", "name": "Validation Result", "role": "verification", "required": false, "note": "Outside the Excel table (beyond-column)" }
+            ],
+            "relationships": [
+                { "to": "Master Roadmap", "via": "Node ID (B) / Affected Nodes (AB)", "type": "RESERVES" },
+                { "to": "Version History", "via": "Change ID (A) <-> Version History Change ID (AD); Version History ID (Z)", "type": "RELEASES_RECORDS" },
+                { "to": "Activity Log", "via": "Change ID (A) <-> Activity Log Change ID (J)", "type": "EVENTED_BY" },
+                { "to": "Architecture Decisions", "via": "ADR ID (AA) <-> ADR ID (A)", "type": "RECORDS_IF_APPLICABLE" },
+                { "to": "Dependencies & Blockers", "via": "Source Change (I) <-> Change ID (A)", "type": "ORIGINATES" }
+            ],
+            "mandatoryReadConditions": [
+                "Before any preflight or task selection: read every Active Changes row that is NOT Completed and NOT Cancelled (Session Protocol step 3). These are open reservations that constrain concurrent work.",
+                "Read Preflight Verdict, Conflicts With, Dependency On, Repositories, Files / Globs, Schema Contexts, Contracts / APIs, Branch, Worktree of each open reservation to run the rule-by-rule concurrency comparison (Session Protocol step 5).",
+                "Always read the full reserved row before appending a completion update to it."
+            ],
+            "relevanceRules": [
+                "Relevant to every task selection, preflight, and concurrency decision.",
+                "The status vocabulary is free-form narrative; DevBridge classifies by leading keyword. A row is OPEN unless its Status begins with Completed or Cancelled.",
+                "Completed records remain; never delete history (Session Protocol step 12/13)."
+            ],
+            "writeTriggers": [
+                "Step 7 (pre-implementation): append a new reservation row BEFORE editing; record Change ID, Node ID, Worker, Repositories, Files / Globs, timestamps, Branch, Worktree.",
+                "Step 12: on completion, update the reservation row's Status, Completed At, Result / Evidence. NEVER delete the row.",
+                "Step 13: append the final result to Active Changes and Activity Log.",
+                "When scope changes mid-work: update Active Changes BEFORE editing further (Step 8) and record the resulting governed change in Version History.",
+                "When a change relates to an approved ADR or resolves a decision: set ADR ID (AA) / record Change Type (AC) / Validation Result (AD)."
+            ],
+            "mutation": "APPEND_ONLY",
+            "appendUpdateBehavior": "Append new reservation rows. Update only the lifecycle fields (Status, Started At, Last Heartbeat, Completed At, Result / Evidence, Branch, Worktree, Validation Result, ADR ID, Version History ID) of the owning reservation row. Never delete rows.",
+            "requiresHistory": false,
+            "requiresActivity": true,
+            "validationRequirements": [
+                "Change ID must be unique and formatted CHG-YYYYMMDD-NNN.",
+                "Node ID and Affected Nodes must reference existing RoadmapNode IDs.",
+                "An open reservation must exist for any node before files are edited; preflight must stop if an un-reserved overlap appears (Step 8 stop condition).",
+                "Appended completions must carry Result / Evidence; the row is never deleted."
+            ],
+            "notes": [
+                "The Excel table covers only A5:Y8 (4 data rows) while real data extends to row 78 and columns Z:AD; DevBridge must read the full used range A5:AD78, not just the table.",
+                "Z:AD columns are present on the sheet but outside the Excel table; they are sparsely populated (unresolved whether table should be extended)."
+            ]
+        },
+        {
+            "name": "Audit Findings",
+            "index": 4,
+            "purpose": "Registry of audit findings (security, correctness, governance) that must be checked when selecting or verifying work. Findings are linked to roadmap nodes and gates; resolving a finding may require this sheet to be updated.",
+            "layout": "table",
+            "usedRange": "A1:M23",
+            "headerRow": 5,
+            "dataStartRow": 6,
+            "excelTable": { "name": "AuditFindingsTable", "ref": "A5:M23", "columnCount": 13 },
+            "governanceRole": "GOVERNANCE",
+            "uniqueKey": { "column": "A", "name": "Finding ID", "space": "FindingId" },
+            "columns": [
+                { "column": "A", "name": "Finding ID", "role": "identity", "required": true, "unique": true },
+                { "column": "B", "name": "Severity", "role": "governance", "required": true, "vocabulary": ["Critical", "High", "Medium"] },
+                { "column": "C", "name": "Area", "role": "taxonomy", "required": true },
+                { "column": "D", "name": "Repository", "role": "scope", "required": false },
+                { "column": "E", "name": "Evidence", "role": "verification", "required": false },
+                { "column": "F", "name": "Impact", "role": "narrative", "required": false },
+                { "column": "G", "name": "Required Action", "role": "narrative", "required": true },
+                { "column": "H", "name": "Roadmap Link", "role": "identity", "required": false, "references": "RoadmapNode" },
+                { "column": "I", "name": "Status", "role": "lifecycle", "required": true, "vocabulary": ["Open", "In Progress", "Resolved", "Closed", "Cancelled"] },
+                { "column": "J", "name": "Owner", "role": "ownership", "required": false },
+                { "column": "K", "name": "Due Gate", "role": "gate", "required": false, "vocabulary": ["GATE_A", "GATE_B", "GATE_C", "P0", "P1", "P2", "P3", "P4", "P5"] },
+                { "column": "L", "name": "Verification", "role": "verification", "required": false },
+                { "column": "M", "name": "Notes", "role": "narrative", "required": false }
+            ],
+            "relationships": [
+                { "to": "Master Roadmap", "via": "Roadmap Link (H) -> Node ID (A)", "type": "TARGETS" },
+                { "to": "Version History", "via": "Roadmap Link (H) -> Node ID (A); status changes versioned through the linked node", "type": "TRACKED_VIA" }
+            ],
+            "mandatoryReadConditions": [
+                "When selecting or verifying work: read all findings whose Roadmap Link matches the target node or whose Area/Repository overlaps the task scope.",
+                "When a task resolves or changes an audit finding, the finding row may require update (Status, Verification, Owner)."
+            ],
+            "relevanceRules": [
+                "A finding linked to the target node is a preflight constraint: the change must not regress it and must where applicable close it.",
+                "Critical/High findings in the task's area gate acceptance."
+            ],
+            "writeTriggers": [
+                "On approved completion that resolves a finding: update Status to Resolved/Closed and record Verification.",
+                "On discovery of a new finding during implementation: append a new Finding ID row (governance decision required).",
+                "Any finding status change must be accompanied by an Activity Log record and, where the finding maps to a governed node, a Version History record."
+            ],
+            "mutation": "UPDATE_AND_APPEND_HISTORY",
+            "appendUpdateBehavior": "Update existing finding rows (Status, Verification, Owner) in place. Append new findings when required. Preserve all history.",
+            "requiresHistory": true,
+            "requiresActivity": true,
+            "validationRequirements": [
+                "Finding ID must be unique and formatted AF-NNN.",
+                "Roadmap Link must resolve to an existing RoadmapNode.",
+                "Severity vocabulary is Critical/High/Medium; Status transitions must be recorded."
+            ]
+        },
+        {
+            "name": "Session Protocol",
+            "index": 5,
+            "purpose": "Executable governance: the mandatory development-session protocol. Contains numbered pre-implementation steps, implementation/completion steps, verdicts, and append-only version rules. DevBridge must treat these as hard rules and must not override them.",
+            "layout": "tabular-list",
+            "usedRange": "A1:H34",
+            "headerRow": 5,
+            "dataStartRow": 6,
+            "excelTable": null,
+            "governanceRole": "PROTOCOL",
+            "uniqueKey": { "column": "A", "name": "Step", "space": "protocol step number" },
+            "columns": [
+                { "column": "A", "name": "Step", "role": "identity", "required": true },
+                { "column": "B", "name": "Required action", "role": "governance", "required": true },
+                { "column": "C", "name": "Evidence recorded", "role": "verification", "required": true },
+                { "column": "D", "name": "Stop condition", "role": "governance", "required": true }
+            ],
+            "sections": {
+                "row2": "Workbook-era control protocol statement.",
+                "row4": "Section header: PRE-IMPLEMENTATION - no file edit is permitted before Step 7.",
+                "row6-12": "Steps 1-7 (pre-implementation).",
+                "row15": "Section header: IMPLEMENTATION AND COMPLETION.",
+                "row16": "Second header row (Step / Required action / Evidence recorded / Stop condition).",
+                "row17-24": "Steps 8-14 (implementation and completion).",
+                "row26-27": "Section header: APPEND-ONLY VERSION RULES.",
+                "row28": "Header row (Rule / Required behavior).",
+                "row29-34": "Six append-only rules."
+            },
+            "steps": {
+                "preImplementation": [
+                    { "step": 1, "requiredAction": "Read repository AGENTS.md and authoritative CURRENT_STATE / architecture documents.", "evidence": "Documents and versions read", "stopCondition": "Missing mandatory document" },
+                    { "step": 2, "requiredAction": "Open this workbook; locate the requested current node in Master Roadmap and read its dependencies, ADRs and open decisions.", "evidence": "Node ID + applicable ADR/Decision IDs", "stopCondition": "Node missing or multiple current versions" },
+                    { "step": 3, "requiredAction": "Filter Active Changes to every row not Completed/Cancelled.", "evidence": "Compared change IDs", "stopCondition": "Ledger unavailable or stale" },
+                    { "step": 4, "requiredAction": "Declare exact scope: repository, project, files/globs, schema/DbContext, contracts/API, dependencies and risk.", "evidence": "Scope declaration", "stopCondition": "Any scope field still unknown" },
+                    { "step": 5, "requiredAction": "Compare dependency paths, file/project overlap, shared schema mutation, shared contract mutation and dual-high-risk work.", "evidence": "Rule-by-rule comparison", "stopCondition": "Analysis cannot be computed" },
+                    { "step": 6, "requiredAction": "Return one verdict: CLEAR / DEPENDENCY FOUND / OVERLAP FOUND / CONFLICT FOUND / ARCHITECTURE CONFLICT.", "evidence": "Verdict + reason + conflicting node/change", "stopCondition": "CONFLICT or ARCHITECTURE CONFLICT" },
+                    { "step": 7, "requiredAction": "Reserve the change in Active Changes before editing; assign branch/worktree for implementation work.", "evidence": "Change ID, worker, timestamps, branch, worktree", "stopCondition": "Reservation not recorded" }
+                ],
+                "implementation": [
+                    { "step": 8, "requiredAction": "Work only inside the reserved scope. If scope changes, update Active Changes before editing and record the resulting governed change in Version History.", "evidence": "Files actually changed", "stopCondition": "Unreserved overlap appears" },
+                    { "step": 9, "requiredAction": "Build, test and inspect against the work item's acceptance criteria.", "evidence": "Commands, results and evidence links", "stopCondition": "Required verification is red or unavailable" },
+                    { "step": 10, "requiredAction": "Human review is required before integration; rejected work returns with a recorded reason.", "evidence": "Reviewer, decision and reason", "stopCondition": "No human review" },
+                    { "step": 11, "requiredAction": "Integrate sequentially into the milestone integration branch and verify after each merge.", "evidence": "Integration run + green result", "stopCondition": "Integration turns red" },
+                    { "step": 12, "requiredAction": "Append the final result to Active Changes. Never delete the reservation row.", "evidence": "Completed time + result/evidence", "stopCondition": "Result not recorded" },
+                    { "step": 13, "requiredAction": "Append the final result to Active Changes and Activity Log. Never delete the reservation row or activity record.", "evidence": "New version + Change ID + Supersedes Version", "stopCondition": "History would be overwritten" },
+                    { "step": 14, "requiredAction": "Update Master Roadmap current state. When any governed fact/concept/status/ownership changes, append its new record version to Version History; never overwrite history.", "evidence": "Current roadmap update + Version History ID", "stopCondition": "Mandatory docs remain stale" }
+                ],
+                "completionSubStep": {
+                    "step": "14b",
+                    "requiredAction": "Update CURRENT_STATE/owning docs plus Architecture Decisions or Open Decisions when applicable; prepare continuation state for the next chat.",
+                    "evidence": "Docs diff + ADR/Decision + next active node"
+                }
+            },
+            "verdicts": ["CLEAR", "DEPENDENCY FOUND", "OVERLAP FOUND", "CONFLICT FOUND", "ARCHITECTURE CONFLICT"],
+            "appendOnlyRules": [
+                { "rule": "Never delete", "behavior": "Cancelled, superseded and mistaken history remains in Version History / Active Changes / Activity Log with explanatory state." },
+                { "rule": "Current roadmap only", "behavior": "Master Roadmap contains only the latest approved state for each Node ID." },
+                { "rule": "Change a governed fact", "behavior": "Update Master Roadmap and append a newer Record Version in Version History with Change ID, reason and ADR/Decision link when applicable." },
+                { "rule": "Concept changes count", "behavior": "Ownership, purpose, architecture, scope and product-positioning changes are versioned even when no code changes." },
+                { "rule": "Progress honesty", "behavior": "Parents with incomplete breakdown report blank/not estimable rather than fabricated progress." },
+                { "rule": "End of chat", "behavior": "Update Active Changes, Activity Log, Master Roadmap and Version History; update ADR/Open Decisions when the discussion changed architecture or left a decision unresolved." }
+            ],
+            "relationships": [
+                { "to": "all sheets", "via": "protocol steps reference Master Roadmap, Active Changes, Version History, Activity Log, Architecture Decisions, Open Decisions", "type": "GOVERNS" }
+            ],
+            "mandatoryReadConditions": [
+                "Always read the full protocol before any task. It is executable governance."
+            ],
+            "relevanceRules": [
+                "Applies to every task. No DevBridge action may contradict a step, evidence requirement, or stop condition."
+            ],
+            "writeTriggers": ["NONE - DevBridge must not modify the protocol. Protocol changes are human governance decisions."],
+            "mutation": "NONE",
+            "appendUpdateBehavior": "No mutation by DevBridge.",
+            "requiresHistory": false,
+            "requiresActivity": false,
+            "validationRequirements": [
+                "DevBridge MUST STOP if a stop condition is met (e.g., verdict CONFLICT or ARCHITECTURE CONFLICT, missing mandatory document, node missing or multiple current versions, ledger stale, reservation not recorded, unresolved overlap, red verification, no human review, red integration, missing result, history overwrite risk, stale mandatory docs)."
+            ]
+        },
+        {
+            "name": "Version History",
+            "index": 6,
+            "purpose": "Append-only archive of every governed roadmap/concept/status/ownership change. Never update historical rows to rewrite history. Master Roadmap is the current-state projection of this archive.",
+            "layout": "tabular-list",
+            "usedRange": "A1:AJ957",
+            "headerRow": 5,
+            "dataStartRow": 6,
+            "excelTable": null,
+            "governanceRole": "APPEND_ONLY",
+            "uniqueKey": { "column": "A + AA", "name": "Node ID + Record Version", "space": "RoadmapNode + version" },
+            "columns": [
+                { "column": "A", "name": "Node ID", "role": "identity", "required": true, "references": "RoadmapNode" },
+                { "column": "B", "name": "Parent ID", "role": "identity-hierarchy", "required": false, "references": "RoadmapNode" },
+                { "column": "C", "name": "Node Type", "role": "taxonomy", "required": true, "vocabulary": ["Layer", "Feature", "Milestone", "WorkItem", "Task", "Subtask"] },
+                { "column": "D", "name": "Sort Key", "role": "ordering", "required": false },
+                { "column": "E", "name": "Hierarchy Path", "role": "identity-hierarchy", "required": false },
+                { "column": "F", "name": "Layer", "role": "taxonomy", "required": false },
+                { "column": "G", "name": "Phase", "role": "taxonomy", "required": false, "vocabulary": ["P0", "P1", "P2", "P3", "P4", "P5"] },
+                { "column": "H", "name": "Name", "role": "naming", "required": true },
+                { "column": "I", "name": "Outcome / Purpose", "role": "narrative", "required": false },
+                { "column": "J", "name": "Dependencies", "role": "dependency", "required": false },
+                { "column": "K", "name": "Parallel Safe", "role": "governance", "required": false },
+                { "column": "L", "name": "Projects", "role": "scope", "required": false },
+                { "column": "M", "name": "Files / Globs", "role": "scope", "required": false },
+                { "column": "N", "name": "Schema Contexts", "role": "scope", "required": false },
+                { "column": "O", "name": "Contracts / APIs", "role": "scope", "required": false },
+                { "column": "P", "name": "Gate", "role": "gate", "required": false },
+                { "column": "Q", "name": "Acceptance Criteria", "role": "verification", "required": false },
+                { "column": "R", "name": "Status", "role": "lifecycle", "required": true, "vocabulary": ["Planned", "In Progress", "Implemented - Verify", "Ready", "Blocked", "Complete", "Completed", "Superseded"] },
+                { "column": "S", "name": "Breakdown Complete", "role": "lifecycle", "required": false },
+                { "column": "T", "name": "Manual Progress", "role": "progress", "required": false },
+                { "column": "U", "name": "Derived Progress", "role": "progress", "required": false },
+                { "column": "V", "name": "Reported Progress", "role": "progress", "required": false },
+                { "column": "W", "name": "Owner", "role": "ownership", "required": false },
+                { "column": "X", "name": "Priority", "role": "governance", "required": false },
+                { "column": "Y", "name": "Risk", "role": "governance", "required": false },
+                { "column": "Z", "name": "Baseline Version", "role": "version", "required": false },
+                { "column": "AA", "name": "Record Version", "role": "version", "required": true },
+                { "column": "AB", "name": "Effective From", "role": "timestamp", "required": false },
+                { "column": "AC", "name": "Is Current", "role": "version", "required": true, "vocabulary": ["Yes", "No"] },
+                { "column": "AD", "name": "Change ID", "role": "trace", "required": false, "references": "ChangeId" },
+                { "column": "AE", "name": "Supersedes Version", "role": "version", "required": false },
+                { "column": "AF", "name": "Source", "role": "provenance", "required": false },
+                { "column": "AG", "name": "Notes", "role": "narrative", "required": false },
+                { "column": "AH", "name": "Change Type", "role": "taxonomy", "required": false },
+                { "column": "AI", "name": "Change Summary", "role": "narrative", "required": false },
+                { "column": "AJ", "name": "ADR / Decision Link", "role": "trace", "required": false, "references": "AdrId | DecisionId" }
+            ],
+            "relationships": [
+                { "to": "Master Roadmap", "via": "Node ID (A); the row with Is Current=Yes for a Node ID equals Master Roadmap's current row", "type": "ARCHIVES" },
+                { "to": "Active Changes", "via": "Change ID (AD) <-> Change ID (A)", "type": "CAUSED_BY" },
+                { "to": "Activity Log", "via": "Change ID (AD) <-> Activity Log Change ID (J)", "type": "TRACED_BY" },
+                { "to": "Architecture Decisions", "via": "ADR / Decision Link (AJ) -> ADR ID / Decision ID", "type": "REFERENCED_BY_DECISION" }
+            ],
+            "mandatoryReadConditions": [
+                "When resolving current state of a node: read its Is Current=Yes record in Version History to confirm Master Roadmap's current row is the latest approved state.",
+                "When a node appears in multiple versions, read the chain (Supersedes Version / Record Version / Is Current) to detect 'multiple current versions' (stop condition of Step 2)."
+            ],
+            "relevanceRules": [
+                "Relevant whenever verifying current state, tracing a governed change, or before writing Master Roadmap (the new Version History record must be appended first or alongside)."
+            ],
+            "writeTriggers": [
+                "On any governed fact/concept/status/ownership change (Session Protocol Step 13/14 and Append-Only rule 'Change a governed fact'): append a newer Record Version with Change ID, reason and ADR/Decision link when applicable.",
+                "Concept changes count: ownership, purpose, architecture, scope and product-positioning changes are versioned even when no code changes.",
+                "On end of chat: append Version History records for everything governed."
+            ],
+            "mutation": "APPEND_ONLY",
+            "appendUpdateBehavior": "Append new rows only. NEVER update, delete, or rewrite existing historical rows. Each new version carries Record Version, Is Current, Change ID, Supersedes Version.",
+            "requiresHistory": true,
+            "requiresActivity": true,
+            "validationRequirements": [
+                "Node ID + Record Version must be unique.",
+                "Exactly one record per Node ID should carry Is Current=Yes; the rest No.",
+                "Change ID and ADR/Decision Link must resolve when populated.",
+                "Appended records must not alter existing rows (the stop condition 'History would be overwritten' must never trigger)."
+            ]
+        },
+        {
+            "name": "Phase Plan",
+            "index": 7,
+            "purpose": "Approved phase execution order, dependencies, exit evidence, status and priorities. Governs the permitted execution sequence for development.",
+            "layout": "tabular-list",
+            "usedRange": "A1:I29",
+            "headerRow": 4,
+            "dataStartRow": 5,
+            "excelTable": null,
+            "governanceRole": "GOVERNANCE",
+            "uniqueKey": { "column": "A", "name": "Phase Step", "space": "PhaseStep" },
+            "columns": [
+                { "column": "A", "name": "Phase Step", "role": "identity", "required": true, "unique": true },
+                { "column": "B", "name": "Layer / Area", "role": "taxonomy", "required": false },
+                { "column": "C", "name": "Roadmap Link", "role": "identity", "required": false, "references": "RoadmapNode" },
+                { "column": "D", "name": "Objective", "role": "narrative", "required": false },
+                { "column": "E", "name": "Depends On", "role": "dependency", "required": false, "references": "PhaseStep" },
+                { "column": "F", "name": "Exit Evidence", "role": "verification", "required": false },
+                { "column": "G", "name": "Status", "role": "lifecycle", "required": true, "vocabulary": ["Planned", "In Progress", "Completed", "Superseded"] },
+                { "column": "H", "name": "Priority", "role": "governance", "required": false, "vocabulary": ["Critical", "High", "Medium"] },
+                { "column": "I", "name": "Notes", "role": "narrative", "required": false }
+            ],
+            "relationships": [
+                { "to": "Master Roadmap", "via": "Roadmap Link (C) -> Node ID (A)", "type": "EXECUTES" },
+                { "to": "Version History", "via": "Roadmap Link (C); phase status changes versioned through linked nodes", "type": "TRACKED_VIA" }
+            ],
+            "mandatoryReadConditions": [
+                "When determining permitted execution sequence: read all phase rows with Status In Progress or Planned, their Depends On chains, and their Exit Evidence."
+            ],
+            "relevanceRules": [
+                "Superseded phase rows are preserved and must not be executed; use only current/non-superseded rows.",
+                "Exit Evidence gates progression from one phase step to the next."
+            ],
+            "writeTriggers": [
+                "On approved phase completion: update Status to Completed and record Exit Evidence.",
+                "On approval of a new/revised phase: append or update the relevant row; superseded rows are marked Status=Superseded, never deleted.",
+                "Phase status changes must be recorded in Activity Log and, for linked nodes, Version History."
+            ],
+            "mutation": "UPDATE_AND_APPEND_HISTORY",
+            "appendUpdateBehavior": "Update existing non-superseded rows; mark superseded rows Status=Superseded and preserve them; append new phase steps when approved.",
+            "requiresHistory": true,
+            "requiresActivity": true,
+            "validationRequirements": [
+                "Phase Step must be unique (P<phase>-<step>).",
+                "Depends On must reference an existing Phase Step.",
+                "Roadmap Link must resolve to existing RoadmapNode IDs.",
+                "DevBridge must only execute current/non-superseded phase rows."
+            ]
+        },
+        {
+            "name": "Architecture Decisions",
+            "index": 8,
+            "purpose": "Approved architecture decision records (ADRs). Approved ADRs are authoritative architectural constraints. When implementation would contradict an approved ADR, preflight must stop with ARCHITECTURE CONFLICT.",
+            "layout": "tabular-list",
+            "usedRange": "A1:J9",
+            "headerRow": 4,
+            "dataStartRow": 5,
+            "excelTable": null,
+            "governanceRole": "GOVERNANCE",
+            "uniqueKey": { "column": "A", "name": "ADR ID", "space": "AdrId" },
+            "columns": [
+                { "column": "A", "name": "ADR ID", "role": "identity", "required": true, "unique": true },
+                { "column": "B", "name": "Date", "role": "timestamp", "required": false },
+                { "column": "C", "name": "Status", "role": "lifecycle", "required": true, "vocabulary": ["Approved", "Superseded", "Proposed"] },
+                { "column": "D", "name": "Decision", "role": "narrative", "required": true },
+                { "column": "E", "name": "Layer / Owner", "role": "ownership", "required": false },
+                { "column": "F", "name": "Roadmap Links", "role": "identity", "required": false, "references": "RoadmapNode" },
+                { "column": "G", "name": "Supersedes / Related", "role": "trace", "required": false, "references": "AdrId" },
+                { "column": "H", "name": "Reason", "role": "narrative", "required": false },
+                { "column": "I", "name": "Consequences", "role": "narrative", "required": false },
+                { "column": "J", "name": "Change ID", "role": "trace", "required": false, "references": "ChangeId" }
+            ],
+            "relationships": [
+                { "to": "Master Roadmap", "via": "Roadmap Links (F) -> Node ID (A)", "type": "CONSTRAINS" },
+                { "to": "Version History", "via": "Change ID (J); ADR / Decision Link (AJ)", "type": "CAUSED_BY" },
+                { "to": "Open Decisions", "via": "Open Decisions Resolution / ADR (J) -> ADR ID (A)", "type": "RESOLVES" },
+                { "to": "Active Changes", "via": "ADR ID (AA)", "type": "APPLIES_TO" }
+            ],
+            "mandatoryReadConditions": [
+                "Before any preflight: read all Approved ADRs whose Roadmap Links match the target node or whose scope overlaps the task's contracts/schema/architecture.",
+                "A contradiction with an approved ADR yields verdict ARCHITECTURE CONFLICT and preflight STOPS."
+            ],
+            "relevanceRules": [
+                "Relevant to every task that touches contracts, schema, layer ownership, or architecture. Always read when an implementation could conflict with an approved decision."
+            ],
+            "writeTriggers": [
+                "When a new architectural decision is approved: append a new ADR row and record its Change ID and Roadmap Links.",
+                "When an ADR is superseded: mark the old row Status=Superseded and reference it in the new ADR's Supersedes / Related.",
+                "ADR creation/changes must be recorded in Activity Log and Version History."
+            ],
+            "mutation": "APPEND_ONLY",
+            "appendUpdateBehavior": "Append new ADRs. Mark superseded ADRs (Status=Superseded) without deleting. Approved ADR rows are authoritative and not edited.",
+            "requiresHistory": true,
+            "requiresActivity": true,
+            "validationRequirements": [
+                "ADR ID must be unique and formatted ADR-NNN.",
+                "Roadmap Links must resolve to existing RoadmapNode IDs.",
+                "Preflight verdict must be ARCHITECTURE CONFLICT if implementation contradicts an approved ADR."
+            ]
+        },
+        {
+            "name": "Open Decisions",
+            "index": 9,
+            "purpose": "Registry of unresolved decisions that must not disappear between chats. DevBridge must check whether a task depends on or touches an unresolved decision; if an unresolved decision prevents safe implementation, preflight must stop.",
+            "layout": "tabular-list",
+            "usedRange": "A1:J8",
+            "headerRow": 4,
+            "dataStartRow": 5,
+            "excelTable": null,
+            "governanceRole": "GOVERNANCE",
+            "uniqueKey": { "column": "A", "name": "Decision ID", "space": "DecisionId" },
+            "columns": [
+                { "column": "A", "name": "Decision ID", "role": "identity", "required": true, "unique": true },
+                { "column": "B", "name": "Raised Date", "role": "timestamp", "required": false },
+                { "column": "C", "name": "Area", "role": "taxonomy", "required": false },
+                { "column": "D", "name": "Question / Decision Needed", "role": "narrative", "required": true },
+                { "column": "E", "name": "Roadmap Links", "role": "identity", "required": false, "references": "RoadmapNode" },
+                { "column": "F", "name": "Options / Constraints", "role": "narrative", "required": false },
+                { "column": "G", "name": "Needed Before", "role": "gate", "required": false },
+                { "column": "H", "name": "Owner", "role": "ownership", "required": false },
+                { "column": "I", "name": "Status", "role": "lifecycle", "required": true, "vocabulary": ["Open", "Decided"] },
+                { "column": "J", "name": "Resolution / ADR", "role": "trace", "required": false, "references": "AdrId | narrative" }
+            ],
+            "relationships": [
+                { "to": "Master Roadmap", "via": "Roadmap Links (E) -> Node ID (A)", "type": "AFFECTS" },
+                { "to": "Architecture Decisions", "via": "Resolution / ADR (J) -> ADR ID (A)", "type": "RESOLVED_BY" }
+            ],
+            "mandatoryReadConditions": [
+                "Before any task: read all rows with Status=Open whose Roadmap Links match the target node or whose Area overlaps the task scope.",
+                "If an unresolved decision prevents safe implementation, preflight must stop."
+            ],
+            "relevanceRules": [
+                "Relevant to every task that touches a node referenced by an open decision."
+            ],
+            "writeTriggers": [
+                "If the task/discussion resolves a decision: update Status to Decided and set Resolution / ADR; record the corresponding ADR relationship when a new ADR is created.",
+                "On discovery of a new unresolved decision: append a new Decision ID row (governance).",
+                "Decision changes must be recorded in Activity Log and, for linked nodes, Version History."
+            ],
+            "mutation": "UPDATE_AND_APPEND_HISTORY",
+            "appendUpdateBehavior": "Update existing decision rows (Status, Resolution / ADR) in place; append new decisions when raised; preserve all rows.",
+            "requiresHistory": true,
+            "requiresActivity": true,
+            "validationRequirements": [
+                "Decision ID must be unique and formatted DEC-NNN.",
+                "Roadmap Links must resolve to existing RoadmapNode IDs.",
+                "A Decided row should reference its resolution ADR when one applies."
+            ]
+        },
+        {
+            "name": "Dependencies & Blockers",
+            "index": 10,
+            "purpose": "Explicit machine-readable relationship graph of dependencies and blockers. Participates directly in task eligibility and preflight analysis. DevBridge must not rely only on textual dependency fields in Master Roadmap.",
+            "layout": "tabular-list",
+            "usedRange": "A1:J15",
+            "headerRow": 4,
+            "dataStartRow": 5,
+            "excelTable": null,
+            "governanceRole": "GOVERNANCE",
+            "uniqueKey": { "column": "A", "name": "Relation ID", "space": "RelationId" },
+            "columns": [
+                { "column": "A", "name": "Relation ID", "role": "identity", "required": true, "unique": true },
+                { "column": "B", "name": "From Node", "role": "identity", "required": true, "references": "RoadmapNode" },
+                { "column": "C", "name": "Depends On / Blocks", "role": "identity", "required": true, "references": "RoadmapNode" },
+                { "column": "D", "name": "Relation Type", "role": "taxonomy", "required": true, "vocabulary": ["Dependency", "Exit Gate Dependency", "External Blocker"] },
+                { "column": "E", "name": "Blocking?", "role": "governance", "required": true, "vocabulary": ["Yes", "No"] },
+                { "column": "F", "name": "Status", "role": "lifecycle", "required": true, "vocabulary": ["Open", "Resolved", "Satisfied"] },
+                { "column": "G", "name": "Reason / Condition", "role": "narrative", "required": false },
+                { "column": "H", "name": "Owner", "role": "ownership", "required": false },
+                { "column": "I", "name": "Source Change", "role": "trace", "required": false, "references": "ChangeId" },
+                { "column": "J", "name": "Notes", "role": "narrative", "required": false }
+            ],
+            "relationships": [
+                { "to": "Master Roadmap", "via": "From Node (B) / Depends On or Blocks (C) -> Node ID (A); the explicit graph is authoritative for eligibility", "type": "GRAPHS" },
+                { "to": "Active Changes", "via": "Source Change (I) -> Change ID (A)", "type": "ORIGINATED_BY" }
+            ],
+            "mandatoryReadConditions": [
+                "For every task eligibility and preflight analysis: read all relations involving the target node (as From Node or as Depends On / Blocks).",
+                "Resolve the transitive closure of Open/Blocking relations to detect blocked or blocking chains."
+            ],
+            "relevanceRules": [
+                "A relation with Status=Open and Blocking?=Yes that references the target node BLOCKS task eligibility until resolved/satisfied.",
+                "Exit Gate Dependency and External Blocker types constrain phase/gate progression."
+            ],
+            "writeTriggers": [
+                "When a dependency is discovered during planning: append a new Relation ID row.",
+                "When a dependency is satisfied/resolved: update Status to Satisfied/Resolved and note Source Change.",
+                "Relation changes must be recorded in Activity Log."
+            ],
+            "mutation": "UPDATE_AND_APPEND_HISTORY",
+            "appendUpdateBehavior": "Append new relations; update Status and Reason / Condition of existing relations; preserve all rows.",
+            "requiresHistory": false,
+            "requiresActivity": true,
+            "validationRequirements": [
+                "Relation ID must be unique and formatted REL-NNN.",
+                "From Node and Depends On / Blocks must resolve to existing RoadmapNode IDs.",
+                "Relation Type and Status must be from vocabulary.",
+                "The graph (not the textual Dependencies column) is authoritative for eligibility/preflight."
+            ]
+        },
+        {
+            "name": "Tool & Integration Registry",
+            "index": 11,
+            "purpose": "Approved tools/services, ownership, integration methods, current state, need, approval/safety requirements and target integration. DevBridge must consult this when a development task involves external tools or integrations and must not authorize a tool merely because an agent proposes it.",
+            "layout": "tabular-list",
+            "usedRange": "A1:J20",
+            "headerRow": 4,
+            "dataStartRow": 5,
+            "excelTable": null,
+            "governanceRole": "GOVERNANCE",
+            "uniqueKey": { "column": "A", "name": "Tool / Service", "space": "tool name" },
+            "columns": [
+                { "column": "A", "name": "Tool / Service", "role": "identity", "required": true, "unique": true },
+                { "column": "B", "name": "Category", "role": "taxonomy", "required": false },
+                { "column": "C", "name": "Primary Purpose", "role": "narrative", "required": false },
+                { "column": "D", "name": "Owning Layer", "role": "ownership", "required": false },
+                { "column": "E", "name": "Integration Method", "role": "integration", "required": false },
+                { "column": "F", "name": "Current State", "role": "lifecycle", "required": false, "vocabulary": ["Active", "Existing / evolving", "Existing externally", "External today", "Local setup in progress", "Local SQL + Azure direction", "Source available"] },
+                { "column": "G", "name": "Phase 1 Need", "role": "governance", "required": false, "vocabulary": ["Required", "Useful", "Optional"] },
+                { "column": "H", "name": "Approval / Safety", "role": "governance", "required": false },
+                { "column": "I", "name": "Developer Chat Target", "role": "integration", "required": false },
+                { "column": "J", "name": "Notes", "role": "narrative", "required": false }
+            ],
+            "relationships": [
+                { "to": "Architecture Decisions", "via": "Approved model/tool path constraints (ADR-referenced integration patterns)", "type": "CONSTRAINED_BY" },
+                { "to": "Master Roadmap", "via": "nodes referencing tool capabilities (e.g., model gateway work items)", "type": "SUPPORTS" }
+            ],
+            "mandatoryReadConditions": [
+                "When a development task involves external tools/services or integrations: read the registry rows for those tools, their Approval / Safety, Current State, and Integration Method."
+            ],
+            "relevanceRules": [
+                "A tool not listed or listed with an unmet approval/safety requirement must NOT be authorized by DevBridge; route to human governance.",
+                "Prefer reuse of tools already listed as Existing/Active over introducing new ones."
+            ],
+            "writeTriggers": [
+                "When a tool/service is approved or its state changes: update Current State, Approval / Safety, and Notes.",
+                "When a genuinely new tool/integration is approved: append a new row (governance decision required).",
+                "Registry changes must be recorded in Activity Log."
+            ],
+            "mutation": "UPDATE_AND_APPEND_HISTORY",
+            "appendUpdateBehavior": "Update existing tool rows (Current State, Approval / Safety, Notes); append new rows only after governance approval; preserve all rows.",
+            "requiresHistory": false,
+            "requiresActivity": true,
+            "validationRequirements": [
+                "Tool / Service names are unique.",
+                "DevBridge must not authorize a tool unless it is listed with satisfied Approval / Safety requirements."
+            ]
+        },
+        {
+            "name": "Activity Log",
+            "index": 12,
+            "purpose": "Append-only event log of what actually happened during development. Records every governed operation with actor, change, entity, row versions, before/after values, preflight verdict, result, evidence, error, duration and human review status. Never delete historical activities.",
+            "layout": "dashboard",
+            "usedRange": "A1:AH52",
+            "headerRow": 4,
+            "dataStartRow": 5,
+            "excelTable": null,
+            "governanceRole": "APPEND_ONLY",
+            "uniqueKey": { "column": "A", "name": "Activity ID", "space": "ActivityId" },
+            "columns": [
+                { "column": "A", "name": "Activity ID", "role": "identity", "required": true, "unique": true },
+                { "column": "B", "name": "Timestamp UTC", "role": "timestamp", "required": true },
+                { "column": "C", "name": "Actor Type", "role": "ownership", "required": false, "vocabulary": ["Agent", "Human", "System"] },
+                { "column": "D", "name": "Actor ID", "role": "ownership", "required": false },
+                { "column": "E", "name": "Actor Name", "role": "ownership", "required": false },
+                { "column": "F", "name": "Source", "role": "provenance", "required": false },
+                { "column": "G", "name": "Chat Platform", "role": "provenance", "required": false },
+                { "column": "H", "name": "Chat/Session ID", "role": "trace", "required": false },
+                { "column": "I", "name": "Prompt ID", "role": "trace", "required": false },
+                { "column": "J", "name": "Change ID", "role": "trace", "required": false, "references": "ChangeId" },
+                { "column": "K", "name": "Correlation ID", "role": "trace", "required": false },
+                { "column": "L", "name": "Operation", "role": "taxonomy", "required": true },
+                { "column": "M", "name": "Entity Type", "role": "taxonomy", "required": false },
+                { "column": "N", "name": "Entity ID", "role": "identity", "required": false },
+                { "column": "O", "name": "Parent ID", "role": "identity-hierarchy", "required": false },
+                { "column": "P", "name": "Expected RowVersion", "role": "version", "required": false },
+                { "column": "Q", "name": "Previous RowVersion", "role": "version", "required": false },
+                { "column": "R", "name": "New RowVersion", "role": "version", "required": false },
+                { "column": "S", "name": "Before Value", "role": "verification", "required": false },
+                { "column": "T", "name": "After Value", "role": "verification", "required": false },
+                { "column": "U", "name": "Reason", "role": "narrative", "required": false },
+                { "column": "V", "name": "Repository", "role": "scope", "required": false },
+                { "column": "W", "name": "Project", "role": "scope", "required": false },
+                { "column": "X", "name": "Branch", "role": "scope", "required": false },
+                { "column": "Y", "name": "Worktree", "role": "scope", "required": false },
+                { "column": "Z", "name": "Files/Globs", "role": "scope", "required": false },
+                { "column": "AA", "name": "Preflight Verdict", "role": "preflight", "required": false, "vocabulary": ["CLEAR", "DEPENDENCY FOUND", "OVERLAP FOUND", "CONFLICT FOUND", "ARCHITECTURE CONFLICT"] },
+                { "column": "AB", "name": "Result", "role": "verification", "required": false },
+                { "column": "AC", "name": "Evidence", "role": "verification", "required": false },
+                { "column": "AD", "name": "Error Code", "role": "verification", "required": false },
+                { "column": "AE", "name": "Error Message", "role": "verification", "required": false },
+                { "column": "AF", "name": "Duration", "role": "timestamp", "required": false },
+                { "column": "AG", "name": "Human Review Status", "role": "governance", "required": false, "vocabulary": ["Not Reviewed", "Approved", "Rejected"] },
+                { "column": "AH", "name": "Created At", "role": "timestamp", "required": false }
+            ],
+            "relationships": [
+                { "to": "Active Changes", "via": "Change ID (J) <-> Change ID (A)", "type": "EVENTS" },
+                { "to": "Version History", "via": "Change ID (J); record versions captured in P/Q/R columns", "type": "EVIDENCES" },
+                { "to": "Master Roadmap", "via": "Entity Type/Entity ID referencing RoadmapNode", "type": "TRACES" },
+                { "to": "Control Center", "via": "narrative changelog and summary events", "type": "FEEDS" }
+            ],
+            "mandatoryReadConditions": [
+                "Always read recent rows (and rows correlated by Change ID / Session) when verifying what actually happened, especially before accepting a completion.",
+                "Read the Human Review Status and Result to confirm an operation was reviewed."
+            ],
+            "relevanceRules": [
+                "Relevant to every completion, verification, and traceability requirement. DevBridge appends an activity record for every governed operation it performs."
+            ],
+            "writeTriggers": [
+                "On every governed operation: append an Activity ID row recording operation, entity, change, before/after values, preflight verdict, result, evidence, duration, actor.",
+                "On end of chat: append an activity record (Session Protocol 'End of chat').",
+                "Never delete, edit, or rewrite existing activity rows."
+            ],
+            "mutation": "APPEND_ONLY",
+            "appendUpdateBehavior": "Append new rows only. NEVER delete or update existing activity records.",
+            "requiresHistory": false,
+            "requiresActivity": true,
+            "validationRequirements": [
+                "Activity ID must be unique and formatted ACT-YYYYMMDD-NNN.",
+                "Timestamp UTC must be recorded.",
+                "Change ID must resolve when populated.",
+                "New RowVersion must be recorded for governed writes to support traceability."
+            ],
+            "notes": [
+                "The sheet was migrated to 34 columns in workbook v3.26 (was 11); prior rows preserved with zero data loss.",
+                "DevBridge must append its own activity records on every governed write."
+            ]
+        },
+        {
+            "name": "Development Guide",
+            "index": 13,
+            "purpose": "Milestone-level plain-English planning fields. Mirrors Master Roadmap milestones for simple planning. DevBridge must keep it aligned with Master Roadmap when milestone status/evidence/next step changes.",
+            "layout": "tabular-list",
+            "usedRange": "A1:K164",
+            "headerRow": 4,
+            "dataStartRow": 5,
+            "excelTable": null,
+            "governanceRole": "REFERENCE",
+            "uniqueKey": { "column": "C", "name": "Milestone ID", "space": "RoadmapNode (Milestone type)" },
+            "columns": [
+                { "column": "A", "name": "Phase", "role": "taxonomy", "required": false, "vocabulary": ["P0", "P1", "P2", "P3", "P4", "P5"] },
+                { "column": "B", "name": "Layer", "role": "taxonomy", "required": false },
+                { "column": "C", "name": "Milestone ID", "role": "identity", "required": true, "unique": true, "references": "RoadmapNode" },
+                { "column": "D", "name": "Milestone", "role": "naming", "required": true },
+                { "column": "E", "name": "In Plain Words", "role": "narrative", "required": false },
+                { "column": "F", "name": "Status", "role": "lifecycle", "required": true, "vocabulary": ["Planned", "In Progress", "Implemented - Verify", "Complete", "Completed"] },
+                { "column": "G", "name": "Progress %", "role": "progress", "required": false },
+                { "column": "H", "name": "What Exists Now", "role": "narrative", "required": false },
+                { "column": "I", "name": "Next Step", "role": "narrative", "required": false },
+                { "column": "J", "name": "Depends On", "role": "dependency", "required": false, "references": "RoadmapNode" },
+                { "column": "K", "name": "Gate", "role": "gate", "required": false }
+            ],
+            "relationships": [
+                { "to": "Master Roadmap", "via": "Milestone ID (C) <-> Node ID (A) for Milestone-type nodes; Status/Progress/Next Step must stay aligned", "type": "MIRRORS" },
+                { "to": "Dependencies & Blockers", "via": "Depends On (J) aligning with explicit graph", "type": "ALIGNS_WITH" }
+            ],
+            "mandatoryReadConditions": [
+                "When preparing task context: read the relevant milestone rows to obtain plain-English planning guidance.",
+                "Before writing: confirm Milestone ID matches an existing Master Roadmap Milestone node."
+            ],
+            "relevanceRules": [
+                "Relevant to every task-context generation and to milestone planning. Master Roadmap remains authoritative for detail; the Guide is the simple planning view."
+            ],
+            "writeTriggers": [
+                "When a milestone's status, evidence, or next step changes on Master Roadmap: update the matching Development Guide row (Status, Progress %, What Exists Now, Next Step).",
+                "Guide changes must be recorded in Activity Log."
+            ],
+            "mutation": "UPDATE_EXISTING",
+            "appendUpdateBehavior": "Update existing milestone rows in place to mirror Master Roadmap. Append new rows when a new milestone is created.",
+            "requiresHistory": false,
+            "requiresActivity": true,
+            "validationRequirements": [
+                "Milestone ID must reference an existing Milestone Node ID on Master Roadmap.",
+                "Status/Progress/Next Step must not contradict Master Roadmap current state."
+            ]
+        },
+        {
+            "name": "Existing Assets",
+            "index": 14,
+            "purpose": "Registry of existing capabilities and what remains missing. Must be included in task-context generation so ChatGPT/DeepSeek are instructed to REUSE existing working assets rather than rebuild them.",
+            "layout": "tabular-list",
+            "usedRange": "A1:F15",
+            "headerRow": 4,
+            "dataStartRow": 5,
+            "excelTable": null,
+            "governanceRole": "REFERENCE",
+            "uniqueKey": { "column": "A", "name": "Area", "space": "area name" },
+            "columns": [
+                { "column": "A", "name": "Area", "role": "identity", "required": true, "unique": true },
+                { "column": "B", "name": "What Already Exists", "role": "narrative", "required": false },
+                { "column": "C", "name": "Repository / Files", "role": "scope", "required": false },
+                { "column": "D", "name": "Roadmap Meaning", "role": "narrative", "required": false },
+                { "column": "E", "name": "State", "role": "lifecycle", "required": false, "vocabulary": ["Existing", "Working", "Working foundation", "Working prototype", "Contract only", "Stub", "Source available", "Implemented - Verify"] },
+                { "column": "F", "name": "What Is Still Missing", "role": "narrative", "required": false }
+            ],
+            "relationships": [
+                { "to": "Master Roadmap", "via": "Roadmap Meaning (D) describing node relevance", "type": "SUPPORTS" },
+                { "to": "Tool & Integration Registry", "via": "tool capabilities referenced in Repository / Files", "type": "ALIGNS_WITH" }
+            ],
+            "mandatoryReadConditions": [
+                "Always read this registry when generating task context: it tells ChatGPT/DeepSeek which working assets to REUSE rather than rebuild."
+            ],
+            "relevanceRules": [
+                "Relevant to every task-context generation. Reuse existing assets unless the task explicitly replaces them."
+            ],
+            "writeTriggers": [
+                "If an implementation materially creates, replaces, or invalidates an existing-asset record: update the row (or append a new Area) after governance approval.",
+                "Asset changes must be recorded in Activity Log."
+            ],
+            "mutation": "UPDATE_AND_APPEND_HISTORY",
+            "appendUpdateBehavior": "Update existing asset rows (What Already Exists, State, What Is Still Missing); append new Area rows when a new capability is established; preserve all rows.",
+            "requiresHistory": false,
+            "requiresActivity": true,
+            "validationRequirements": [
+                "Area must be unique.",
+                "State must be from the observed vocabulary.",
+                "Task-context generation MUST include relevant Existing Assets rows to force reuse."
+            ]
+        }
+    ],
+
+    "relationshipModel": {
+        "nodeId": {
+            "definition": "RoadmapNode identity. Produced by Master Roadmap A. Referenced by Master Roadmap (B Parent ID, J Dependencies), Version History (A, B), Active Changes (B, AB), Audit Findings (H), Phase Plan (C), Architecture Decisions (F), Open Decisions (E), Dependencies & Blockers (B, C), Development Guide (C).",
+            "consistencyRule": "A reference that resolves to no existing Node ID is a staleness defect; preflight must flag it (observed: resolved 92-100% across sheets; Dependencies & Blockers C and Phase Plan C resolve below threshold -> flagged in unresolved)."
+        },
+        "changeId": {
+            "definition": "Change identity. Produced by Active Changes A. Referenced by Version History AD, Activity Log J, Architecture Decisions J, Dependencies & Blockers I, Active Changes O.",
+            "consistencyRule": "Version History Change ID and Activity Log Change ID resolve at 100% and 99-100% to Active Changes."
+        },
+        "adrId": {
+            "definition": "ADR identity. Produced by Architecture Decisions A. Referenced by Open Decisions J, Active Changes AA, Version History AJ.",
+            "consistencyRule": "Resolution / ADR references to ADR IDs resolve partially (observed 2%); free-form narrative references are common."
+        },
+        "decisionId": {
+            "definition": "Decision identity. Produced by Open Decisions A.",
+            "consistencyRule": "Uniqueness within Open Decisions only."
+        },
+        "activityId": {
+            "definition": "Activity identity. Produced by Activity Log A.",
+            "consistencyRule": "Uniqueness within Activity Log only."
+        },
+        "findingId": {
+            "definition": "Finding identity. Produced by Audit Findings A.",
+            "consistencyRule": "Uniqueness within Audit Findings only."
+        },
+        "relationId": {
+            "definition": "Relation identity. Produced by Dependencies & Blockers A.",
+            "consistencyRule": "Uniqueness within Dependencies & Blockers only."
+        },
+        "milestoneId": {
+            "definition": "Milestone identity. Produced by Master Roadmap A for Milestone-type nodes. Development Guide C must equal a Milestone Node ID.",
+            "consistencyRule": "Development Guide Milestone ID resolves 100% to Master Roadmap Node ID (CONFIRMED)."
+        },
+        "phaseStep": {
+            "definition": "Phase-plan step identity. Produced by Phase Plan A. Depends On (E) references other Phase Step values.",
+            "consistencyRule": "Uniqueness within Phase Plan only."
+        },
+        "versionRecord": {
+            "definition": "Version record identity. Produced by Version History (Node ID A + Record Version AA). Is Current=Yes marks the latest.",
+            "consistencyRule": "The current-state row on Master Roadmap must match the Is Current=Yes Version History record for each Node ID."
+        },
+        "governanceFlows": {
+            "definition": "The governing dependency flow of the workbook.",
+            "diagram": [
+                "Session Protocol GOVERNS all sheets.",
+                "Control Center SUMMARIZES Master Roadmap, Active Changes, Version History.",
+                "Master Roadmap CURRENT_STATE_OF Version History (which ARCHIVES it).",
+                "Active Changes RESERVES Master Roadmap nodes; RELEASES_RECORDS to Version History; EVENTED_BY Activity Log.",
+                "Dependencies & Blockers GRAPHS Master Roadmap nodes (authoritative over textual Dependencies).",
+                "Architecture Decisions CONSTRAINS Master Roadmap nodes; RESOLVES Open Decisions.",
+                "Open Decisions AFFECTS Master Roadmap nodes; RESOLVED_BY Architecture Decisions.",
+                "Audit Findings TARGETS Master Roadmap nodes.",
+                "Phase Plan EXECUTES Master Roadmap nodes.",
+                "Development Guide MIRRORS Milestone nodes on Master Roadmap.",
+                "Existing Assets SUPPORTS Master Roadmap node implementation context.",
+                "Activity Log EVIDENCES Active Changes, Version History, and all governed writes."
+            ]
+        }
+    },
+
+    "sessionProtocol": {
+        "summary": "Executable governance extracted from the Session Protocol sheet. DevBridge must follow these steps in order for every task.",
+        "phases": {
+            "preImplementation": {
+                "header": "PRE-IMPLEMENTATION - no file edit is permitted before Step 7",
+                "steps": "1-7",
+                "details": "See sheet record 'Session Protocol'.steps.preImplementation"
+            },
+            "implementationAndCompletion": {
+                "header": "IMPLEMENTATION AND COMPLETION",
+                "steps": "8-14",
+                "details": "See sheet record 'Session Protocol'.steps.implementation and steps.completionSubStep"
+            },
+            "appendOnlyVersionRules": {
+                "header": "APPEND-ONLY VERSION RULES",
+                "rules": [
+                    "Never delete",
+                    "Current roadmap only",
+                    "Change a governed fact",
+                    "Concept changes count",
+                    "Progress honesty",
+                    "End of chat"
+                ],
+                "details": "See sheet record 'Session Protocol'.appendOnlyRules"
+            }
+        },
+        "verdicts": ["CLEAR", "DEPENDENCY FOUND", "OVERLAP FOUND", "CONFLICT FOUND", "ARCHITECTURE CONFLICT"],
+        "hardStops": [
+            "Missing mandatory document",
+            "Node missing or multiple current versions",
+            "Ledger unavailable or stale",
+            "Any scope field still unknown",
+            "Analysis cannot be computed",
+            "Verdict CONFLICT or ARCHITECTURE CONFLICT",
+            "Reservation not recorded",
+            "Unreserved overlap appears",
+            "Required verification is red or unavailable",
+            "No human review",
+            "Integration turns red",
+            "Result not recorded",
+            "History would be overwritten",
+            "Mandatory docs remain stale"
+        ]
+    },
+
+    "preflight": {
+        "definition": "The deterministic gate DevBridge runs before selecting and before executing any task. It operationalizes Session Protocol steps 1-7.",
+        "readSet": [
+            "Session Protocol (always)",
+            "Master Roadmap target node + ancestry + explicit dependencies (always)",
+            "Active Changes open reservations (always)",
+            "Architecture Decisions Approved ADRs touching scope (always when scope touches contracts/schema/architecture)",
+            "Open Decisions Open rows touching scope (always)",
+            "Dependencies & Blockers relations on target node (always)",
+            "Audit Findings linked to target node (always)",
+            "Control Center current version/state (always)",
+            "Version History Is Current=Yes confirmation (when verifying current state)",
+            "Phase Plan permitted sequence (when determining execution order)",
+            "Development Guide milestone guidance (for context)",
+            "Existing Assets reuse instructions (for context)",
+            "Tool & Integration Registry (when task involves external tools)",
+            "Activity Log correlation (when verifying prior operations)"
+        ],
+        "eligibilityRules": [
+            "The target node must be found in Master Roadmap and have exactly one current state (no 'multiple current versions').",
+            "No open (non-Completed/Cancelled) Active Changes reservation may target the same node, overlapping files/globs, shared schema mutation, shared contract mutation, or dual-high-risk work.",
+            "No Open Blocking relation in Dependencies & Blockers may reference the target node (resolve the transitive closure).",
+            "No Approved ADR may be contradicted by the proposed implementation (else verdict ARCHITECTURE CONFLICT).",
+            "No Open decision that prevents safe implementation may touch the scope.",
+            "Required build/test commands must be known and green-capable.",
+            "A reservation row must be appended to Active Changes BEFORE editing (Step 7)."
+        ],
+        "verdicts": ["CLEAR", "DEPENDENCY FOUND", "OVERLAP FOUND", "CONFLICT FOUND", "ARCHITECTURE CONFLICT"],
+        "caveats": [
+            "Control Center manual summary values are not trusted; counts are recomputed from source sheets.",
+            "Master Roadmap governed range is the full structurally valid set A6:AG675 (659 records), including the 34 records beyond the formal Excel table (A5:AG630); the Excel table boundary is metadata, not the governance boundary (corrected in DB-M02.1).",
+            "Active Changes columns Z:AD and the Z:AD fields are sparsely populated; treat as advisory, not required.",
+            "Identifier linkage is by naming convention; DevBridge validates every reference by value matching."
+        ],
+        "safeForAutomatedPreflight": true
+    },
+
+    "unresolved": [
+        {
+            "item": "Master Roadmap Column1 / Column2 / Column3 (AE:AG)",
+            "detail": "Present in the MasterRoadmapTable schema but observed empty. Purpose unknown.",
+            "impact": "Low. Does not block preflight; treat as unmapped until populated."
+        },
+        {
+            "item": "Master Roadmap rows beyond the Excel table (A5:AG630 vs A1:AG675) - RESOLVED in DB-M02.1",
+            "detail": "The 34 rows below the table end (631-675) are structurally valid governed RoadmapNode records, appended under ADR-005 (2026-08-26) without extending the Excel table. Verified by structural scan and cross-sheet reference: they carry Node ID, Parent ID, Sort Key, Hierarchy Path, Status, Current Evidence, Next Action and are referenced by Active Changes reservations, Version History records and ADR-005.",
+            "impact": "RESOLVED: governedDataRange is now the full structurally valid set A6:AG675 (659 records); the Excel table boundary is metadata, not the governance boundary. No workbook change was made."
+        },
+        {
+            "item": "Active Changes columns Z:AD outside the Excel table (A5:Y8)",
+            "detail": "Version History ID, ADR ID, Affected Nodes, Change Type, Validation Result exist as sheet columns but are not part of ActiveChangesTable. Sparse population.",
+            "impact": "Advisory fields. Does not block preflight."
+        },
+        {
+            "item": "Control Center manual summary drift",
+            "detail": "Manual values are stale relative to source sheets (observed: Workbook version 1.8 vs narrative v3.26; Roadmap nodes 624 vs 659 actual).",
+            "impact": "DevBridge must recompute rather than trust. Identified as a governance gap to surface, not a blocker."
+        },
+        {
+            "item": "Identifier linkage by naming convention only",
+            "detail": "No defined names, data validations or enforced foreign keys exist; cross-sheet references are conventions.",
+            "impact": "DevBridge validates every reference by value matching (as done in DB-M01). Acceptable for automated preflight."
+        },
+        {
+            "item": "Active Changes Status is free-form narrative",
+            "detail": "The Status column carries descriptive text rather than a closed vocabulary; DevBridge must classify by leading keyword (Completed/Cancelled/Blocked/In Progress/Open).",
+            "impact": "Classification rule defined in the map. Low risk; flagged for human governance."
+        },
+        {
+            "item": "Status vocabulary split (Complete vs Completed)",
+            "detail": "Master Roadmap current state uses both Complete and Completed as observed values.",
+            "impact": "DevBridge treats them as equivalent for eligibility; flagged for human normalization."
+        },
+        {
+            "item": "Version History versioning semantics",
+            "detail": "Is Current / Supersedes Version resolution is now defined by Session Protocol append rules, but the full formal resolution rule is not written as a closed algorithm in the workbook.",
+            "impact": "DevBridge uses Record Version + Is Current + Supersedes Version chain; ADR-003 confirms Master Roadmap holds current state. Safe for preflight."
+        },
+        {
+            "item": "Activity Log row 3 is blank in the schema profile",
+            "detail": "The Human Review Status profile shows 0 distinct; review status is sparsely populated on existing rows.",
+            "impact": "DevBridge populates Human Review Status on every appended activity record; existing sparse values do not block."
+        }
+    ],
+
+    "conclusions": {
+        "canonicalReadPath": "Session Protocol -> Control Center -> Master Roadmap (target) -> Active Changes (ledger) -> Dependencies & Blockers (graph) -> Architecture Decisions + Open Decisions (constraints) -> Audit Findings (obligations) -> Version History (confirmation) -> Development Guide + Existing Assets + Tool & Integration Registry (context) -> Activity Log (trace).",
+        "canonicalWritePath": "Reserve in Active Changes (Step 7) -> implement -> verify (Step 9) -> human review (Step 10) -> integrate (Step 11) -> complete Active Changes row (Step 12) -> append Activity Log (Step 13) -> append Version History + update Master Roadmap (Step 14) -> update ADR/Open Decisions and CURRENT_STATE docs (14b) -> reconcile Control Center summary + Development Guide.",
+        "governanceRoles": {
+            "PROTOCOL": ["Session Protocol"],
+            "CURRENT_STATE": ["Master Roadmap"],
+            "APPEND_ONLY": ["Version History", "Activity Log"],
+            "GOVERNANCE": ["Active Changes", "Audit Findings", "Phase Plan", "Architecture Decisions", "Open Decisions", "Dependencies & Blockers", "Tool & Integration Registry"],
+            "REFERENCE": ["Development Guide", "Existing Assets"],
+            "DERIVED_SUMMARY": ["Control Center"]
+        },
+        "writeTargetsSummary": {
+            "NONE": ["Session Protocol"],
+            "APPEND_ONLY": ["Version History", "Activity Log", "Active Changes", "Architecture Decisions"],
+            "UPDATE_EXISTING": ["Master Roadmap", "Control Center", "Development Guide"],
+            "UPDATE_AND_APPEND_HISTORY": ["Audit Findings", "Phase Plan", "Open Decisions", "Dependencies & Blockers", "Tool & Integration Registry", "Existing Assets"]
+        }
+    },
+
+    "mappingReady": true,
+    "mappingReadyCriteria": {
+        "all14SheetsMapped": true,
+        "masterRoadmapIdentityMapped": true,
+        "activeChangesScopeReservationMapped": true,
+        "sessionProtocolUnderstood": true,
+        "versionHistoryAppendRulesMapped": true,
+        "dependenciesAndBlockersMapped": true,
+        "adrOpenDecisionRelationshipsMapped": true,
+        "activityLogSchemaMapped": true,
+        "developmentGuideRelationshipMapped": true,
+        "noUnresolvedIssuePreventsSafePreflight": true,
+        "evidence": "All 14 worksheets are mapped with purpose, header row, data start row, columns, unique key, relationships, governance role, read obligations, write triggers, mutation type and validation requirements. The Session Protocol was extracted in full (14 steps + 6 append-only rules). Cross-sheet references were validated by value matching in DB-M01 (workbook-schema.json). DB-M02.1 (2026-08-30) extended Master Roadmap governance to the full structurally valid used range A6:AG675 (659 records), resolving DB-G02 critical issue C-1; the formal Excel table boundary is metadata, not the governance boundary. Preflight can safely drive task selection under the documented caveats."
+    }
+}

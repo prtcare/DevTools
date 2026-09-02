@@ -1,0 +1,80 @@
+﻿{
+  "Milestone": "DB-M24",
+  "Title": "Model Performance Intelligence Foundation",
+  "Lane": "B1",
+  "DateUtc": "2026-08-30T18:26:36Z",
+  "Implementation": "PASS",
+  "Summary": "Descriptive + recommendation-only performance intelligence computed from DB-M17 attempt history. ModelPerformanceSummary/ModelComparison/PerformanceRecommendation/PerformanceQuery v1 frozen. Verified-success semantics (VERIFIED vs MODEL_RETURNED vs VERIFIED_PREFERRED, verification contradicting a PASS claim never counts), first-attempt success, attempt-chain reconstruction (retry/escalation/provider-failover/human-intervention), cost-per-successful-task includes failed attempts (1+1+4 = 6), ActualCost preferred over labelled EstimatedCost fallback, common-currency reuse (never re-converts historic INR), provider-vs-model-quality failure separation, configurable confidence bands, 7/30/90-day + custom UTC windows, dimension filters/group-by, ranked (never winner-selecting) comparison, non-binding recommendation evidence with PolicyVersion 0.0.0 and zero policy mutation. No database; cache designed-not-implemented. No AI/paid/network calls, zero credentials.",
+  "ModelPerformanceSummaryV1": "PASS",
+  "ModelComparisonV1": "PASS",
+  "PerformanceRecommendationV1": "PASS",
+  "PerformanceQueryV1": "PASS",
+  "VerifiedSuccessSemantics": "PASS",
+  "FirstAttemptSuccess": "PASS",
+  "CostPerSuccessfulTaskIncludesFailed": "PASS",
+  "FailureCategorySeparation": "PASS",
+  "TaskTypeAnalytics": "PASS",
+  "ReasoningLevelAnalytics": "PASS",
+  "ProviderRouteAnalytics": "PASS",
+  "ConfidenceSampleHandling": "PASS",
+  "CurrencyNormalization": "PASS",
+  "AttemptChains": "PASS",
+  "TimeWindows": "PASS",
+  "OutlierPolicy": "PASS",
+  "SchemaV1RoundTrip": "PASS",
+  "Tests": {
+    "Passed": 128,
+    "Failed": 0,
+    "Total": 128,
+    "Scenarios": 34,
+    "ScenarioCount": "34/34",
+    "PaidApiCalls": 0,
+    "NetworkCalls": 0,
+    "Note": "34 required scenarios (zero attempts; one success; one failure; 100-attempt mixed; first-attempt success; retry then success; multiple retries; model escalation; provider failover; human intervention; model-quality failure; provider outage; rate limit; build failure; test failure; cost-per-success includes failed attempts; actual-cost preferred; estimated fallback labelled; missing-cost excluded; average/median/P95 duration; task-type/complexity/risk/reasoning-level filters; 7/30-day + custom ranges; low/high confidence; underlying model via two providers; no automatic policy mutation; schema v1 round-trip) + safety scan (no network / credential tokens)."
+  },
+  "Regressions": {
+    "DBM14": "51/51 PASS",
+    "DBM15": "71/71 PASS",
+    "DBM16": "167/167 PASS",
+    "DBM17": "99/99 PASS"
+  },
+  "FilesCreated": [
+    "config/performance/confidence-bands.json",
+    "scripts/ai-routing/performance/AiPerformanceContracts.ps1",
+    "scripts/ai-routing/performance/ModelPerformance.ps1",
+    "scripts/ai-routing/performance/AiPerformanceFoundation.ps1",
+    "scripts/ai-routing/performance/Test-AiModelPerformance.ps1",
+    "design/ai-routing/DB-M24_MODEL_PERFORMANCE.md",
+    "design/ai-routing/DB-M24_RECOMMENDATION_EVIDENCE.md",
+    "state/db-m24-result.json"
+  ],
+  "FilesModified": [],
+  "AutomaticRoutingChanges": "NO",
+  "PolicyVersion": "0.0.0",
+  "AI_APICalls": 0,
+  "DBM18Overlap": {
+    "Overlap": "NONE",
+    "Details": "ContextPackage.ps1, TaskClassification.ps1 (DB-M18-owned) untouched. DB-M24 does not read classification outputs; DB-M19 wiring waits for DB-M18."
+  },
+  "DBM16Overlap": {
+    "Overlap": "NONE",
+    "Details": "DB-M16 cost/FX files (AiCostContracts.ps1, AiExchangeRates.ps1, CostCalculator.ps1, config/cost, config/currency) untouched; stored cost fields consumed read-only, no pricing recalculated."
+  },
+  "DBM17Overlap": {
+    "Overlap": "NONE",
+    "Details": "AttemptStore.ps1 and Test-AttemptStore.ps1 untouched; attempt history consumed read-only. No synthetic attempts written into live history."
+  },
+  "DBM12Overlap": {
+    "Overlap": "NONE",
+    "Details": "src/DevBridge.* (DB-M12-owned) untouched."
+  },
+  "LaneCOverlap": {
+    "Overlap": "NONE",
+    "Details": "Lane C WI-07-0.2.4 (state/current-task.json, workbook backups, logs) untouched; config/ai-routing.json hash verified unchanged by the no-policy-mutation test."
+  },
+  "WorkbookModified": "NO",
+  "NexusRepositoriesModified": "NO",
+  "DBM25FoundationReady": "YES",
+  "NotesForDBM25": "Performance summaries expose all component metrics DB-M25 needs (success/failure, retry burden via AverageAttemptsPerSuccessfulTask, cost-per-success, durations) with transparent per-route statistics; verified-success and failure-separation rules are already established. DB-M25's quality-adjusted savings, baseline comparison, and savings calculation remain to be implemented by that milestone."
+}
+

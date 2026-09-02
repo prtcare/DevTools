@@ -1,0 +1,58 @@
+﻿== Group A: overlay unit qualification ==
+  [PASS] A1 overlay qualifies preserved trial evidence (TRIAL_DEPENDENCY_SATISFIED)
+  [PASS] A1 provenance is truthful: realStatus Planned, realNexusCompletion false, overlay TRIAL_DEPENDENCY_SATISFIED
+  [PASS] A1 provenance carries M06 + M08 chained evidence (capability 5)
+  [PASS] A2 no closure entry -> NO_TRIAL_HISTORY, not satisfied
+  [PASS] A3 REAL mode -> NOT_TRIAL_MODE, overlay ignored
+  [PASS] A4 missing evidence dir -> honest DEPENDENCY_CONTEXT_STALE block
+  [PASS] A5 M08 decision FIX -> TRIAL_DEPENDENCY_EVIDENCE_INVALID honest block (capability 6)
+  [PASS] A6 DB-M18.1 DEPENDENCY_CONTEXT_STALE context -> block
+  [PASS] A7 config-disabled overlay -> OVERLAY_DISABLED (capability 12)
+== Group B: M03 selection engine ==
+  [PASS] B8 overlay qualifies -> WI-07-0.2.5 SELECTED (dependency satisfied by trial-proven predecessor)
+  [PASS] B8 selection basis truthfully records the trial-proven overlay (capability 4)
+  [PASS] B9 sparse evidence -> NO_IMPLEMENTABLE_DESCENDANT honest block (never fake satisfaction)
+  [PASS] B10 REAL mode -> WI-07-0.2.4 re-selected (real status authoritative, overlay ignored)
+  [PASS] B11 invalid evidence -> NO_IMPLEMENTABLE_DESCENDANT with honest overlay note
+  [PASS] B12 env-disabled overlay -> NO_IMPLEMENTABLE_DESCENDANT (pre-DB-M03.2 behavior)
+  [PASS] B13 basis names predecessor WI-07-0.2.4 and its real status (capability 1/2)
+== Group C: preflight / M04 / M05 / M07 integration ==
+  [PASS] C14 overlay-qualified preflight CLEAR on WI-07-0.2.5 (IMPLEMENTABLE_LEAF / RESERVE)
+  [PASS] C14 preflight dependency state = TRIAL_DEPENDENCY_SATISFIED (real status Planned preserved)
+  [PASS] C14 leafValidation dependencies PASS with trial-overlay detail
+  [PASS] C15 sparse evidence preflight -> NO_IMPLEMENTABLE_DESCENDANT (honest block, not CLEAR)
+  [PASS] C16 M04 reserve passes with trial-proven predecessor (capability 9)
+  [PASS] C17 M04 honest STOP_PREFLIGHT_STALE on stale trial evidence (capability 6)
+  [FAIL] C18 M05 handoff generates (real outcome, not stale-stop) - got NO_MARKER :: DB05_STATE: RESERVED / CHATGPT_HANDOFF ; DB05_HANDOFF_GATE: READY ; DB05_HANDOFF_WRITTEN: C:\Personal\DevTools\DevBridge\logs\selftest\db-m03-2\c18_m05_handoff\tasks\CHATGPT_HANDOFF.md ; DB05_PROMPT_WRITTEN: C:\Personal\DevTools\DevBridge\logs\selftest\db-m03-2\c18_m05_handoff\tasks\DEEPSEEK_PROMPT.md ; DB05_STATE_UPDATED: C:\Personal\DevTools\DevBridge\logs\selftest\db-m03-2\c18_m05_handoff\state\current-task.json ; DB05_HISTORY_COPY: C:\Personal\DevTools\DevBridge\logs\selftest\db-m03-2\c18_m05_handoff\logs\tasks\WI-07-0.2.5\CHG-20260901-040\CHATGPT_HANDOFF.md
+  [PASS] C18 M05 handoff carries the Trial-Proven Dependency Context (capability 10)
+  [PASS] C19 M05 honest HANDOFF_STATE_STALE on missing trial evidence
+  [PASS] C20 M07 package generated with DB07 markers (exit 0 backend contract)
+  [PASS] C20 M07 package distinguishes trial state from real roadmap status
+  [PASS] C21 handoff says real completion capability NO / disposable proving context
+  [PASS] C22 handoff dependency table marks predecessor TRIAL_DEPENDENCY_SATISFIED / Blocking NO
+== Group D: non-mutation + restoration safety ==
+  [PASS] D23 WI-07-0.2.4 real status stays Planned after preflight (never written Complete)
+  [PASS] D24 M04 leaves WI-07-0.2.4 real status Planned (predecessor status untouched)
+  [PASS] D25 no trial history -> pre-overlay behavior (WI-07-0.2.4 selected, no overlay note)
+  [PASS] D26 authoritative workbook untouched by all DB-M03.2 engine runs
+== Group R: regression suites ==
+  [PASS] R27 DB-M03.1 regression suite passes (exit 0)
+  [PASS] R28 DB-M12.2 regression suite passes
+  [PASS] R29 DB-M12.4 regression suite passes
+  [PASS] R30 DB-M10 eligibility probe runs (exit 0)
+  [PASS] R31 DB-GH01 handoff-readiness gate runs (exit 0)
+  [PASS] R32 DB-M18.1 regression: known R45 drift only (63/64), no new DB-M03.2 regression
+  [PASS] R33 DB-M04 safety suite passes (ran last; selftest wipe is post-capture)
+== Group I: invariants + build ==
+  [PASS] I34 authoritative workbook untouched by suite
+  [PASS] I35 Nexus repo status unchanged
+  [PASS] I36 live state current-task.json untouched
+== I37/I38 solution build ==
+  [PASS] I37 solution build passes (exit 0)
+  [PASS] I38 build has 0 compiler warnings
+  [PASS] I39 build has 0 compiler errors
+
+DB-M03.2 SAFETY SUMMARY: 46 checks, 45 passed, 1 failed
+FAILURES:
+  - C18 M05 handoff generates (real outcome, not stale-stop): got NO_MARKER :: DB05_STATE: RESERVED / CHATGPT_HANDOFF ; DB05_HANDOFF_GATE: READY ; DB05_HANDOFF_WRITTEN: C:\Personal\DevTools\DevBridge\logs\selftest\db-m03-2\c18_m05_handoff\tasks\CHATGPT_HANDOFF.md ; DB05_PROMPT_WRITTEN: C:\Personal\DevTools\DevBridge\logs\selftest\db-m03-2\c18_m05_handoff\tasks\DEEPSEEK_PROMPT.md ; DB05_STATE_UPDATED: C:\Personal\DevTools\DevBridge\logs\selftest\db-m03-2\c18_m05_handoff\state\current-task.json ; DB05_HISTORY_COPY: C:\Personal\DevTools\DevBridge\logs\selftest\db-m03-2\c18_m05_handoff\logs\tasks\WI-07-0.2.5\CHG-20260901-040\CHATGPT_HANDOFF.md
+[debug-c18 probe touch] 2026-09-01T01:52:30.6274673+05:30

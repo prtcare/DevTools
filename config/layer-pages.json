@@ -1,0 +1,378 @@
+{
+  "01": {
+    "menus": [
+      {
+        "id": "overview",
+        "label": "Overview"
+      },
+      {
+        "id": "files",
+        "label": "Files"
+      },
+      {
+        "id": "identity",
+        "label": "Identity & Access"
+      },
+      {
+        "id": "services",
+        "label": "Core Services"
+      },
+      {
+        "id": "dependencies",
+        "label": "Dependencies"
+      }
+    ],
+    "products": [],
+    "features": []
+  },
+  "02": {
+    "menus": [
+      {
+        "id": "overview",
+        "label": "Overview"
+      },
+      {
+        "id": "files",
+        "label": "Files"
+      },
+      {
+        "id": "databases",
+        "label": "Databases"
+      },
+      {
+        "id": "schemas",
+        "label": "Schemas"
+      },
+      {
+        "id": "pipelines",
+        "label": "Data Pipelines"
+      },
+      {
+        "id": "dependencies",
+        "label": "Dependencies"
+      }
+    ],
+    "products": [],
+    "features": []
+  },
+  "03": {
+    "menus": [
+      {
+        "id": "overview",
+        "label": "Overview"
+      },
+      {
+        "id": "files",
+        "label": "Files"
+      },
+      {
+        "id": "standards",
+        "label": "Standards"
+      },
+      {
+        "id": "decisions",
+        "label": "Decisions"
+      },
+      {
+        "id": "policies",
+        "label": "Policies"
+      },
+      {
+        "id": "assets",
+        "label": "Governance Assets"
+      }
+    ],
+    "products": [],
+    "features": []
+  },
+  "04": {
+    "menus": [
+      {
+        "id": "overview",
+        "label": "Overview"
+      },
+      {
+        "id": "files",
+        "label": "Files"
+      },
+      {
+        "id": "models",
+        "label": "Models"
+      },
+      {
+        "id": "providers",
+        "label": "Providers"
+      },
+      {
+        "id": "routing",
+        "label": "Routing"
+      },
+      {
+        "id": "usage",
+        "label": "Token & Cost Usage"
+      },
+      {
+        "id": "evaluations",
+        "label": "Evaluations"
+      }
+    ],
+    "products": [],
+    "features": []
+  },
+  "05": {
+    "menus": [
+      {
+        "id": "overview",
+        "label": "Overview"
+      },
+      {
+        "id": "files",
+        "label": "Files"
+      },
+      {
+        "id": "workflows",
+        "label": "Workflows"
+      },
+      {
+        "id": "jobs",
+        "label": "Jobs"
+      },
+      {
+        "id": "triggers",
+        "label": "Triggers"
+      },
+      {
+        "id": "integrations",
+        "label": "Integrations"
+      }
+    ],
+    "products": [],
+    "features": []
+  },
+  "06": {
+    "menus": [
+      {
+        "id": "overview",
+        "label": "Overview"
+      },
+      {
+        "id": "files",
+        "label": "Files"
+      },
+      {
+        "id": "capabilities",
+        "label": "Shared Capabilities"
+      },
+      {
+        "id": "apis",
+        "label": "APIs"
+      },
+      {
+        "id": "components",
+        "label": "Components"
+      },
+      {
+        "id": "dependencies",
+        "label": "Dependencies"
+      }
+    ],
+    "products": [],
+    "features": []
+  },
+  "07": {
+    "menus": [
+      {
+        "id": "overview",
+        "label": "Overview"
+      },
+      {
+        "id": "module",
+        "label": "Developer Console"
+      },
+      {
+        "id": "files",
+        "label": "Files"
+      },
+      {
+        "id": "current-task",
+        "label": "Current Task"
+      },
+      {
+        "id": "workflow",
+        "label": "Workflow"
+      },
+      {
+        "id": "repositories",
+        "label": "Repositories"
+      },
+      {
+        "id": "tools",
+        "label": "Development Tools"
+      },
+      {
+        "id": "history",
+        "label": "History"
+      }
+    ],
+    "products": [],
+    "features": []
+  },
+  "08": {
+    "menus": [
+      {
+        "id": "overview",
+        "label": "Overview"
+      },
+      {
+        "id": "files",
+        "label": "Files"
+      },
+      {
+        "id": "packages",
+        "label": "Packages"
+      },
+      {
+        "id": "cicd",
+        "label": "CI / CD"
+      },
+      {
+        "id": "environments",
+        "label": "Environments"
+      },
+      {
+        "id": "releases",
+        "label": "Releases"
+      }
+    ],
+    "products": [],
+    "features": []
+  },
+  "09": {
+    "menus": [
+      {
+        "id": "overview",
+        "label": "Overview"
+      },
+      {
+        "id": "files",
+        "label": "Files"
+      },
+      {
+        "id": "tests",
+        "label": "Tests"
+      },
+      {
+        "id": "quality",
+        "label": "Quality Gates"
+      },
+      {
+        "id": "security",
+        "label": "Security"
+      },
+      {
+        "id": "results",
+        "label": "Results"
+      }
+    ],
+    "products": [],
+    "features": []
+  },
+  "10": {
+    "menus": [
+      {
+        "id": "overview",
+        "label": "Overview"
+      },
+      {
+        "id": "files",
+        "label": "Files"
+      },
+      {
+        "id": "services",
+        "label": "Services"
+      },
+      {
+        "id": "health",
+        "label": "Health"
+      },
+      {
+        "id": "logs",
+        "label": "Logs"
+      },
+      {
+        "id": "alerts",
+        "label": "Alerts"
+      },
+      {
+        "id": "incidents",
+        "label": "Incidents"
+      }
+    ],
+    "products": [],
+    "features": []
+  },
+  "11": {
+    "menus": [
+      {
+        "id": "overview",
+        "label": "Overview"
+      },
+      {
+        "id": "files",
+        "label": "Files"
+      },
+      {
+        "id": "apps",
+        "label": "Applications"
+      },
+      {
+        "id": "components",
+        "label": "UI Components"
+      },
+      {
+        "id": "routes",
+        "label": "Routes"
+      },
+      {
+        "id": "integrations",
+        "label": "Integrations"
+      }
+    ],
+    "products": [],
+    "features": []
+  },
+  "12": {
+    "menus": [
+      {
+        "id": "overview",
+        "label": "Overview"
+      },
+      {
+        "id": "products",
+        "label": "Products"
+      },
+      {
+        "id": "features",
+        "label": "Features"
+      },
+      {
+        "id": "files",
+        "label": "Files"
+      },
+      {
+        "id": "roadmap",
+        "label": "Roadmap"
+      },
+      {
+        "id": "releases",
+        "label": "Releases"
+      }
+    ],
+    "products": [
+      "Nexus Vault",
+      "Nexus Trips",
+      "Nexus Truck"
+    ],
+    "features": []
+  }
+}

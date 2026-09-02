@@ -1,0 +1,85 @@
+﻿== Graph (1-7) ==
+  [PASS] G1 direct dependency resolved (1)
+  [PASS] G2 transitive dependency resolved through catalog (2)
+  [PASS] G2 M-07-0.1 and M-99.0 both transitive (3)
+  [PASS] G3 cycle detected (F-1 <-> F-2) (4)
+  [PASS] G4 missing catalog node reported (5)
+  [PASS] G5 invalid reference reported, valid direct kept (6)
+  [PASS] G6 blocked dependency reported (7)
+  [PASS] G7 duplicate path detected + graph evidence deterministic (8)
+== File lineage (8-14) ==
+  [PASS] L8 deltaAttribution created files + completion (9)
+  [PASS] L9 inventory shape created/modified/preserved (10)
+  [PASS] L10 M06 dual-shape build/test/acceptance (11)
+  [PASS] L10 old-old build shape (projects only) succeeds (12)
+  [PASS] L11 claude-decision lineage + observations (13)
+  [PASS] L11 observation ids NB-1/NB-2 preserved (14)
+  [PASS] L12 scope-amendment prior-cycle ownership (15)
+  [PASS] L13 component derivation (contract/class) (16)
+  [PASS] L14 absent evidence stays Planned/NONE/INFERRED, never invented (17)
+== Reconciliation / freshness (15-17) ==
+  [PASS] R15 reconciliation statuses (CURRENT/MODIFIED_LATER/SUPERSEDED/MISSING/RENAMED_OR_MOVED/HISTORICAL_ONLY) (18)
+  [PASS] F16 fresh context after index build (19)
+  [PASS] F16 repo change detected -> DEPENDENCY_CONTEXT_STALE (20)
+  [PASS] F17 dependency-set change detected -> STALE + rebuild required (21)
+== Relevance (18-23) ==
+  [PASS] R18 scope-path overlap -> RELEVANT (22)
+  [PASS] R19 scope + contract overlap -> RELEVANT (23)
+  [PASS] R20 transitive proximity (depth<=2) -> SUPPORTING (24)
+  [PASS] R21 deep + no overlap -> NOT_RELEVANT (25)
+  [PASS] R22 non-node + no-lineage -> UNKNOWN_RELEVANCE (26)
+  [PASS] R23 omitted references listed (NOT_RELEVANT + UNKNOWN) (27)
+== Evidence (24-27) ==
+  [PASS] E24 evidence refs carry kind + provenance (28)
+  [PASS] E25 provenance vocabulary complete (29)
+  [PASS] E25 all lineage provenance values in vocabulary (30)
+  [PASS] E26 M06 evidence populated (31)
+  [PASS] E27 fingerprints/hashes deterministic (32)
+== Scope / defect (28-33) ==
+  [PASS] S28 in-scope file -> CONTINUE (33)
+  [PASS] S29 out-of-scope file -> SCOPE_CHANGE_REQUIRED (owner known) (34)
+  [PASS] D30 normal reuse -> NORMAL_DEPENDENCY_REUSE (35)
+  [PASS] D31 extension + scope-expansion classification (36)
+  [PASS] D32 defect routing preserves history (37)
+  [PASS] D33 unknown dependency/nature rejected (ArgumentException) (38)
+== Integration (34-37) ==
+  [PASS] I34 M05 handoff lineage section emitted (39)
+  [PASS] I35 M05 readiness gate (leaf NOT_REQUIRED / unresolved NOT_READY / stale NOT_READY / fresh READY) (40)
+  [PASS] I36 M07 relevant-only dependency context emitted (41)
+  [PASS] I37 M09 correction dependency context (creator identified / fallback) (42)
+  [PASS] I38 orchestrator one-shot bundle (graph+lineage+recon+index+freshness+relevance+context) (43)
+  [PASS] I38b orchestrator no-repo fallback (UNVERIFIED, never STALE, never blocks) (44)
+== Determinism (38) ==
+  [PASS] T38 full pipeline byte-deterministic under pinned time (45)
+== Provenance (39) ==
+  [PASS] P39 context provenance within vocabulary + evidence union (46)
+== Context size (40) ==
+  [PASS] C40 metrics counts (deps 5, included 2, omitted 3, omission reasons) (47)
+  [PASS] C40 size ordering + token estimate in range (48)
+  [PASS] C40 omission reasons name each omitted dependency (49)
+== No-secret (41) ==
+  [PASS] S41 secret-bearing purpose redacted from all packaged output (50)
+== No-source-modification (42) ==
+  [PASS] S42 DevBridge src fingerprint unchanged by suite (51)
+  [PASS] S42 Nexus.Developer git state unchanged by suite (52)
+== No-workbook-modification (43) ==
+  [PASS] S43 authoritative workbook byte-identical (53)
+== Trial/Real semantics (44) ==
+  [PASS] S44 TRIAL_ONLY_UNMERGED lineage -> TRIAL_CYCLE_CLOSED (54)
+  [PASS] S44 REAL PASS lineage -> Completed (not trial-closed) (55)
+  [PASS] S44 supersession record (PaymentService -> PaymentOrchestrator) (56)
+  [PASS] S44 no supersession recorded -> null (57)
+== Regressions (45-50) ==
+  [FAIL] R45 DB-M18 regression (child suite) passes (58) - exit=1
+  [PASS] R46 M05 handoff gate regression (marker contract intact) (59)
+  [PASS] R47 M07 regression (CLAUDE_REVIEW_PACKAGE_CREATED marker) (60)
+  [PASS] R48 M09 regression (FIX_CONTEXT_CREATED marker) (61)
+  [PASS] R49 DB-M12.2 regression (child suite) passes (62)
+  [PASS] R50 DB-M12.4 regression (child suite) passes (63)
+== Build (51) ==
+  [PASS] B51 solution builds with 0 errors (64)
+
+DB-M18.1 TEST SUMMARY: 64 checks, 63 passed, 1 failed
+FAILURES:
+  - R45 DB-M18 regression (child suite) passes [58]: exit=1
+EXIT=1

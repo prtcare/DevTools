@@ -1,0 +1,149 @@
+{
+  "Milestone": "FINAL HARDENED LANE C TRIAL - PART 1",
+  "Lane": "C",
+  "DateUtc": "2026-08-31T14:10:00Z",
+  "Mode": "TRIAL",
+  "Kind": "Proving-cycle evidence. PART 1 only (UI launch, state refresh, START NEXT CYCLE, M03, M04, M05). No implementation, no M06/M07/M08/M10.",
+  "Purpose": "Prove the hardened DevBridge (DB-GH01 + DB-M12.2 + DB-M12.3 + M03..M11) controls a fresh Nexus-shaped work item end-to-end through the actual system. No lifecycle progress faked; no manual state edits.",
+  "Steps": {
+    "Step1_LaunchRefreshUI": {
+      "result": "PASS",
+      "method": "Supported launch: src/DevBridge.UI/bin/Debug/net10.0-windows/DevBridge.UI.exe",
+      "uiProcessAlive": true,
+      "pid": 12672,
+      "responding": true,
+      "trialModeVisible": "PASS (config mode=TRIAL; engine/UI banner renders TRIAL; DB-M12.3 UI-01..06)",
+      "previousTrialShownAsSafeStopHistory": "PASS (live state TRIAL_CYCLE_SAFE_STOP; logs/tasks/WI-07-0.2.4/CHG-20260830-017 history present)",
+      "workbookAuthorityHealthy": "PASS (state/workbook-authority-reconciliation.json = WORKBOOK_AUTHORITY_CONFIRMED)",
+      "protectedRoadmapHealthy": "PASS (state/roadmap-fingerprint.json 25BBECA448CC83B76F9A639BBF5A3E4A1599FDE536938A413FBE9DB5D67BE057 = DB-GH01 baseline; PROTECTED_STRUCTURE_UNCHANGED)",
+      "gitStateVisible": "PASS (state/current-task.json repositoryStates + GET_CURRENT_LIFECYCLE_STATE gitLifecycleState)",
+      "noStructuralRoadmapEditingControl": "PASS (engine button set has no roadmap-structure write; DB-M12.3 'Roadmap structural editing capability: NO')",
+      "dbM26SeparateReadOnlyModule": "PASS (state/db-m26-result.json; separate read-only analytics tab; DB-M26 result 382/382)"
+    },
+    "Step2_GetCurrentLifecycleState": {
+      "result": "PASS",
+      "command": "scripts/Get-CurrentLifecycleState.ps1 (read-only, DB14_* markers)",
+      "outcome": "LIFECYCLE_STATE_SNAPSHOT",
+      "resultPass": true,
+      "nodeId": "WI-07-0.2.4",
+      "changeId": "CHG-20260830-017",
+      "status": "CLAUDE_REVIEW_PASSED_TRIAL",
+      "nextAllowedAction": "TRIAL_CYCLE_SAFE_STOP",
+      "mode": "TRIAL",
+      "previousTrialActiveContinuation": false,
+      "writerActive": false,
+      "staleWriterLock": false,
+      "gitLifecycleState": { "mergeConfirmed": false },
+      "workbookModified": false,
+      "nexusSourceModified": false,
+      "gitModified": false
+    },
+    "Step3_StartNextCycle": {
+      "result": "NOT_AVAILABLE_DESIGNED",
+      "uiControlPresent": false,
+      "engineArms": ["OPEN_DETAIL"],
+      "engineBranch": "NextActionEngine branch 3.5 (TrialCycleSafeStop && TrialMode)",
+      "engineInstruction": "TRIAL cycle complete. Stop at TRIAL_CYCLE_SAFE_STOP. M10 governed completion is NOT applicable to trial evidence.",
+      "detail": "From the live trial safe-stop state the hardened engine/UI arms ONLY OPEN TASK DETAIL. There is no START NEXT CYCLE, archive, or close-cycle control anywhere in the 25-button operator set; START_NEXT_CYCLE was deliberately unbound in DB-M12.3 (engine regression asserts it is never enabled). START_PREFLIGHT is armed only by branch 0 (no active task) or branch 1 (CONTROL_VALIDATED) - neither is reachable from a trial safe-stop. This is the designed DB-M12.3 terminal behavior.",
+      "preflightProcessInvokedSeparately": true,
+      "note": "The actual lifecycle/preflight process was separately invoked for M03 (below) through the real engine scripts in an isolated fixture, so the auto-selection was observed directly. The UI itself offers no start control from the safe-stop state."
+    },
+    "Step4_M03Preflight": {
+      "result": "PASS",
+      "runMethod": "Actual DB-M03 engine (scripts/Get-NextTask.ps1 + scripts/Test-DevelopmentPreflight.ps1, the exact script set START_PREFLIGHT invokes) executed in an isolated fixture root against a byte-identical copy of the authoritative workbook (SHA256 F520060CB753EC8EC96B44BCBD193BDAB69CA68D4CC27198663665D5FE63F884). Fixture run required by the DB-GH01 fixture-only rule: Test-DevelopmentPreflight.ps1 overwrites live state/current-task.json, which would destroy the WI-07-0.2.4 live evidence (forbidden). Live workbook/state/tasks untouched.",
+      "fixtureEvidenceDir": "logs/trials/FINAL_HARDENED_TRIAL_PART1_20260831",
+      "fixtureRoot": "%TEMP%\\DBFinalTrialFixture",
+      "selectedNodeId": "WI-07-0.2.4",
+      "selectedTask": "Concurrency, locking and atomic writes",
+      "selectedAutomatically": true,
+      "hardCodedNodeId": false,
+      "preflightVerdict": "CLEAR",
+      "preflightStatus": "PREFLIGHTED",
+      "nextAllowedActionFromPreflight": "RESERVE",
+      "whySelected": [
+        "CURRENT WORK FIRST: M-07-0.2 (Development Control Service (Excel-backed, Azure-SQL-ready)) has Status 'In Progress' and is named by 4 open reservation(s); freshest open reservation CHG-20260830-017 (row 80) - the workbook's most recent governed activity.",
+        "NEXT WORK drill-down: within M-07-0.2 the only planned child whose declared dependencies are satisfied is WI-07-0.2.4 (deps satisfied: WI-07-0.2.3)."
+      ],
+      "dependencies": [
+        { "dependencyId": "WI-07-0.2.3", "state": "SATISFIED", "status": "Complete", "detail": "Excel persistence adapter" },
+        { "dependencyId": "REL-001..011", "state": "NOT_APPLICABLE", "detail": "No Dependencies & Blockers row references the target or its chain" }
+      ],
+      "blockers": [],
+      "conflicts": "NONE (12/12 active-change checks PASS/WARN; single WARN: same repository, different node, checked at file/project level and passed)",
+      "proposedRepository": "Nexus.Developer",
+      "proposedProject": "Nexus.Developer.Infrastructure",
+      "proposedScope": "src/Nexus.Developer.Infrastructure/DevelopmentControl/**",
+      "contractsApis": ["IDevelopmentControlAtomicWorkUnitRunner", "IDevelopmentControlStore"],
+      "scopeSource": "derived-from-governance",
+      "whyNoNodeConflict": "The node conflict check counts a reservation as naming a work item only when its Active Changes NodeId cell contains the work-item id. CHG-20260830-017's row records the current-work anchor M-07-0.2 (not WI-07-0.2.4), so the engine sees no direct node conflict and CLEARs the selected item.",
+      "cycleStopReason": "The engine automatically selected WI-07-0.2.4 - exactly the task the operator explicitly prohibited as the new task ('Do NOT continue it, use it as the new task, or run M10 for it'). Operator instruction takes precedence over engine selection. Cycle STOPPED at M03."
+    },
+    "Step5_M04Reservation": {
+      "result": "NOT_RUN",
+      "reason": "M03 auto-selected the operator-prohibited WI-07-0.2.4; cannot reserve it as the new task. No workbook write performed."
+    },
+    "Step6_M05ChatGptHandoff": {
+      "result": "NOT_RUN",
+      "reason": "M04 not run; no reservation / change id exists for this cycle. No handoff generated."
+    },
+    "Step7_SafeStop": {
+      "result": "STOPPED_AT_M03",
+      "copyToChatGpt": "NOT_APPLICABLE",
+      "nextHumanAction": "GOVERNANCE_DECISION_REQUIRED"
+    }
+  },
+  "FinalReport": {
+    "Mode": "TRIAL",
+    "UI launched": "PASS",
+    "Trial banner": "PASS",
+    "Backend state refresh": "PASS",
+    "Previous trial preserved": "PASS",
+    "START NEXT CYCLE": "FAIL (no start control armed from trial safe-stop; designed terminal; only OPEN_DETAIL)",
+    "M03": "PASS (engine auto-selected WI-07-0.2.4, verdict CLEAR)",
+    "Selected Node": "WI-07-0.2.4",
+    "Selected Task": "Concurrency, locking and atomic writes",
+    "Selected automatically": "YES",
+    "Hard-coded task": "NO",
+    "M04": "NOT_RUN (selected task is operator-prohibited)",
+    "Change ID": "(none - M04 not run)",
+    "Exact scope": "M03 proposed (not reserved): Nexus.Developer.Infrastructure / src/Nexus.Developer.Infrastructure/DevelopmentControl/**",
+    "Git baseline": "NOT_RUN (M04 not run); Step-1 git observation PASS",
+    "Workbook backup": "NOT_RUN (M04 not run)",
+    "Workbook read-back": "NOT_RUN (M04 not run)",
+    "Protected roadmap fingerprint": "PASS (Step-1: 25BBECA4 == DB-GH01 baseline, unchanged)",
+    "M05": "NOT_RUN",
+    "Zero-context governance header": "NOT_RUN (no handoff generated)",
+    "ChatGPT handoff validation": "NOT_RUN",
+    "ChatGPT handoff": "NOT_READY",
+    "Handoff path": "(none)",
+    "UI COPY_TO_CHATGPT enabled": "NO",
+    "Roadmap structural editing capability": "NO",
+    "Automatic Git merge capability": "NO",
+    "AUTO AI execution": "NO",
+    "Protected roadmap modified": "NO",
+    "Nexus source modified": "NO",
+    "Next Human Action": "GOVERNANCE_DECISION_REQUIRED (not COPY_TO_CHATGPT - the auto-selected task is the operator-prohibited WI-07-0.2.4, so the cycle stops at M03)"
+  },
+  "Finding": {
+    "Kind": "GOVERNANCE_STATE_GAP (not a runtime defect)",
+    "Statement": "The hardened M03 engine deterministically auto-selects WI-07-0.2.4 and returns CLEAR whenever it is run against the current authoritative trial workbook: M-07-0.2 is the current-work anchor (freshest open reservation CHG-20260830-017, row 80) and WI-07-0.2.4 is its only dependency-satisfied planned child. Because trial M10 is NOT_APPLICABLE by design, the previous trial reservation cannot be closed, so WI-07-0.2.4 remains perpetually 'next'. The operator explicitly prohibits WI-07-0.2.4 as the new task. There is no governed path for the engine to select a different (fresh) work item while this reservation state stands.",
+    "Component": "M03 selection + workbook trial-reservation state (DevBridgeState/TrialCycleSafeStop design)",
+    "Expected": "A governed way to begin the final hardened trial on a FRESH work item (engine selects a work item other than the operator-prohibited WI-07-0.2.4)",
+    "Actual": "M03 auto-selects WI-07-0.2.4 (CLEAR); no alternate selection is reachable; no cycle-restart/archive/close-trial command exists; trial M10 NOT_APPLICABLE",
+    "Evidence": "logs/trials/FINAL_HARDENED_TRIAL_PART1_20260831/preflight.json (selectedAt 2026-08-31T14:05:22Z, verdict CLEAR); Get-NextTask.ps1 -ShowCandidates (Task=WI-07-0.2.4, CurrentWork=M-07-0.2, freshest CHG-20260830-017 row 80); NextActionEngine.cs:136-147 (branch 3.5 arms only OPEN_DETAIL); state/workbook-authority-reconciliation.json LaneCNewTaskMayStart=NO",
+    "AffectedFiles": "None modified. Live state/current-task.json, state/preflight.json, tasks/*.md untouched.",
+    "WorkbookChanged": false,
+    "RollbackNeeded": false
+  },
+  "NoMutation": {
+    "WorkbookModified": "NO",
+    "NexusSourceModified": "NO",
+    "LiveStateModified": "NO",
+    "GitModified": "NO",
+    "M10Run": "NO",
+    "ProtectedRoadmapModified": "NO",
+    "WI07024EvidenceOverwritten": "NO",
+    "HardCodedNodeIdUsed": "NO",
+    "ManualStateEdit": "NO"
+  }
+}

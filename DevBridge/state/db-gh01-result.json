@@ -1,0 +1,141 @@
+﻿{
+  "Milestone": "DB-GH01",
+  "Title": "DevBridge Governance Hardening",
+  "Lane": "C (governance amendment)",
+  "DateUtc": "2026-08-31T05:20:00Z",
+  "Implementation": "PASS",
+  "Kind": "Targeted amendment milestone (no roadmap change; temporary scaffolding hardening only)",
+  "Summary": "Governance hardening executed at the end of the WI-07-0.2.4 trial cycle. Adds 35 enumerated governance properties (G1..G35, 301 engine checks) covering mode TRIAL default and precedence, Git human-gated lifecycle with observed-only merge confirmation, Claude decision routing, evidence-record contracts, the M10 eligibility gate (TRIAL_COMPLETION_NOT_APPLICABLE / BLOCKED_* / ReadyForGovernedCompletion), the protected-roadmap fingerprint guard, the 14-check ChatGPT handoff gate, the Claude review package governance-header check, the represent-only pre-DevBridge baseline, and the DevBridge retirement / fix-task rule. Adds three read-only gates (M10 eligibility, handoff readiness, periodic Claude workbook review advisory) and two read-only captures (pre-DevBridge baseline, protected-roadmap fingerprint). Fixes the Reserve-DevelopmentChange.ps1 '-f'-inside-method-call FormatError defect (3 lines) and the PowerShell 5.1 em-dash encoding parse hazard in 5 scripts. No compliant milestone modified; live workbook F520060C untouched; C:\\Personal\\Nexus.Developer untouched; M10 not run for the trial; real Nexus baseline not restored; Lane B AI routing unchanged.",
+  "GovernanceProperties": {
+    "Count": 35,
+    "EngineChecks": "301/301 PASS",
+    "G1": "PASS",
+    "G2": "PASS",
+    "G3": "PASS",
+    "G4": "PASS",
+    "G5": "PASS",
+    "G6": "PASS",
+    "G7": "PASS",
+    "G8": "PASS",
+    "G9": "PASS",
+    "G10": "PASS",
+    "G11": "PASS",
+    "G12": "PASS",
+    "G13": "PASS",
+    "G14": "PASS",
+    "G15": "PASS",
+    "G16": "PASS",
+    "G17": "PASS",
+    "G18": "PASS",
+    "G19": "PASS",
+    "G20": "PASS",
+    "G21": "PASS",
+    "G22": "PASS",
+    "G23": "PASS",
+    "G24": "PASS",
+    "G25": "PASS",
+    "G26": "PASS",
+    "G27": "PASS",
+    "G28": "PASS",
+    "G29": "PASS",
+    "G30": "PASS",
+    "G31": "PASS",
+    "G32": "PASS",
+    "G33": "PASS",
+    "G34": "PASS",
+    "G35": "PASS"
+  },
+  "Amendments": [
+    "Engine governance property suite G1..G35 (301 checks) in src/DevBridge.Tests/Program.cs",
+    "Test-DBM10CompletionEligibility.ps1 - read-only M10 gate; TRIAL_COMPLETION_NOT_APPLICABLE on live state; BLOCKED_* tokens; ROADMAP_STRUCTURE_WRITE_PROHIBITED fingerprint guard",
+    "Test-ChatGptHandoffReady.ps1 - read-only 14-check handoff gate with ModePresent requirement; CHATGPT_HANDOFF_NOT_READY on legacy doc (expected)",
+    "Get-PreDevBridgeBaseline.ps1 - represent-only baseline capture (workbook F520060C, git feature/m-08-1-2-ci-pipeline @ ea39db91); no restore function exists",
+    "Get-ProtectedRoadmapFingerprint.ps1 + config/roadmap-protection.json - immutability fingerprint over 5 protected sheets, 715 rows / 9161 cells",
+    "New-PeriodicClaudeWorkbookReview.ps1 - READ-ONLY Role B advisory; deterministic PASS -> NO_ADVISORY_REVIEW_RECOMMENDED",
+    "Defect fix: Reserve-DevelopmentChange.ps1 lines 921/925/975 '-f'-inside-method-call FormatError",
+    "Encoding hardening: U+2014 em-dash replaced with '--' in 5 DB-GH01 scripts (PowerShell 5.1 no-BOM hazard)"
+  ],
+  "Regression": {
+    "Build": "0 warnings, 0 errors (DevBridge.Engine / DevBridge.UI / DevBridge.Tests)",
+    "EngineGovernanceSuite": "301/301 PASS",
+    "Test-DBM04Safety": "26/26 PASS (includes T2 fix verification)",
+    "M10Eligibility": {
+      "Eligible": false,
+      "Verdict": "NotApplicable",
+      "Token": "TRIAL_COMPLETION_NOT_APPLICABLE",
+      "Mode": "TRIAL",
+      "FingerprintGuard": "NOT_COMPARABLE",
+      "Outcome": "M10_BLOCKED",
+      "Note": "Correct for TRIAL mode; M10 must not run for WI-07-0.2.4"
+    },
+    "M10CompletionSuite": {
+      "Passed": 9,
+      "Failed": 3,
+      "Total": 12,
+      "ExpectedFailures": [
+        "T11 (state/current-task.json status=COMPLETION_WRITTEN)",
+        "T11b (completion.json hash matches live workbook)",
+        "T12 (idempotency)"
+      ],
+      "Note": "Failures are state progression: the suite asserts post-completion state from WI-07-0.2.3; live state is now WI-07-0.2.4 trial. Not DB-GH01 regressions."
+    },
+    "ChatGptHandoffGate": {
+      "Ready": false,
+      "Token": "CHATGPT_HANDOFF_NOT_READY",
+      "Missing": "ModePresent",
+      "Note": "Legacy tasks/CHATGPT_HANDOFF.md predates the DB-GH01 ModePresent governance requirement; expected"
+    },
+    "PeriodicClaudeWorkbookReview": {
+      "DeterministicPass": true,
+      "Recommended": false,
+      "Token": "NO_ADVISORY_REVIEW_RECOMMENDED"
+    }
+  },
+  "Captures": {
+    "PreDevBridgeBaseline": {
+      "WorkbookSha256": "F520060CB753EC8EC96B44BCBD193BDAB69CA68D4CC27198663665D5FE63F884",
+      "GitBranch": "feature/m-08-1-2-ci-pipeline",
+      "GitHead": "ea39db910a6e3b00bff880316996a696ae7460dc",
+      "RepresentOnly": "NO RESTORE FUNCTION EXISTS"
+    },
+    "RoadmapFingerprint": {
+      "Value": "25BBECA448CC83B76F9A639BBF5A3E4A1599FDE536938A413FBE9DB5D67BE057",
+      "ProtectedRows": 715,
+      "ProtectedCells": 9161,
+      "Sheets": "Master Roadmap;Phase Plan;Architecture Decisions;Dependencies & Blockers;Open Decisions"
+    },
+    "M11ReviewRecommendation": {
+      "Recommended": false,
+      "Token": "NO_ADVISORY_REVIEW_RECOMMENDED"
+    }
+  },
+  "ProcessIncident": {
+    "Disclosed": true,
+    "Summary": "Running scripts/Test-DevelopmentPreflight.ps1 (the real DB-M03 preflight engine) accidentally overwrote live state/current-task.json, state/preflight.json, tasks/NEXT_TASK.md, tasks/PREFLIGHT_REPORT.md with fresh PREFLIGHTED records. All four were restored byte-for-byte from the session transcript (20482B / 33238B / 16581B / 9516B) and re-verified against trial state and workbook hashes. Live state confirmed correct.",
+    "Lesson": "Verify each regression script is fixture-based (Test-*) versus a real engine before running; Test-DevelopmentPreflight.ps1 must not be run again outside a deliberately prepared fixture environment."
+  },
+  "LiveStateSafety": {
+    "CurrentTask": {
+      "TaskId": "WI-07-0.2.4",
+      "Status": "CLAUDE_REVIEW_PASSED_TRIAL",
+      "NextAllowedAction": "TRIAL_CYCLE_SAFE_STOP",
+      "ChangeId": "CHG-20260830-017",
+      "Bytes": 20482,
+      "Restored": true
+    },
+    "Preflight": {
+      "Verdict": "CLEAR",
+      "WorkbookSha256": "24C8D3AF",
+      "Bytes": 33238,
+      "Restored": true
+    },
+    "LiveWorkbookSha256": "F520060C",
+    "NexusRepositoryModified": "NO",
+    "M10RunForTrial": "NO",
+    "NexusBaselineRestored": "NO",
+    "LaneBAiRoutingChanged": "NO"
+  },
+  "WorkbookModified": "NO",
+  "NexusRepositoriesModified": "NO",
+  "Verdict": "PASS"
+}

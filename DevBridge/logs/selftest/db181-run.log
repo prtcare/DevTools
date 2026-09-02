@@ -1,0 +1,36 @@
+﻿== Graph (1-7) ==
+  [PASS] G1 direct dependency resolved (1)
+  [PASS] G2 transitive dependency resolved through catalog (2)
+  [PASS] G2 M-07-0.1 and M-99.0 both transitive (3)
+  [PASS] G3 cycle detected (F-1 <-> F-2) (4)
+  [PASS] G4 missing catalog node reported (5)
+  [PASS] G5 invalid reference reported, valid direct kept (6)
+  [PASS] G6 blocked dependency reported (7)
+  [PASS] G7 duplicate path detected + graph evidence deterministic (8)
+== File lineage (8-14) ==
+  [PASS] L8 deltaAttribution created files + completion (9)
+  [PASS] L9 inventory shape created/modified/preserved (10)
+  [PASS] L10 M06 dual-shape build/test/acceptance (11)
+  [PASS] L10 old-old build shape (projects only) succeeds (12)
+  [PASS] L11 claude-decision lineage + observations (13)
+  [PASS] L11 observation ids NB-1/NB-2 preserved (14)
+  [PASS] L12 scope-amendment prior-cycle ownership (15)
+  [PASS] L13 component derivation (contract/class) (16)
+  [PASS] L14 absent evidence stays Planned/NONE/INFERRED, never invented (17)
+== Reconciliation / freshness (15-17) ==
+  [PASS] R15 reconciliation statuses (CURRENT/MODIFIED_LATER/SUPERSEDED/MISSING/RENAMED_OR_MOVED/HISTORICAL_ONLY) (18)
+powershell.exe : Exception calling "Serialize" with "1" argument(s): "A circular reference was detected while 
+serializing an object of 
+At line:1 char:302
++ ... tch {} } }; powershell.exe -NoProfile -ExecutionPolicy Bypass -File C ...
++                 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (Exception calli...g an object of :String) [], RemoteException
+    + FullyQualifiedErrorId : NativeCommandError
+ 
+type 'System.Management.Automation.PSMethod'."
+At C:\Personal\DevTools\DevBridge\scripts\ai-routing\DependencyLineage.ps1:116 char:12
++     return $js.Serialize($sorted)
++            ~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (:) [], ParentContainsErrorRecordException
+    + FullyQualifiedErrorId : InvalidOperationException
+ 

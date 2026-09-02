@@ -1,0 +1,8 @@
+﻿C:\Users\Dell\AppData\Local\Temp\db28-model-config.html
+DB-M28 TEST SUMMARY: 359 passed, 0 failed
+DB-M28 SCENARIOS: 55 scenarios
+DB-M28 REGRESSION DBM26: 381 passed, 1 failed, exit 1
+DB-M28 REGRESSION DBM181: 63 passed, 1 failed, exit 1
+DB-M28 REGRESSION DBM19: 136 passed, 0 failed, exit 0
+DB-M28 REGRESSION DBM22: 68 passed, 0 failed, exit 0
+DB-M28 REGRESSION DBM23: 203 passed, 0 failed, exit 0

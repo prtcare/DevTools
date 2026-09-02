@@ -1,0 +1,131 @@
+{
+  "Milestone": "DB-M12.2",
+  "Title": "Reusable Lifecycle Backend Commands",
+  "Lane": "C",
+  "DateUtc": "2026-08-31T06:15:42Z",
+  "Implementation": "PASS",
+  "Kind": "Reusable backend command surface (temporary DevBridge scaffolding; nothing migrates into Nexus)",
+  "Summary": "The nine DB-M03..DB-M11 lifecycle actions that were GUIDED_MANUAL in DB-M12.1 (RUN_VERIFICATION, CREATE_CLAUDE_REVIEW_PACKAGE, RECORD_CLAUDE_RESULT, CREATE_CORRECTION_CONTEXT, RUN_GOVERNED_COMPLETION, VALIDATE_WORKBOOK, CREATE_CLAUDE_WORKBOOK_REVIEW_PACKAGE, REFRESH_GIT_GATE_STATE, GET_CURRENT_LIFECYCLE_STATE) now have durable, identity-agnostic backend scripts that operate on the CURRENT task, route the lifecycle correctly, write only execution-state evidence through hardened governance, and always exit 0 while communicating outcomes only via stdout markers. OperatorCommandService orchestration is state-first: expected marker + evidence + state transition + no prohibited side effects, else BACKEND_STATE_MISMATCH. Scripts carry no hard-coded WI/CHG identity (proven with generic fixtures N-01-0.1 / CHG-20260831-0xx). M10 real apply writes only execution-state sheets (Activity Log) on a temp copy with backup + read-back + fingerprint guard. Live trial evidence WI-07-0.2.4 / CHG-20260830-017 untouched; authoritative workbook byte-identical (F520060C...); Nexus.Developer git delta zero; DB-M23 files untouched; M10 not run for the trial; real Nexus baseline not restored.",
+  "CommandSurface": {
+    "TotalCatalog": 29,
+    "ScriptBacked": 12,
+    "GuidedManual": 5,
+    "Navigation": 8,
+    "Clipboard": 4,
+    "NewReusableCommands": [
+      "RUN_VERIFICATION -> Run-Verification.ps1 -> VERIFIED",
+      "CREATE_CLAUDE_REVIEW_PACKAGE -> New-ClaudeReviewPackage.ps1 -> VERIFIED (package written)",
+      "RECORD_CLAUDE_RESULT -> Set-ClaudeReviewResult.ps1 -> routed (PASS/FIX/GOVERNANCE_ISSUE/HUMAN_DECISION_REQUIRED)",
+      "CREATE_CORRECTION_CONTEXT -> New-CorrectionContext.ps1 -> DB_M09_FIX_REQUIRED preserved",
+      "RUN_GOVERNED_COMPLETION -> Complete-GovernedCycle.ps1 -> COMPLETION_WRITTEN (WritesWorkbook)",
+      "VALIDATE_WORKBOOK -> Invoke-WorkbookValidation.ps1 -> CONTROL_VALIDATED",
+      "CREATE_CLAUDE_WORKBOOK_REVIEW_PACKAGE -> New-ClaudeWorkbookReviewPackage.ps1 -> advisory",
+      "REFRESH_GIT_GATE_STATE -> Get-GitGateState.ps1 -> observation (PR never fabricated)",
+      "GET_CURRENT_LIFECYCLE_STATE -> Get-CurrentLifecycleState.ps1 -> snapshot"
+    ],
+    "GuidedManualKept": ["CREATE_PR", "REVIEW_PR", "MERGE_PR", "REVIEW_GOVERNANCE_ISSUE", "RESTORE_REAL_NEXUS_BASELINE"]
+  },
+  "OneCommandContract": {
+    "ReusedFrom": "DB-M12.1 (no competing command-result framework invented)",
+    "Input": "CommandId, NodeId, ChangeId, Mode, Parameters, ExpectedCurrentState, Actor, CorrelationId",
+    "Output": "CommandId, Status, PreviousState, CurrentState, NextAllowedAction, ResultCode, EvidenceReferences, WorkbookModified, NexusSourceModified, GitModified, RequiresHumanAction, HumanActionType, StartedAtUtc, CompletedAtUtc, Errors, Warnings"
+  },
+  "EngineOrchestration": {
+    "InputValidation": "PASS",
+    "StaleStateGuard": "PASS",
+    "RequiredStatesGate": "PASS",
+    "WriterSerialization": "PASS",
+    "ScriptClassification": "PASS",
+    "StateFirstSuccess": "PASS",
+    "BackendStateMismatchDetection": "PASS",
+    "M10Hardening": "PASS",
+    "NonWriteTerminalTokens": "PASS",
+    "AvailabilityVocabulary": "PASS"
+  },
+  "ScriptContract": {
+    "AlwaysExitZero": "PASS",
+    "StdoutMarkersOnly": "PASS",
+    "EnvChannel": "PASS",
+    "AsciiOnly": "PASS",
+    "ArraySafeJson": "PASS"
+  },
+  "Routes": {
+    "M08PassTrial": "CLAUDE_REVIEW_PASSED_TRIAL / TRIAL_CYCLE_SAFE_STOP",
+    "M08PassReal": "CLAUDE_REVIEW_PASSED_REAL / AWAITING_HUMAN_PR",
+    "M08Fix": "DB_M09_FIX_REQUIRED / CORRECT_CURRENT_ATTEMPT (dbM09Required)",
+    "M08GovernanceIssue": "GOVERNANCE_ISSUE / HUMAN_GOVERNANCE_REVIEW",
+    "M08HumanDecisionRequired": "HUMAN_DECISION_REQUIRED / HUMAN_DECISION",
+    "M08InvalidDecision": "STOP_INVALID_DECISION (no transition)",
+    "M09": "FIX_CONTEXT_CREATED; task preserved; REUSED on re-run",
+    "M10Trial": "TRIAL_COMPLETION_NOT_APPLICABLE (no write)",
+    "M10MergeGate": "STOP_HUMAN_GIT_MERGE_GATE_PENDING / HUMAN_GIT_MERGE",
+    "M10FingerprintDrift": "STOP_ROADMAP_STRUCTURE_WRITE_PROHIBITED / HUMAN_GOVERNANCE_REVIEW",
+    "M10RealApply": "COMPLETED + COMPLETION_WRITTEN (backup, read-back, atomic replace)",
+    "M11Valid": "CONTROL_VALIDATED",
+    "M11Invalid": "CONTROL_VALIDATION_FAILED",
+    "DB12Recommended": "ADVISORY_REVIEW_PACKAGE_CREATED",
+    "DB12Suppressed": "NO_ADVISORY_REVIEW_RECOMMENDED",
+    "DB13Observed": "prState MERGED -> mergeConfirmed",
+    "DB13Unavailable": "prState UNKNOWN (never fabricated)",
+    "DB14": "LIFECYCLE_STATE_SNAPSHOT"
+  },
+  "DefectsFoundAndFixed": [
+    "WorkbookWriterGate.Release never deleted the lock (path passed to ReadOwnPid instead of content)",
+    "Get-DevBridgeField .Contains() unbound on JS-parsed Dictionary -> .ContainsKey",
+    "Complete-GovernedCycle.ps1 strict-mode optional-member crashes guarded via Get-DevBridgeField",
+    "Complete-GovernedCycle.ps1 empty read-back array collapsed to $null -> @() context",
+    "Get-CurrentLifecycleState.ps1 unset $script:CurrentTaskPath -> Join-Path StateDir",
+    "Run-Verification.ps1 selftest ordering (preceding implementation pass)",
+    "M07/M09/M10 idempotency guards (preceding implementation pass)"
+  ],
+  "Build": {
+    "Projects": ["DevBridge.Engine", "DevBridge.Tests"],
+    "Warnings": 0,
+    "Errors": 0
+  },
+  "Tests": {
+    "EngineSuite": {
+      "Passed": 371,
+      "Failed": 0,
+      "Total": 371
+    },
+    "FixtureHarness": {
+      "File": "scripts/Test-DBM12-2Commands.ps1",
+      "Scenarios": "S1..S26 (M06/M07/M08/M09/M10/M11/DB12/DB13/DB14) + I1..I6 invariants",
+      "Passed": 59,
+      "Failed": 0,
+      "Total": 59
+    },
+    "LiveReadOnlySmoke": "NOT RUN (DB-M12.2 is script-surface proving; live trial evidence was a read-only regression fixture)",
+    "PaidApiCalls": 0,
+    "NetworkCalls": 0,
+    "GovernedWorkbookWritesTriggered": 0
+  },
+  "CollisionCheck": {
+    "AuthoritativeWorkbookTouched": false,
+    "AuthoritativeWorkbookSha256": "F520060CB753EC8EC96B44BCBD193BDAB69CA68D4CC27198663665D5FE63F884",
+    "AuthoritativeWorkbookByteIdentical": true,
+    "NexusDeveloperTouched": false,
+    "NexusGitDelta": 0,
+    "NexusGitHead": "ea39db9",
+    "NexusGitBranch": "feature/m-08-1-2-ci-pipeline",
+    "NexusPreExistingState": "Tracked NEXUS_DEVELOPMENT_CONTROL.xlsx modified + untracked src/Nexus.Developer.Core/DevelopmentControl files already present; unchanged by DB-M12.2",
+    "LiveTrialEvidenceTouched": false,
+    "LiveTrialTaskId": "WI-07-0.2.4",
+    "LiveTrialStatus": "CLAUDE_REVIEW_PASSED_TRIAL",
+    "LiveTrialNextAllowedAction": "TRIAL_CYCLE_SAFE_STOP",
+    "LiveTrialChangeId": "CHG-20260830-017",
+    "DBM23FilesTouched": false,
+    "M10RunForTrial": "NO",
+    "NexusBaselineRestored": "NO",
+    "RoadmapStructureModified": "NO",
+    "UiModified": "NO"
+  },
+  "Outputs": {
+    "DesignDoc": "design/DB-M12.2_REUSABLE_LIFECYCLE_BACKEND.md",
+    "ResultJson": "state/db-m12-2-result.json",
+    "ImplementationReport": "tasks/DB-M12.2_IMPLEMENTATION_REPORT.md"
+  },
+  "Verdict": "PASS",
+  "StopAfterMilestone": true
+}

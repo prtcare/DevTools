@@ -1,0 +1,92 @@
+{
+  "nodeId": "WI-07-0.2.4",
+  "changeId": "CHG-20260830-017",
+  "scopeAmended": true,
+  "scopeAmendedAt": "2026-08-30T18:51:45Z",
+  "scopeChangePreflightResult": "SCOPE_CHANGE_CLEAR",
+  "preflightRef": "state/scope-change-preflight.json",
+  "originalScope": {
+    "repository": "Nexus.Developer",
+    "projects": ["Nexus.Developer.Core"],
+    "filesGlobs": ["src/Nexus.Developer.Core/DevelopmentControl/**"],
+    "contracts": ["IDevelopmentControlStore (22 ops)", "Core concurrency/work-unit contracts"]
+  },
+  "amendedScope": {
+    "repository": "Nexus.Developer",
+    "projects": ["Nexus.Developer.Core", "Nexus.Developer.Infrastructure"],
+    "filesGlobs": [
+      "src/Nexus.Developer.Core/DevelopmentControl/**",
+      "src/Nexus.Developer.Infrastructure/DevelopmentControl/ExcelDevelopmentControlStore.cs"
+    ],
+    "contracts": [
+      "IDevelopmentControlStore (22 ops, unchanged)",
+      "Core concurrency/work-unit contracts (unchanged)",
+      "new IDevelopmentControlAtomicWorkUnitRunner (in-scope Core correction)",
+      "minimum adapter batch entry (added Infrastructure file)"
+    ],
+    "note": "ADDED scope is a single Infrastructure file only. NOT widened to src/Nexus.Developer.Infrastructure/DevelopmentControl/**."
+  },
+  "addedProjects": [
+    "Nexus.Developer.Infrastructure"
+  ],
+  "addedFiles": [
+    "src/Nexus.Developer.Infrastructure/DevelopmentControl/ExcelDevelopmentControlStore.cs"
+  ],
+  "addedFileBaselineHashes": [
+    {
+      "path": "src/Nexus.Developer.Infrastructure/DevelopmentControl/ExcelDevelopmentControlStore.cs",
+      "sha256": "6160c4fea3185ec48701d2934c55d354b4780ecedd7a2b2363d4ac16ce3d9a80",
+      "bytes": 90279,
+      "gitStatus": "untracked",
+      "priorCycleOwner": "WI-07-0.2.3 / CHG-20260830-016 (Completed)",
+      "amendmentOwner": "CHG-20260830-017 (permitted for modification by the approved scope amendment)",
+      "baselineCapturedAt": "2026-08-30T18:53:38Z",
+      "note": "PRE-EXISTING untracked deliverable. Becomes the new DB-M06 delta baseline. Not modified during this amendment."
+    }
+  ],
+  "originalCoreFileBaselines": [
+    { "path": "src/Nexus.Developer.Core/DevelopmentControl/AtomicWriteResult.cs", "sha256": "6f7741f14e5a30b958ad47ba685af04325f522b725f8260ffc7b30647ec96fcb" },
+    { "path": "src/Nexus.Developer.Core/DevelopmentControl/ConcurrencyGuardedDevelopmentControlStore.cs", "sha256": "5624eebaf7722d36356d8110b9cb90abf5f89c9a836241090189e3a5a86e3392" },
+    { "path": "src/Nexus.Developer.Core/DevelopmentControl/DevelopmentControlAtomicWriteCoordinator.cs", "sha256": "c085fbc04dddd44dbef75d2bd03a803dc74ab289b1e51ae31079163ca1513c28" },
+    { "path": "src/Nexus.Developer.Core/DevelopmentControl/DevelopmentControlConcurrencyOutcome.cs", "sha256": "802914ef8a88e60e8963326cd86338c2584ba688435a57a31fcbc6e40fbb7f13" },
+    { "path": "src/Nexus.Developer.Core/DevelopmentControl/DevelopmentControlMutexIdentity.cs", "sha256": "d7fb7618aab13190a9e279fb7988eb375772477dfc79fa97f0f544b44c782be1" },
+    { "path": "src/Nexus.Developer.Core/DevelopmentControl/DevelopmentControlWriteLock.cs", "sha256": "99412bbde5585f6f4ffa1f581075f0c6250478824a4df4e38cca699592381180" },
+    { "path": "src/Nexus.Developer.Core/DevelopmentControl/IDevelopmentControlWriteLockFactory.cs", "sha256": "35a7cf423e49f2748aa2af8c98494e2d5eb09b013b3c5072b98ad91d2aa62f3a" },
+    { "path": "src/Nexus.Developer.Core/DevelopmentControl/NamedDevelopmentControlMutex.cs", "sha256": "31c51f54c980498fa3d0877a9ffe1eeba959a4ed27af223bf7985db7540eb933" },
+    { "path": "src/Nexus.Developer.Core/DevelopmentControl/SemaphoreDevelopmentControlWriteLock.cs", "sha256": "324d382a4f9bd0c90c03893583c03036331320b4d9749ca794bfce5bc813d970" }
+  ],
+  "scopeAmendmentActivityId": "ACT-20260830-019",
+  "activeChangesRow": 80,
+  "activityLogRow": 56,
+  "workbookBackup": {
+    "path": "C:\\Personal\\DevTools\\DevBridge\\logs\\workbook-backups\\NEXUS_DEVELOPMENT_CONTROL_20260830_184615.xlsx",
+    "sha256": "93d2620d919789d9c7199c417ff3a9fd5b09da0464f0d3800db0748e62772372",
+    "verified": true,
+    "note": "PRE-amendment backup. Matches the pre-write canonical workbook SHA-256 byte-for-byte."
+  },
+  "workbookHashes": {
+    "preAmendment": "93d2620d919789d9c7199c417ff3a9fd5b09da0464f0d3800db0748e62772372",
+    "postAmendment": "f520060cb753ec8ec96b44bcbd193bdab69ca68d4cc27198663665d5fe63f884",
+    "amendmentVerify": "PASS"
+  },
+  "amendmentHistory": {
+    "sequence": [
+      "DB-M04 reservation (CHG-20260830-017): Core-only scope (src/Nexus.Developer.Core/DevelopmentControl/**)",
+      "Implementation attempt: 9 Core files delivered + verified (44/44 harness, 199/199 tests)",
+      "BLOCKED / SCOPE_CHANGE_REQUIRED=YES (atomic multi-op save requires the adapter batch entry)",
+      "SCOPE_CHANGE_PREFLIGHT = SCOPE_CHANGE_CLEAR (state/scope-change-preflight.json)",
+      "AMEND_ACTIVE_CHANGE_SCOPE (this operation): CHG-20260830-017 scope amended Core-only -> Core + single Infrastructure file; Activity Log ACT-20260830-019 appended"
+    ],
+    "originalCoreOnlyReservationPreserved": true
+  },
+  "parallelScopeCheck": "PASS",
+  "implementationState": "READY_FOR_SCOPE_DELTA_IMPLEMENTATION",
+  "nextAllowedAction": "CONTINUE_DEEPSEEK_IMPLEMENTATION",
+  "nexusSourceModifiedDuringAmendment": false,
+  "idempotency": {
+    "duplicateRowCreated": false,
+    "duplicateActivityEventCreated": false,
+    "runTwiceDetection": "SCOPE_ALREADY_AMENDED (H80/I80 already contain the Infrastructure addition)",
+    "verified": true
+  }
+}

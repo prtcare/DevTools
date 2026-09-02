@@ -1,0 +1,81 @@
+{
+  "milestone": "DB-M06",
+  "taskId": "WI-07-0.2.3",
+  "changeId": "CHG-20260830-016",
+  "capturedAtUtc": "2026-08-30T00:00:00Z",
+  "baseline": {
+    "repository": "C:\\Personal\\Nexus.Developer",
+    "branch": "feature/m-08-1-2-ci-pipeline",
+    "headCommit": "ea39db910a6e3b00bff880316996a696ae7460dc",
+    "headSubject": "CHG-20260830-015: workbook v3.26 - WI-07-0.2.2 verified clean, marked Complete; M-07-0.2 at 20%"
+  },
+  "current": {
+    "branch": "feature/m-08-1-2-ci-pipeline",
+    "headCommit": "ea39db910a6e3b00bff880316996a696ae7460dc",
+    "commitsAddedSinceBaseline": 0,
+    "stagedFiles": [],
+    "modifiedFiles": [
+      " NEXUS_DEVELOPMENT_CONTROL.xlsx"
+    ],
+    "untrackedFiles": [
+      "src/Nexus.Developer.Infrastructure/DevelopmentControl/DevelopmentControlCellCodec.cs",
+      "src/Nexus.Developer.Infrastructure/DevelopmentControl/ExcelDevelopmentControlStore.cs",
+      "src/Nexus.Developer.Infrastructure/DevelopmentControl/ExcelWorkbookColumnMap.cs"
+    ]
+  },
+  "inventory": [
+    {
+      "path": "NEXUS_DEVELOPMENT_CONTROL.xlsx",
+      "state": "modified",
+      "classification": "GOVERNANCE_WORKBOOK",
+      "evidence": "Pre-existing DB-M04 reservation write. Current SHA256 F52A1A8FE491B6C91809EAC92DB2F0DCCD43FF7C5C80BA2618E19B64D3FDD4F7 equals the reservation's workbookSha256After; no implementation modification."
+    },
+    {
+      "path": "src/Nexus.Developer.Infrastructure/DevelopmentControl/ExcelWorkbookColumnMap.cs",
+      "state": "new-untracked",
+      "classification": "IMPLEMENTATION_CHANGE_IN_SCOPE",
+      "bytes": 7846,
+      "sha256": "35592CF5534663C07DCDB6FE814B08DDCF52146AF7BE19E1A5D578B9FBE6357F",
+      "evidence": "Inside reserved glob src/Nexus.Developer.Infrastructure/DevelopmentControl/**"
+    },
+    {
+      "path": "src/Nexus.Developer.Infrastructure/DevelopmentControl/DevelopmentControlCellCodec.cs",
+      "state": "new-untracked",
+      "classification": "IMPLEMENTATION_CHANGE_IN_SCOPE",
+      "bytes": 13751,
+      "sha256": "79488E960BD0376A24951D7A1B0DFD18789A62327DF131B0475FDEC519C66FE4",
+      "evidence": "Inside reserved glob src/Nexus.Developer.Infrastructure/DevelopmentControl/**"
+    },
+    {
+      "path": "src/Nexus.Developer.Infrastructure/DevelopmentControl/ExcelDevelopmentControlStore.cs",
+      "state": "new-untracked",
+      "classification": "IMPLEMENTATION_CHANGE_IN_SCOPE",
+      "bytes": 90279,
+      "sha256": "6160C4FEA3185EC48701D2934C55D354B4780ECEDD7A2B2363D4AC16CE3D9A80",
+      "evidence": "Inside reserved glob src/Nexus.Developer.Infrastructure/DevelopmentControl/**"
+    }
+  ],
+  "preExistingScopeFilesUnchanged": [
+    {
+      "path": "src/Nexus.Developer.Infrastructure/DevelopmentControl/ActivityLogMigration.cs",
+      "baselineSha256": "D9051FCD68F282FA5688EC47B4CC9EF5DE9FCB1A341F46F8371B17C141824A4C",
+      "currentSha256": "D9051FCD68F282FA5688EC47B4CC9EF5DE9FCB1A341F46F8371B17C141824A4C",
+      "unchanged": true
+    },
+    {
+      "path": "src/Nexus.Developer.Infrastructure/DevelopmentControl/WorkbookSchemaReport.cs",
+      "baselineSha256": "E8D053290E68BAFFBCEEDC853E28AB9876A15D4DFCC6CC9E6F8463B22D7350B0",
+      "currentSha256": "E8D053290E68BAFFBCEEDC853E28AB9876A15D4DFCC6CC9E6F8463B22D7350B0",
+      "unchanged": true
+    },
+    {
+      "path": "src/Nexus.Developer.Infrastructure/DevelopmentControl/WorkbookSchemaValidator.cs",
+      "baselineSha256": "DC76E648C4C16F944A9E4D580CBB45785AAD955A7987CBF79158233AB63976FD",
+      "currentSha256": "DC76E648C4C16F944A9E4D580CBB45785AAD955A7987CBF79158233AB63976FD",
+      "unchanged": true
+    }
+  ],
+  "scopeViolation": false,
+  "outOfScopeChanges": [],
+  "unknownChanges": []
+}

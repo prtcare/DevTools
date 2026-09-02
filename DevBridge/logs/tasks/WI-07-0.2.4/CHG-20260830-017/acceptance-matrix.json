@@ -1,0 +1,28 @@
+{
+  "milestone": "DB-M06",
+  "taskId": "WI-07-0.2.4",
+  "changeId": "CHG-20260830-017",
+  "capturedAtUtc": "2026-08-31T01:12:00Z",
+  "trialMode": true,
+  "areas": [
+    { "id": "AREA-01", "area": "Governance freshness", "result": "PASS", "evidence": "Workbook F520060C... current; WI-07-0.2.4 row 328 Planned; CHG-20260830-017 exactly once, row 80 Open with amended scope; dependency CHG-20260830-016 SATISFIED; no conflicting open reservation; open decisions all pre-existing and non-blocking." },
+    { "id": "AREA-02", "area": "Source delta attribution", "result": "PASS", "evidence": "Baseline A (DB-M04) = Core-only; Baseline B (amendment) = adapter 6160c4fe -> current 17a25a56. Core 7/9 byte-identical, 2 routing edits, 1 new contract. ExcelDevelopmentControlStore.cs NOT classified as a new file; pre-existing WI-07-0.2.3 content preserved. See changed-files.json." },
+    { "id": "AREA-03", "area": "Hard scope", "result": "PASS", "evidence": "Current-task source changes exist ONLY inside authorized scope (Core/DevelopmentControl/** + the one Infra file). git status shows only pre-existing untracked deliverables + amendment workbook M. No SCOPE_VIOLATION." },
+    { "id": "AREA-04", "area": "Architecture / dependency direction", "result": "PASS", "evidence": "Dependency direction Infrastructure->Core only; Core has no ClosedXML package or project reference and no Infrastructure using; no circular dependency; exactly one Development Control store implementation; no second spreadsheet engine; no alternative save architecture." },
+    { "id": "AREA-05", "area": "Named cross-process mutex", "result": "PASS", "evidence": "M1-M10: deterministic identity, distinct unrelated identity, normalized token, acquire/release, same-process different-thread bounded timeout (~408ms), REAL child-process contention (child times out while parent holds; child acquires after release), abandoned-mutex recovery via kernel handoff." },
+    { "id": "AREA-06", "area": "RowVersion optimistic concurrency (no lost update)", "result": "PASS", "evidence": "M11-M16: A commits N->N+1; B acquires lock, re-reads persisted state, observes N+1, controlled CONCURRENCY_CONFLICT carrying the current node; B does NOT overwrite A; concurrent two-writer race yields exactly one success + one conflict and advances persisted RowVersion exactly once." },
+    { "id": "AREA-07", "area": "Multi-operation atomic success (single save)", "result": "PASS", "evidence": "M17-M19: two-op work unit -> SUCCESS, persisted RowVersion advanced by exactly 2, exactly 2 VH + 2 AL rows committed together, one save, temp directory holds exactly ONE file." },
+    { "id": "AREA-08", "area": "Failure atomicity (incl. temp validation gate)", "result": "PASS", "evidence": "M20-M26: op1 in-memory success + op2 failure -> whole unit controlled CONCURRENCY_CONFLICT, canonical temp byte-identical (no partial op1, no final replace), ZERO VH/AL rows; validation-failure variant -> ValidationFailure, no promotion; schema gate rejects missing-sheet temp (throws); adapter Open rejects structurally-invalid workbook." },
+    { "id": "AREA-09", "area": "Single-operation regression (22-op contract)", "result": "PASS", "evidence": "M27-M30: guarded single-op update SUCCESS RowVersion +1; GetControlState / GetActivityLog / SearchNodes read paths intact." },
+    { "id": "AREA-10", "area": "Append-only VH/AL (ADR-003)", "result": "PASS", "evidence": "M32-M34 (independent fingerprint, not row counts): Activity Log strictly append-only, every prior row byte-identical, exactly one new row; Version History prior records preserved byte-identical except the documented predecessor Is-Current flip Yes->No, exactly one new row." },
+    { "id": "AREA-11", "area": "Temp-write -> validate -> atomic-replace -> cleanup", "result": "PASS", "evidence": "M19/M31: no leftover temp-save artifacts after any commit; single promotion path." },
+    { "id": "AREA-12", "area": "Canonical workbook protection", "result": "PASS", "evidence": "Canonical SHA-256 F520060CB753EC8EC96B44BCBD193BDAB69CA68D4CC27198663665D5FE63F884 before == after (Z1); independent Get-FileHash confirmed identical post-verification. See workbook-consistency.json / WORKBOOK_CONSISTENCY_REPORT.md." },
+    { "id": "AREA-13", "area": "Build", "result": "PASS", "evidence": "dotnet build Nexus.Developer.slnx -c Release -> 0 warnings, 0 errors. No unrelated source modified to make build green." },
+    { "id": "AREA-14", "area": "Existing test suite", "result": "PASS", "evidence": "dotnet test tests/Nexus.Developer.Core.Tests -c Release -> 199 passed, 0 failed, 0 skipped (independent run)." },
+    { "id": "AREA-15", "area": "Git safety", "result": "PASS", "evidence": "No commit, push, PR, merge, rebase, stash, reset, or clean. Branch feature/m-08-1-2-ci-pipeline unchanged; HEAD ea39db910a6e3b00bff880316996a696ae7460dc unchanged; working tree shows only pre-existing untracked deliverables + amendment workbook M. Implementation marked TRIAL_ONLY_UNMERGED." },
+    { "id": "AREA-16", "area": "Trial boundary", "result": "PASS", "evidence": "WI-07-0.2.4 implementation evaluated ONLY as trial evidence of DevBridge lifecycle quality; NOT evaluated as a component to preserve for final Nexus; NO recommendation to migrate it into the final Nexus architecture." },
+    { "id": "AREA-17", "area": "Roadmap protection", "result": "PASS", "evidence": "Roadmap/workbook not modified by verification (byte-identical canonical); no phases/milestones changed." }
+  ],
+  "verdict": "VERIFICATION_PASS",
+  "nextAllowedAction": "CREATE_CLAUDE_REVIEW_PACKAGE"
+}

@@ -1,0 +1,130 @@
+{
+  "Milestone": "DB-M26",
+  "Title": "AI Usage / Cost Dashboard",
+  "Lane": "B",
+  "DateUtc": "2026-08-31T12:00:00Z",
+  "Implementation": "PASS",
+  "Summary": "A read-only operator-facing AI analytics dashboard answering the brief's ten questions (spend, on what, verified results, cheap-but-retry routes, failure cost, escalation cost, true cost per verified success, savings, budgets approaching limits, provider failures driving waste). Single HTML artifact, self-contained in DB-M26-owned files; every number derives READ-ONLY from the existing foundations, never a divergent alternate metric. Total/Actual/Estimated-pending spend is DB-M16 semantics via the DB-M25 reporting pass (S01/S02/S06); verified-success is authoritative (a model self-PASS with failed verification is CONTRADICTED, never success; S07); attempt-chain cost is the DB-M25 chain cost (fail 3 + fail 6 + pass 10 = 19 cumulative 3/9/19; S05); failed-attempt cost, escalation cost (3+6) and correction cost (full multi-attempt chain) are each visible and drillable (S08-S12); first-attempt success rate and cost per verified success are shown (S13/S14); savings always carry the explicit baseline type/basis + observed cost-per-success on both sides + confidence + sample (S15/S16); confidence reuses DB-M24 bands and INSUFFICIENT is labelled everywhere (S17); filters cover task type/provider/model/reasoning/date window (S18-S22); direct vs gateway stay separate with the underlying model preserved (S23/S24); LOCAL is never invented as FREE (LOCAL_COST_UNKNOWN; S25); budget WARNING/BLOCKED is displayed from the policy thresholds and the dashboard never grants overrides (S26/S27/S37); provider health + circuit state are displayed from the passed snapshot and never polled (S28/S29/S38); failed attempts remain visible after later success (S30/S32); chain drilldown carries cumulative cost (S31); zero write actions, zero provider/model execution, zero pricing/router/budget/health mutation, zero network calls, zero paid calls (S33-S40); the canonical Nexus workbook and all 18 M12.x UI source files are SHA-256 verified byte-identical (S41/S42); all DB-M14/M16/M17/M19/M20/M21/M22/M23/M24/M25 regressions stay green (S43/S44); build + schema validators pass on real artifacts (S45). AUTO_EXECUTION_ENABLED=FALSE; paid calls 0; network calls 0.",
+  "DashboardViewV1": "PASS",
+  "DashboardRequestV1": "PASS",
+  "DashboardLoads": "PASS",
+  "SummaryCards": "PASS",
+  "TotalSpend": "PASS",
+  "ActualVsEstimatedSpend": "PASS",
+  "VerifiedSuccessCost": "PASS",
+  "AttemptChainCost": "PASS",
+  "FailedAttemptCost": "PASS",
+  "EscalationCost": "PASS",
+  "CorrectionCost": "PASS",
+  "SavingsAnalytics": "PASS",
+  "BaselineVisibility": "PASS",
+  "ConfidenceSampleDisplay": "PASS",
+  "BudgetView": "PASS",
+  "ProviderHealthView": "PASS",
+  "ModelPerformanceView": "PASS",
+  "AttemptHistory": "PASS",
+  "ChainDrilldown": "PASS",
+  "Filters": "PASS",
+  "LocalOpenRouterRouteDisplay": "PASS",
+  "ReadOnlyAnalytics": "PASS",
+  "RouterPolicyModified": "NO",
+  "PricingModified": "NO",
+  "BudgetModified": "NO",
+  "ProviderHealthModified": "NO",
+  "AutoExecutionEnabled": "FALSE",
+  "ProviderModelExecuted": "NO",
+  "RoadmapModificationCapability": "NO",
+  "GitPrMergeCapability": "NO",
+  "TemporaryDevBridgeBoundary": "PASS",
+  "Tests": {
+    "Passed": 382,
+    "Failed": 0,
+    "Total": 382,
+    "Scenarios": 45,
+    "ScenarioCount": "45/45",
+    "PaidApiCalls": 0,
+    "NetworkCalls": 0,
+    "Note": "Test-DbM26Dashboard.ps1: 382 assertions, 0 failed, exit 0; 45/45 scenarios. S01 dashboard loads + view valid + HTML non-empty + READ-ONLY badge; S02 empty data labels No attempts; S03 one attempt -> spend/verified/cps 10; S04 fail+pass chain cost-per-success 13 (never 10); S05 fail+fail+pass cumulative 3/9/19; S06 actual 10 + estimated 5 -> total 15, verified-success cost from actual evidence only; S07 FAILED verification contradicts model PASS (verified tasks 0, cps null); S08 failed-attempt cost 3; S09 provider-failure bucket 5 separated; S10 model-quality bucket 4 separated and buckets sum; S11 escalation cost card 9 + drilldown evidence; S12 correction cost = full multi-attempt chain 19, single-attempt 0; S13 first-attempt rate 0.5; S14 cost per verified success 13; S15 baseline cost 13 vs candidate 5 -> absolute 8, percent 61.54, baseline type/basis shown; S16 savings confidence INSUFFICIENT + sample; S17 INSUFFICIENT badge on single sample; S18 task-type filter; S19 provider filter; S20 model filter; S21 reasoning filter; S22 CUSTOM window 8-20..8-30 keeps only in-window; S23 direct prov-a|model-a|(none) vs gateway prov-a|model-a|openrouter separate; S24 underlying model claude-opus preserved on both rows; S25 LOCAL -> LOCAL_COST_UNKNOWN, never FREE, no invented cost; S26 budget WARNING at 90/100; S27 budget BLOCKED at 120/100; S28 provider health rows + healthy/unavailable counts; S29 circuit CLOSED vs HALF_OPEN + retry-after; S30 attempt history preserved; S31 chain drilldown total 13 + 2 attempts; S32 failed attempts not hidden after success; S33 zero write tokens in dash files + no forms; S34 no provider-execution tokens; S35 no pricing-mutation tokens + adaptor contract byte-identical; S36 no router-policy tokens + config byte-identical; S37 displayed override never lifts budget status; S38 no health-mutation tokens; S39 zero network tokens + guard; S40 zero paid calls + immutable PolicyVersion 0.0.0 + footer zeroes; S41 no workbook tokens + canonical workbook SHA F520060C byte-identical; S42 18 M12.x UI source files SHA-256 byte-identical + no DevBridge.UI reference; S43 DB-M25 regression 337/337 green; S44 DB-M14/16/17/19/20/21/21Fingerprints/22Health/22Failover/23/24 regressions all green; S45 fresh parse + engine + renderer + explicit artifact export + schema validators."
+  },
+  "Regressions": {
+    "DBM14": "51/51 PASS, exit 0",
+    "DBM16": "167/167 PASS, exit 0",
+    "DBM17": "99/99 PASS, exit 0",
+    "DBM19": "136/136 PASS, exit 0",
+    "DBM20": "149/149 PASS, exit 0",
+    "DBM21": "Budget 77/77 PASS, exit 0; Fingerprints 74/74 PASS, exit 0",
+    "DBM22": "Health 68/68 PASS, exit 0; Failover 64/64 PASS, exit 0",
+    "DBM23": "203/203 PASS, exit 0",
+    "DBM24": "128/128 PASS, exit 0",
+    "DBM25": "337/337 PASS, exit 0"
+  },
+  "FilesCreated": [
+    "scripts/ai-routing/dashboard/DashboardContracts.ps1",
+    "scripts/ai-routing/dashboard/DashboardData.ps1",
+    "scripts/ai-routing/dashboard/DashboardRender.ps1",
+    "scripts/ai-routing/dashboard/Test-DbM26Dashboard.ps1",
+    "design/ai-routing/DB-M26_AI_USAGE_COST_DASHBOARD.md",
+    "state/db-m26-result.json"
+  ],
+  "FilesModified": [],
+  "AutomaticExecutionEnabled": "FALSE",
+  "AI_APICalls": 0,
+  "NetworkCalls": 0,
+  "M123UiOverlap": {
+    "Overlap": "NONE",
+    "Details": "The 18 M12.x-owned lifecycle UI source files under src\\DevBridge.UI (xaml/cs, excluding obj/bin) are SHA-256 verified byte-identical before/after the run (S42). The DB-M26 library never references the DevBridge.UI namespace (grep-verified, S42). DB-M12.3 is unmodified."
+  },
+  "DBM14Overlap": {
+    "Overlap": "NONE",
+    "Details": "AiRoutingContracts.ps1 consumed READ-ONLY through the DB-M25 chain (Get-ContractProperty, reasoning/task-type/local-or-remote vocabularies). SHA-256 verified MATCH (byte-identical; S43/S44 frozen-file post-check). Untouched."
+  },
+  "DBM16Overlap": {
+    "Overlap": "NONE",
+    "Details": "Cost semantics reused READ-ONLY via DB-M25 Resolve-DbM25RecordCost / Get-DbM25ChainCost: ActualCost preferred, EstimatedCost labelled pending, only reporting-currency evidence contributes, historic cost in another currency never re-converted. The dashboard spend split is the same pass, never a divergent metric."
+  },
+  "DBM17Overlap": {
+    "Overlap": "NONE",
+    "Details": "AttemptStore.ps1 untouched. AiAttemptRecord v1 consumed READ-ONLY (Result/VerificationResult/FailureCategory/ProviderId/ModelId/GatewayProviderId/ReasoningLevel/TaskType/StartedAtUtc/ActualCost/EstimatedCost/CostCurrency). LocalOrRemote and ClaudeReviewStatus are read defensively via Get-ContractProperty; the DB-M17 record shape is unchanged."
+  },
+  "DBM19Overlap": {
+    "Overlap": "NONE",
+    "Details": "router/* untouched. The dashboard does NOT select routes: it mirrors filter dimensions into a DB-M25 query READ-ONLY and renders evidence. config/ai-routing.json byte-identical (S36); PolicyVersion immutable 0.0.0 (S40). No routing policy mutation capability."
+  },
+  "DBM20Overlap": {
+    "Overlap": "NONE",
+    "Details": "escalation/* untouched. Escalation evidence (EscalatedFromAttemptId/EscalatedToAttemptId/EscalationReason, ClaudeReviewStatus) is displayed READ-ONLY; escalation cost is the DB-M25 group sum (S11). The dashboard never decides escalation."
+  },
+  "DBM21Overlap": {
+    "Overlap": "NONE",
+    "Details": "budget/* untouched. A DB-M21 BudgetPolicy v1 is passed as INPUT and read READ-ONLY; WARNING/BLOCKED status derives from the policy's own WarnAtPercent/BlockAtPercent (S26/S27). The dashboard NEVER grants overrides; override evidence is displayed only and never lifts status (S37)."
+  },
+  "DBM22Overlap": {
+    "Overlap": "NONE",
+    "Details": "provider-health/* and failover/* untouched. An effective-health snapshot is passed as INPUT and displayed READ-ONLY (Health/CircuitState/RetryAfter/evidence counts; S28/S29). The dashboard never polls providers and has no health-mutation capability (S38)."
+  },
+  "DBM23Overlap": {
+    "Overlap": "NONE",
+    "Details": "providers/common/AdapterContracts.ps1 consumed READ-ONLY (price statuses CONFIGURED/FREE/LOCAL_COST_UNKNOWN/PRICE_UNKNOWN). LOCAL is never shown as FREE: LOCAL_COST_UNKNOWN unless price evidence is known and labelled (S25). No pricing mutation capability (S35)."
+  },
+  "DBM24Overlap": {
+    "Overlap": "NONE",
+    "Details": "performance/* untouched. AiPerformanceFoundation/ModelPerformance consumed READ-ONLY (Resolve-AiTaskChains/ChainFacts/GroupKey/Identity, Get-AiConfidenceLevel bands INSUFFICIENT/LOW/MODERATE/HIGH, Get-PerfMean/Median/String, ConvertTo-AiPerfUtc). Confidence/sample display reuses the DB-M24 bands (S17)."
+  },
+  "DBM25Overlap": {
+    "Overlap": "NONE",
+    "Details": "quality-cost/* untouched (byte-identical, S43). The dashboard consumes DB-M25 QualityAdjustedCostResult/SavingsAnalysis READ-ONLY as the single source for verified-success, chain cost, escalation cost, failed-attempt cost, savings, confidence and cost-per-success; it never recomputes an inconsistent alternate metric. Engine + renderer call the DB-M25 functions directly (DashboardContracts/Data dot-source AiQualityCostContracts + QualityCost READ-ONLY)."
+  },
+  "DBGH01Overlap": {
+    "Overlap": "NONE",
+    "Details": "DB-GH01 (Lane A) owns lifecycle/governance scripts in scripts\\ root and the workbook; DB-M26 wrote ONLY under scripts\\ai-routing\\dashboard\\ + design\\ai-routing\\DB-M26_AI_USAGE_COST_DASHBOARD.md + state\\db-m26-result.json. Grep-verified zero disk-write tokens (Set-Content/Out-File/Add-Content/New-Item/Remove-Item/Copy-Item/Move-Item/ConvertTo-Json/Export-Csv) and zero workbook/current-task/preflight/logs references in every DB-M26 dashboard .ps1 (S33/S41). The only write in the library is Export-DbM26DashboardHtml's WriteAllText of the operator-requested HTML artifact. NO PARALLEL_SCOPE_CONFLICT."
+  },
+  "WorkbookModified": "NO (by DB-M26; S41 grep-verified zero write references + canonical workbook SHA-256 byte-identical)",
+  "NexusRepositoriesModified": "NO",
+  "RoadmapModificationCapability": "NO",
+  "GitPrMergeCapability": "NO",
+  "WorkbookSha256Current": "F520060CB753EC8EC96B44BCBD193BDAB69CA68D4CC27198663665D5FE63F884",
+  "WorkbookSha256Note": "Canonical workbook C:\\Personal\\Nexus.Developer\\NEXUS_DEVELOPMENT_CONTROL.xlsx verified present and SHA-256 byte-identical F520060C (matches the DB-M25 record; S41). DB-M26 itself performed ZERO workbook writes.",
+  "DBM27Ready": "YES",
+  "DBM29FoundationReady": "YES",
+  "NotesForNextMilestones": "DB-M26 delivers the read-only dashboard foundation: DashboardView v1 + request filters + HTML renderer, all consuming the DB-M16/17/21/22/24/25 evidence READ-ONLY. Every view field is stable and schema-validated; the renderer emits one self-contained HTML artifact with summary cards, breakdowns, confidence badges and a read-only footer. Real Nexus restart rule still holds: after DevBridge validation, restore the pre-DevBridge workbook backup + Nexus source/Git baseline; DB-M26 is DevBridge-only, temporary, and NOT designed for Nexus migration."
+}

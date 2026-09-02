@@ -1,0 +1,117 @@
+{
+  "Milestone": "DB-M23",
+  "Title": "Local Models + OpenRouter Integration Foundation",
+  "Lane": "B",
+  "DateUtc": "2026-08-31T11:20:00Z",
+  "Implementation": "PASS",
+  "Summary": "PROVIDER-ADAPTER FOUNDATION for future LOCAL model runtimes and OpenRouter gateway routes, built provider-independently on the existing AI-routing architecture. The generic local abstraction is NOT 'Ollama == local models': a runtime is expressed by DB-M14 ProviderType/GatewayType vocabulary + the DB-M23 ApiStyle (OPENAI_COMPATIBLE / OLLAMA_COMPATIBLE / ANTHROPIC_COMPATIBLE / OPENROUTER / GENERIC), never a hard-coded runtime name in shared logic. LocalProviderConfiguration v1 (Locality forced LOCAL; SecretReference/ConfigurationKey are NAMES, never values). OpenRouter is a GATEWAY, never a model: route decomposition keeps gateway identity distinct from model identity (ProviderId=openrouter, ModelId=or:<route>, ProviderModelId=full route id, UnderlyingModelId=model part after the last '/', ':variant' stripped). Shared common layer (AdapterContracts/AdapterRequest/AdapterResponse/AdapterExecutionGate) owns request normalization (DB-M14 reasoning NONE/LOW/MEDIUM/HIGH/MAX -> provider param; unsupported reported UNSUPPORTED, never silently dropped), usage normalization (Input/CachedInput/CacheWrite/Output/Reasoning/Total/ProviderReportedCost; no fabricated usage; TotalTokens only when input+output known), response normalization (ProviderResponse v1 fixed field list), error normalization (DB-M23 categories -> DB-M20 vocabulary; PROVIDER_UNAVAILABLE->PROVIDER_AVAILABILITY, others identity; NO provider-specific failure logic in DB-M20), pricing integration (DB-M15 Get-AiPriceAt READ-ONLY; CONFIGURED/FREE/LOCAL_COST_UNKNOWN/PRICE_UNKNOWN; zero provider token price is NEVER zero operational cost; LOCAL != FREE automatically), health integration (DB-M22 evidence contract READ-ONLY; offline/model-not-loaded->UNAVAILABLE+PASSIVE_FAILURE+PROVIDER_AVAILABILITY, disabled->DISABLED+CONFIGURATION, auth->AUTH_ERROR+AUTHENTICATION, rate-limit->RATE_LIMITED+RATE_LIMIT; NEVER MODEL_QUALITY; no polling loops), budget integration (DB-M21 decisions READ-ONLY; allowed set ALLOW/ALLOW_WITH_WARNING/NO_APPLICABLE_BUDGET), router integration (DB-M19 RoutingDecisionEvidence READ-ONLY; adapter cannot rewrite a rejected routing decision). Execution gate: AUTO->AUTO_EXECUTION_PROHIBITED, non-eligible->ROUTING_NOT_ELIGIBLE, budget block->BUDGET_BLOCK, route unavailable->HEALTH_BLOCK; AUTO_EXECUTION_ENABLED=FALSE; MANUAL preserved; ASSISTED represented. DRY_RUN returns DRY_RUN_READY (native request shape + redacted headers, NoSend, NetworkCalls=0, PaidApiCalls=0). Secret protection: no secret values stored; Test-DbM23SecretLeak scans free text and rejects secret-like values; ConvertTo-DbM23RedactedValue/Headers keep Bearer scheme, redact the credential; a fake secret injected via the referenced env var never appears in the serialized DRY_RUN artifact. NO provider/model executed, 0 network calls, 0 paid API calls.",
+  "CommonProviderAdapter": "PASS",
+  "LocalProviderConfigurationV1": "PASS",
+  "GenericLocalProvider": "PASS",
+  "OpenAiCompatibleLocalRoute": "PASS",
+  "OpenRouterGatewayRepresentation": "PASS",
+  "UnderlyingModelIdentityPreserved": "PASS",
+  "RequestNormalization": "PASS",
+  "ReasoningTranslation": "PASS",
+  "ToolCapabilityHandling": "PASS",
+  "StructuredOutputHandling": "PASS",
+  "UsageNormalization": "PASS",
+  "ResponseNormalization": "PASS",
+  "ErrorNormalization": "PASS",
+  "PricingIntegration": "PASS",
+  "HealthIntegration": "PASS",
+  "BudgetIntegration": "PASS",
+  "RouterIntegration": "PASS",
+  "SecretProtection": "PASS",
+  "DryRunSupport": "PASS",
+  "ManualModePreserved": "YES",
+  "AssistedSupport": "PASS",
+  "AutoExecutionEnabled": "FALSE",
+  "AutoExecutionRefused": "PASS",
+  "ProviderModelExecuted": "NO",
+  "DiscoveryMode": "STATIC_CONFIG (LIVE_DISCOVERY declared future-only)",
+  "TemporaryDevBridgeBoundary": "PASS",
+  "Tests": {
+    "Passed": 203,
+    "Failed": 0,
+    "Total": 203,
+    "Scenarios": 53,
+    "ScenarioCount": "53/53",
+    "PaidApiCalls": 0,
+    "NetworkCalls": 0,
+    "Note": "Test-DbM23Providers.ps1: 203 assertions, 0 failed, exit 0. S1 LocalProviderConfiguration v1 (Locality LOCAL, schemaVersion 1, STATIC_CONFIG discovery); S2 disabled local provider unusable; S3 LOCAL != FREE (LOCAL_COST_UNKNOWN, operational cost UNKNOWN, provider-level default 0 only); S4 explicit zero-price -> FREE; S5 non-zero -> CONFIGURED; S6 offline -> UNAVAILABLE/PASSIVE_FAILURE/PROVIDER_AVAILABILITY (never MODEL_QUALITY); S7 model-not-loaded -> UNAVAILABLE route; S8 disabled -> DISABLED/CONFIGURATION (never auto re-enabled); S9 registration preserves capabilities/reasoning, unknown stays null; S10 generic local (OLLAMA + OPENAI styles) + REMOTE claim rejected; S11 OpenRouter gateway identity distinct from model identity; S12 route decomposition; S13 distinct direct + gateway routes to one underlying model (Find-AiModelByUnderlyingModel); S14 config contract (GATEWAY/OPENROUTER/https/NAME-only); S15 :variant stripping; S16 unknown capability null; S17 invalid route refused; S18 ProviderRequest v1 + no provider param leak; S19 NONE omitted; S20 OPENAI reasoning_effort low/medium/high; S21 OPENAI MAX UNSUPPORTED; S22 OLLAMA MEDIUM think=true, LOW UNSUPPORTED; S23 ANTHROPIC/OPENROUTER translate all levels; S24 tool/structured-output refusals (no silent emulation); S25 invalid request rejected; S26 usage dims + DB-M17 source; S27 TotalTokens only when input+output known; S28 missing usage null + MissingUsage + UNKNOWN explicit; S29 ProviderResponse v1 field list; S30 tool calls/structured content normalized; S31 DB-M23->DB-M20 map (PROVIDER_UNAVAILABLE->PROVIDER_AVAILABILITY, identity others, unknown->UNKNOWN_FAILURE); S32 message redacted + RetryAfterUtc preserved; S33 secret-like value in Notes rejected, NAME fields exempt; S34 NAME-only SecretReference + injected fake secret never in serialized artifact; S35 redaction helpers; S36 DRY_RUN_READY + NoSend + 0/0 counters; S37 New-ProviderDryRunResult; S38 AUTO refused, MANUAL/ASSISTED preserved; S39 local end-to-end DRY_RUN; S40 OpenRouter end-to-end DRY_RUN; S41 AUTO gate; S42 budget block not bypassable; S43 health block not bypassable; S44 routing non-eligible not bypassable; S45 all gates pass (MANUAL display only); S46 ALLOW_WITH_WARNING/NO_APPLICABLE_BUDGET allowed, BLOCK_COST_UNKNOWN refused; S47 local gate composition; S48 OpenRouter gate + configured price; S49 LOCAL_COST_UNKNOWN vs PRICE_UNKNOWN; S50 local evidence drives DB-M22 health; S51 invariants 0 network/0 paid/auto-execution FALSE across all ops; S52 DB-M14 vocabulary intact (read-only consumption); S53 adapter boundary (cannot rewrite routing/budget/health) + serialization with no secrets."
+  },
+  "Regressions": {
+    "DBM14": "51/51 PASS, exit 0",
+    "DBM19": "136/136 PASS, exit 0",
+    "DBM20": "149/149 PASS, exit 0",
+    "DBM21": "Budget S1-S23 (77 assertions) PASS, exit 0; Fingerprints S24-S50 (74 assertions) PASS, exit 0",
+    "DBM22": "Health 68/68 PASS, exit 0; Failover 64/64 PASS, exit 0",
+    "DBM24": "128/128 PASS, exit 0 (34/34 scenarios)"
+  },
+  "FilesCreated": [
+    "scripts/ai-routing/providers/common/AdapterContracts.ps1",
+    "scripts/ai-routing/providers/common/AdapterRequest.ps1",
+    "scripts/ai-routing/providers/common/AdapterResponse.ps1",
+    "scripts/ai-routing/providers/common/AdapterExecutionGate.ps1",
+    "scripts/ai-routing/providers/local/LocalProvider.ps1",
+    "scripts/ai-routing/providers/openrouter/OpenRouterProvider.ps1",
+    "scripts/ai-routing/providers/Test-DbM23Providers.ps1",
+    "design/ai-routing/DB-M23_LOCAL_MODELS.md",
+    "design/ai-routing/DB-M23_OPENROUTER.md",
+    "state/db-m23-result.json"
+  ],
+  "FilesModified": [],
+  "AutomaticExecutionEnabled": "FALSE",
+  "AI_APICalls": 0,
+  "NetworkCalls": 0,
+  "DBM14Overlap": {
+    "Overlap": "NONE",
+    "Details": "AiRoutingContracts.ps1 consumed READ-ONLY (Get-ContractProperty, reasoning/health/provider/gateway vocabularies, Test-AiRoutingSecretValueLeak). SHA-256 CAF41E6E52B5B98904326C7E5CD8A7BF361B8C8CDFC395AAD2B4C53F357A4408 verified MATCH (byte-identical to the frozen contract recorded in db-m20/db-m21/db-m22 results). Untouched."
+  },
+  "DBM15Overlap": {
+    "Overlap": "NONE",
+    "Details": "Pricing catalogue consumed READ-ONLY via Get-AiPriceAt (AiRoutingPricingFoundation). No pricing records added/modified. Price classification CONFIGURED/FREE/LOCAL_COST_UNKNOWN/PRICE_UNKNOWN; no scraping, no live pricing, no invented cost."
+  },
+  "DBM16Overlap": {
+    "Overlap": "NONE",
+    "Details": "Cost/FX files untouched. DB-M23 normalizes provider-reported cost but performs no cost calculation."
+  },
+  "DBM17Overlap": {
+    "Overlap": "NONE",
+    "Details": "AttemptStore.ps1 untouched. New-NormalizedUsage reuses the DB-M17 usage-source vocabulary (ACTUAL/ESTIMATED/UNKNOWN) READ-ONLY; no attempt records written."
+  },
+  "DBM19Overlap": {
+    "Overlap": "NONE",
+    "Details": "router/* untouched. RoutingDecisionEvidence v1 consumed READ-ONLY by the execution gate (EligibleCandidates); a non-eligible/rejected decision refuses execution (ROUTING_NOT_ELIGIBLE). DB-M23 never decides routing."
+  },
+  "DBM20Overlap": {
+    "Overlap": "NONE",
+    "Details": "escalation/* untouched. DB-M20 failure-category vocabulary consumed READ-ONLY; DB-M23 error categories map deterministically onto it (PROVIDER_UNAVAILABLE->PROVIDER_AVAILABILITY, identity for others). No provider-specific failure logic was added inside DB-M20."
+  },
+  "DBM21Overlap": {
+    "Overlap": "NONE",
+    "Details": "budget/* untouched. Get-DbM21BudgetDecisions + Test-AiBudget consumed READ-ONLY via BudgetPolicy/BudgetEngine; allowed decisions ALLOW/ALLOW_WITH_WARNING/NO_APPLICABLE_BUDGET; everything else BUDGET_BLOCK. DB-M23 never approves budget."
+  },
+  "DBM22Overlap": {
+    "Overlap": "NONE",
+    "Details": "provider-health/* and failover/* untouched. New-ProviderHealthEvidence / Get-EffectiveProviderHealth / Test-ProviderRouteAvailable consumed READ-ONLY. Local conditions map to DB-M22 evidence (offline/model-not-loaded->UNAVAILABLE+PASSIVE_FAILURE+PROVIDER_AVAILABILITY; disabled->DISABLED+CONFIGURATION with no failure category; auth->AUTH_ERROR+AUTHENTICATION; rate-limit->RATE_LIMITED+RATE_LIMIT). Health is NEVER MODEL_QUALITY. No polling loops. Fallback stays DB-M22's decision."
+  },
+  "DBM24Overlap": {
+    "Overlap": "NONE",
+    "Details": "performance/* untouched. Provider-vs-model separation keeps adapter/infrastructure states out of model-quality history."
+  },
+  "DBGH01Overlap": {
+    "Overlap": "NONE",
+    "Details": "DB-GH01 (Lane A) owns lifecycle/governance scripts in scripts\\ root and the workbook; DB-M23 wrote ONLY under scripts\\ai-routing\\providers\\ + design\\ai-routing\\ (2 design docs) + state\\db-m23-result.json. Grep-verified zero disk writes in every DB-M23 .ps1 file; zero references to workbook/current-task/preflight/logs in DB-M23 files. NO PARALLEL_SCOPE_CONFLICT. Lane A activity observed (lifecycle scripts mtime today, logs\\selftest\\ workbook fixtures, live workbook overwritten) is external to DB-M23."
+  },
+  "WorkbookModified": "NO (by DB-M23; DB-M23 has zero write references to any workbook)",
+  "NexusRepositoriesModified": "NO",
+  "RoadmapModificationCapability": "NO",
+  "GitPrMergeCapability": "NO",
+  "WorkbookSha256Current": "E866D3C4D260031D3C067F4C9C272A497FD913AD7C8D0CBFD0BF42F76BCD2941",
+  "WorkbookSha256Note": "The DB-M22 recorded workbook SHA F520060CB753EC8EC96B44BCBD193BDAB69CA68D4CC27198663665D5FE63F884 no longer matches ANY workbook file on disk. This is external Lane A (DB-GH01) activity: Lane A lifecycle scripts have mtime today and logs\\selftest\\ holds workbook fixtures dated today; the live backup\\NEXUS_DEVELOPMENT_CONTROL.xlsx equals its own 19:05:28 backup. DB-M23 itself performed ZERO writes (grep-verified), so the drift is not attributable to this milestone.",
+  "DBM25Ready": "YES",
+  "DBM30ProviderIntegrationFoundationReady": "YES",
+  "NotesForNextMilestones": "DB-M25 (model quality) can consume provider responses/errors normalized through ProviderResponse v1 and the DB-M23->DB-M20 error map without seeing provider-specific shapes. DB-M30 (provider integration) builds on: LocalProviderConfiguration v1 + Register-LocalModel (generic local, ApiStyle-driven), Register-OpenRouterRoute (gateway route identity preserved), the common request/usage/response/error normalization, and the DRY_RUN-verified native request shapes. Execution stays MANUAL/ASSISTED display-only; AUTO execution remains prohibited; LIVE_DISCOVERY is a declared future mode, not a prerequisite."
+}

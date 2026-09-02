@@ -1,0 +1,9 @@
+﻿C:\Users\Dell\AppData\Local\Temp\db29-task-history.html
+DB-M29 TEST SUMMARY: 391 passed, 0 failed
+DB-M29 SCENARIOS: 55 scenarios
+DB-M29 REGRESSION DBM17: 99 passed, 0 failed, exit 0
+DB-M29 REGRESSION DBM20: 149 passed, 0 failed, exit 0
+DB-M29 REGRESSION DBM21: 74 passed, 0 failed, exit 0
+DB-M29 REGRESSION DBM26: 381 passed, 1 failed, exit 1
+DB-M29 REGRESSION DBM28: 359 passed, 0 failed, exit 0
+DB-M29 EXTERNAL DRIFT: M26 S41 workbook-authority drift (suite records F520060C; live workbook is 6D42C3BF after DB-M12.4 closure)

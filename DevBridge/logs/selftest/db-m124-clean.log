@@ -1,0 +1,69 @@
+== S1 safe-stop closure ==
+  [PASS] S1 outcome TRIAL_CYCLE_CLOSED + pass + workbook modified
+  [PASS] S1 no M10 / no PR / no human-gate
+  [PASS] S1 pre-reservation state proven Planned, restore no-op
+  [PASS] S1 state transition TRIAL_CYCLE_CLOSED / START_NEXT_CYCLE
+  [PASS] S1 trial-closure.json recorded (result/row/evidence/fingerprint)
+  [PASS] S1 pre-write backup SHA recorded as a real 64-hex SHA (not the path)
+  [PASS] S1 TRIAL_ONLY_UNMERGED preserved, no completion.json
+  [PASS] S1 no false completion text in closure evidence
+  [PASS] S1 proving history appended with used nodeId
+  [PASS] S1 closure report written
+  [PASS] S1 pre-closure backup created
+  [PASS] S1 reservation row exists and is now Closed-terminal (not Completed)
+  [PASS] S1 roadmap node NOT completed (remains Planned)
+  [PASS] S1 activity log grown by exactly one row
+  [PASS] S1 closure activity row correct (op/entity/change/result/not-reviewed)
+== S6 idempotence ==
+  [PASS] S6 re-close -> TRIAL_CYCLE_ALREADY_CLOSED, pass true, no write
+  [PASS] S6 no duplicate activity rows on idempotent re-close
+  [PASS] S6 proving history not duplicated
+== S2 not a safe stop ==
+  [PASS] S2 active/incomplete trial -> STOP_NOT_A_TRIAL_SAFE_STOP, no write
+  [PASS] S2 no forced lifecycle transition
+  [PASS] S2 no closure evidence written
+== S3 REAL mode prohibited ==
+  [PASS] S3 REAL mode -> TRIAL_CYCLE_CLOSURE_PROHIBITED_REAL_MODE, no write
+  [PASS] S3 no transition in REAL mode
+== S4 restore drift ==
+  [PASS] S4 drift applied on fixture copy only (live In Progress)
+  [PASS] S4 closure proceeds with restore required
+  [PASS] S4 roadmap Status restored to the proven pre-reservation value
+  [PASS] S4 restore recorded in closure evidence
+== S5 unprovable pre-reservation state ==
+  [PASS] S5 missing backup -> TRIAL_PRE_RESERVATION_STATE_UNKNOWN, no write, human governance review
+  [PASS] S5 no transition when the previous state is unprovable
+  [PASS] S5 SHA mismatch -> TRIAL_PRE_RESERVATION_STATE_UNKNOWN (never guessed)
+== M03 control / exclusion ==
+  [PASS] S7 M03 control (TRIAL, no history) selects the proven WI-07-0.2.4 (gap reproduced)
+  [PASS] S8 M03 TRIAL excludes the closed WI-07-0.2.4 (never reselected)
+  [PASS] S8 M03 blocks the governed container M-07-0.2 (DB-M03.1: containers are never tasks; no eligible leaf descendant)
+  [PASS] S9 post-closure M03 blocks M-07-0.2 (NO_IMPLEMENTABLE_DESCENDANT; closed WI-07-0.2.4 trial-excluded, 5-10 dependency-blocked)
+  [PASS] S10 M03 REAL unaffected: still selects WI-07-0.2.4
+== S11 M10 regression ==
+  [PASS] S11 M10 unchanged: TRIAL safe-stop -> TRIAL_COMPLETION_NOT_APPLICABLE, no write
+  [PASS] S11 no completion evidence produced by M10
+== S12 prior-cycle completion.json does not block ==
+  [PASS] S12 prior-cycle completion.json (CHG-20260830-016) does not block closure
+  [PASS] S12 prior completion record preserved untouched
+  [PASS] S12 closure evidence written
+== S13 same-change completion.json blocks ==
+  [PASS] S13 same-change completion.json -> STOP_TRIAL_HAS_REAL_LIFECYCLE, no write
+  [PASS] S13 no closure evidence written
+  [PASS] S13 no forced lifecycle transition
+== invariants ==
+  [PASS] I1 authoritative workbook untouched by suite
+  [PASS] I1 authoritative workbook matches its governed recorded state
+  [PASS] I2 nexus repo git state untouched by suite
+  [PASS] I3 live trial evidence (current-task.json) untouched
+  [PASS] I3 live trial evidence (claude-review.json) untouched
+  [PASS] I3 live trial proving history untouched
+  [PASS] I4 no prior WI/CHG identity hard-coded in DB-M12.4 scripts
+  [PASS] I5 no completion/roadmap-structure mutation capability in DB-M12.4 scripts
+== I6 solution build ==
+  [PASS] I6 solution build passes
+  [PASS] I6 build has no compiler warnings
+  [PASS] I6 build has no compiler errors
+
+DB-M12.4 SAFETY SUMMARY: 54 checks, 54 passed, 0 failed
+DB-M12.4: ALL PASS

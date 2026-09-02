@@ -1,0 +1,53 @@
+<title>DB-M32 Operator Recovery Panel</title>
+<style>
+body{font-family:'Segoe UI',system-ui,sans-serif;margin:0;background:#f5f6f8;color:#1c2733;line-height:1.45}
+.wrap{max-width:1080px;margin:0 auto;padding:28px 24px}
+h1{font-size:20px;margin:0 0 4px}
+h2{font-size:15px;margin:28px 0 8px;color:#33465c}
+.sub{color:#5c6b7a;font-size:13px;margin-bottom:18px}
+.badge{display:inline-block;padding:4px 12px;border-radius:12px;font-weight:600;font-size:13px;color:#fff}
+.badge.ok{background:#1f8a4c}.badge.stale{background:#b5700a}.badge.ambiguous{background:#9a3b9a}.badge.attention{background:#c0392b}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:12px;margin-top:16px}
+.card{background:#fff;border:1px solid #dfe5ec;border-radius:8px;padding:14px 16px;box-shadow:0 1px 2px rgba(0,0,0,.04)}
+.card h3{margin:0 0 6px;font-size:12px;text-transform:uppercase;letter-spacing:.04em;color:#6a7a8c}
+.card .val{font-size:14px;font-weight:600;word-break:break-word}
+.classif{background:#fff;border:1px solid #dfe5ec;border-radius:8px;padding:16px;margin-top:12px}
+.classif .big{font-size:18px;font-weight:700}
+.action{color:#b0392b;font-weight:600}
+.warn{background:#fff6e8;border:1px solid #f0d9b0;border-radius:8px;padding:10px 14px;margin-top:12px;font-size:13px}
+table{width:100%;border-collapse:collapse;margin-top:8px;background:#fff}
+th,td{border:1px solid #e2e8f0;padding:6px 10px;text-align:left;font-size:13px}
+th{background:#eef2f6;color:#33465c}
+.foot{color:#6a7a8c;font-size:12px;margin-top:24px}
+</style>
+<div class='wrap'>
+  <h1>DB-M32 Operator Recovery Panel</h1>
+  <div class='sub'>ESSENTIAL SAFETY, RECOVERY &amp; OPERATIONAL HARDENING &mdash; view DB32-20260901113038 &mdash; 2026-09-01T12:00:00Z</div>
+  <span class='badge ok'>SYSTEM RECOVERY STATUS: OK</span>
+
+  <div class='cards'>
+    <div class='card'><h3>LAST OPERATION</h3><div class='val'>RUN_PREFLIGHT</div><div style='font-size:12px;color:#6a7a8c'>2026-08-31T18:36:43Z</div></div>
+    <div class='card'><h3>EXPECTED STATE</h3><div class='val'>current-task.status = PREFLIGHTED with a preflight verdict recorded</div></div>
+    <div class='card'><h3>OBSERVED STATE</h3><div class='val'>current-task.status=PREFLIGHTED; nextAllowedAction=RESOLVE_GOVERNANCE_BLOCK; workbookSha=6D42C3BF6D3307B4B1A45870CE12F41E403DFED412E59F33D7B487E93A83E4F5; identity=same-op-retried</div></div>
+  </div>
+
+  <div class='classif'>
+    <div class='sub' style='margin-bottom:4px'>RECOVERY CLASSIFICATION</div>
+    <div class='big'>SAFE_TO_RESUME</div>
+    <div style='margin-top:6px'>RECOMMENDED HUMAN ACTION: <span class='action'>NONE REQUIRED</span></div>
+    <div style='margin-top:6px;font-size:13px;color:#33465c'>Last operation (RUN_PREFLIGHT) reached its expected end state; system consistent. Resume the current workflow.</div>
+    <div style='margin-top:6px;font-size:13px;color:#6a7a8c'>Interrupted-operation tokens: NONE &mdash; Workbook verdict: WRITE_NOT_APPLIED &mdash; Writer lock: NO_WRITER &mdash; Operation identity: same-op-retried</div>
+  </div>
+
+  
+
+  <h2>Diagnostics (essential logging)</h2>
+  <table><tr><th>Field</th><th>Value</th></tr><tr><td>TimestampUtc</td><td>2026-09-01T12:00:00Z</td></tr><tr><td>OperationId</td><td>preflight.json</td></tr><tr><td>Task</td><td>M-07-0.2</td></tr><tr><td>Change</td><td>(none)</td></tr><tr><td>Mode</td><td>TRIAL</td></tr><tr><td>ExpectedLifecycle</td><td>PREFLIGHTED</td></tr><tr><td>ObservedLifecycle</td><td>PREFLIGHTED</td></tr><tr><td>Result</td><td>RUN_PREFLIGHT</td></tr><tr><td>FailureCategory</td><td>NONE</td></tr><tr><td>RecoveryClassification</td><td>SAFE_TO_RESUME</td></tr><tr><td>WorkbookSha</td><td>6D42C3BF6D3307B4B1A45870CE12F41E403DFED412E59F33D7B487E93A83E4F5</td></tr><tr><td>GitHead</td><td>ea39db910a6e3b00bff880316996a696ae7460dc</td></tr></table>
+
+  <h2>Provider / routing configuration (secret-redacted)</h2>
+  <table><tr><th>Kind</th><th>Id</th><th>Enabled</th><th>Configured</th></tr><tr><td>PROVIDER</td><td>unknown</td><td>DISABLED</td><td>NOT_CONFIGURED</td></tr><tr><td>ROUTING</td><td>ai-routing</td><td>DISABLED</td><td>CONFIGURED</td></tr></table>
+
+  <div class='foot'>DevBridge DB-M32 is a READ-ONLY observation, classification &amp; guidance engine. It never rolls back,
+  never restores a baseline, never deletes a writer lock, never writes the workbook, and never infers remote Git state.
+  Recovery PREPARES GUIDANCE only; the human decides and acts. AUTO_EXECUTION_ENABLED = False.</div>
+</div>

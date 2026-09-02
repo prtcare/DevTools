@@ -1,0 +1,62 @@
+=== ACTIVE CHANGES (sheet3) rows 6-78 : 73 rows ===
+Classification by leading keyword:
+  Terminal: 31
+  Blocked: 1
+  Open: 17
+
+Open / InProgress / Blocked reservations (NOT terminal):
+  CHG-20260829-002 node=M-12-0.1 class=Blocked verdict=CLEAR worker=DeepSeek (via Claude Code CLI) -- supervised/verified by Claude (Cowork) branch= affected=F-12-0 | M-12-0.1 | WI-12-0.1.1
+  CHG-20260829-005 node=M-12-0.1 class=Open verdict=CLEAR worker=DeepSeek (via Claude Code CLI) -- supervised/verified by Claude (Cowork) branch= affected=F-12-0 | M-12-0.1 | M-12-0.4
+  CHG-20260829-006 node=M-12-0.1 class=Open verdict=CLEAR worker=DeepSeek (via Claude Code CLI) -- supervised/verified by Claude (Cowork) branch= affected=F-12-0 | M-12-0.1
+  CHG-20260830-001 node=M-12-0.4 class=Open verdict=CLEAR worker=DeepSeek (via Claude Code CLI) -- supervised/verified by Claude (Cowork) branch= affected=F-12-0 | M-12-0.4
+  CHG-20260830-002 node=M-12-0.4 class=Open verdict=CLEAR worker=DeepSeek (via Claude Code CLI) -- supervised/verified by Claude (Cowork) branch= affected=F-12-0 | M-12-0.4
+  CHG-20260830-003 node=M-12-0.4 class=Open verdict=CLEAR worker=DeepSeek (via Claude Code CLI) -- supervised/verified by Claude (Cowork) branch= affected=F-12-0 | M-12-0.4
+  CHG-20260830-004 node=F-07-6 | M-07-6.1 | M-07-6.2 | M-07-6.3 | M-07-3.1 | M-07-3.2 | M-07-4.1 | M-07-5.1 | M-07-5.3 | M-07-10.3 | DEC-002 class=Open verdict=CLEAR worker=Claude (Cowork) -- roadmap governance, no code changes branch= affected=F-07-6 | F-07-3 | F-07-4 | F-07-5 | F-07-10 | DEC-002
+  CHG-20260830-005 node=M-07-10.3 | WI-07-3.2.3 class=Open verdict=CLEAR worker=Claude (Cowork) -- roadmap governance, no code changes branch= affected=F-07-10 | F-07-3
+  CHG-20260830-006 node=M-07-0.2 | WI-07-0.2.1..10 | T-07-6.2.1.2 class=Open verdict=CLEAR worker=Claude (Cowork) -- roadmap governance, no code changes branch= affected=F-07-0 | F-07-6
+  CHG-20260830-007 node=WI-07-3.2.4 | DEC-002 class=Open verdict=CLEAR worker=Claude (Cowork) -- roadmap governance, no code changes branch= affected=F-07-3 | DEC-002
+  CHG-20260830-008 node=M-04-3.3 | WI-07-6.2.1 | WI-07-3.2.4 class=Open verdict=CLEAR worker=Claude (Cowork) -- roadmap governance, no code changes branch= affected=F-04-3 | F-07-6 | F-07-3
+  CHG-20260830-009 node=WI-07-3.2.4 | M-07-2.1 | WI-07-2.2.2 | M-07-3.1 | WI-07-3.2.1 | WI-07-3.2.3 | M-07-5.1 class=Open verdict=CLEAR worker=Claude (Cowork) -- roadmap governance, no code changes branch=None affected=F-07-3 | F-07-2 | F-05-1 | F-05-2
+  CHG-20260830-010 node=WI-07-10.3.1 class=Open verdict=CLEAR worker=Claude (Cowork) -- prompt generation and independent verification; DeepCode (Claude Code CLI, device-local) -- implementation branch=None affected=F-07-10
+  CHG-20260830-011 node=M-04-3.3 class=Open verdict=CLEAR worker=Claude (Cowork) -- prompt generation and independent verification; DeepCode (Claude Code CLI, device-local) -- implementation branch=None affected=F-04-3
+  CHG-20260830-012 node=M-04-3.3 | WI-07-6.1.1 | WI-07-2.1.1 class=Open verdict=CLEAR worker=Claude (Cowork) -- verification and roadmap governance, no code changes branch=None affected=F-04-3 | F-07-6 | F-07-2
+  CHG-20260830-013 node=WI-07-2.1.1 | M-07-2.1 | WI-07-6.1.1 | M-07-6.1 | M-07-10.3 class=Open verdict=CLEAR worker=Claude (Cowork) -- verification, git catch-up, roadmap governance, no product code written branch=feature/m-08-1-2-ci-pipeline affected=F-07-2 | F-07-6 | F-07-10
+  CHG-20260830-014 node=WI-07-0.2.1 | M-07-0.2 class=Open verdict=CLEAR worker=Claude (Cowork) -- verification and roadmap governance, no product code written branch=feature/m-08-1-2-ci-pipeline affected=F-07-0 | M-07-0.2
+  CHG-20260830-015 node=WI-07-0.2.2 | M-07-0.2 class=Open verdict=CLEAR worker=Claude (Cowork) -- verification and roadmap governance, no product code written branch=feature/m-08-1-2-ci-pipeline affected=F-07-0 | M-07-0.2
+
+Terminal examples (first 6):
+  CHG-20260825-001 node=M-07-0.1 status=Completed
+  CHG-20260825-002 node=WI-07-0.1.3 status=Completed
+  CHG-20260825-003 node=T-07-0.1.3.2 status=Completed
+  CHG-20260825-004 node=F-06-7 | F-07-6 | F-11-1 | F-12-0 status=Completed
+  CHG-20260826-001 node=FULL ROADMAP status=Completed
+  CHG-20260826-002 node=M-01-6.1 | M-02-1.1 | M-08-1.1 | M-08-1.2 | M-08-1.3 | M-08-1.4 | M-08-2.1 | M-07-0.1 | WI-07-0.1.3 | T-07-0.1.3.2 status=Completed
+
+Preflight verdict vocabulary observed:
+  CLEAR
+  CLEAR -- one flagged pre-existing, unrelated CI gap (see Risk)
+  CLEAR, with one recorded exception (see Risk)
+  FLAGGED -- non-blocking, byte-identical duplication requiring a specific merge order (see description)
+  N/A (governance change, not a code change)
+
+=== DEPENDENCIES & BLOCKERS (sheet10) rows 5-15 ===
+  REL-001 | from=F-06-7 | depsOn=M-02-1.2 | type=Dependency | blocking=Yes | status=Open | reason=Chat Core needs durable conversation/message persistence. | owner=Unassigned | change=CHG-20260825-004
+  REL-002 | from=F-06-7 | depsOn=M-01-1.1 | type=Dependency | blocking=Yes | status=Open | reason=Chat needs real identity/session ownership rather than placeholder identity. | owner=Unassigned | change=CHG-20260825-004
+  REL-003 | from=F-07-6 | depsOn=M-07-1.2 | type=Dependency | blocking=Yes | status=Open | reason=Tool execution needs a resolvable work graph and API. | owner=Unassigned | change=CHG-20260825-004
+  REL-004 | from=F-07-6 | depsOn=M-06-7.3 | type=Dependency | blocking=Yes | status=Open | reason=Developer tools must use common tool-call/approval lifecycle. | owner=Unassigned | change=CHG-20260825-004
+  REL-005 | from=F-11-1 | depsOn=M-06-7.5 | type=Dependency | blocking=Yes | status=Open | reason=Experience consumes Chat Core contracts. | owner=Unassigned | change=CHG-20260825-004
+  REL-006 | from=F-12-0 | depsOn=M-06-7.5 | type=Dependency | blocking=Yes | status=Open | reason=Developer Chat requires reusable Chat Core. | owner=Unassigned | change=CHG-20260825-004
+  REL-007 | from=F-12-0 | depsOn=M-07-6.3 | type=Dependency | blocking=Yes | status=Open | reason=Developer Chat requires development capability/tool evidence. | owner=Unassigned | change=CHG-20260825-004
+  REL-008 | from=F-12-0 | depsOn=M-11-1.2 | type=Dependency | blocking=Yes | status=Open | reason=Developer Chat requires shared chat interaction states. | owner=Unassigned | change=CHG-20260825-004
+  REL-009 | from=T-07-0.1.3.2 | depsOn=DevTools source ZIP | type=External Blocker | blocking=No | status=Satisfied | reason=DevTools.zip is now supplied and contains the expected source files. | owner=Durai | change=CHG-20260825-003
+  REL-010 | from=M-12-0.3 | depsOn=M-07-5.3 | type=Exit Gate Dependency | blocking=Yes | status=Open | reason=Phase 1 exit requires Foundation Gate acceptance and controlled review/integration. | owner=Unassigned | change=CHG-20260825-004
+  REL-011 | from=M-12-0.1 | depsOn=Local SQL Server config (port/auth drift) | type=External Blocker | blocking=Yes | status=Resolved | reason=Nexus.Products.Chat.Api's connection string targets TCP 1433 with SQL authentication; the local SQL Server instance (MSSQL17.MSSQLSERVER) now actually listens on 1434 and is in Windows-authentication-only mode, so the P1-3 live click path fails at workspace listing (the first DB-touching step) before conversation/chat is ever reached. Confirmed this is server-side drift, not an app regression: api_run.log (2026-08-27) shows this same connection string reaching the DB successfully before. Fix requires Durai's decision: restore the SQL listener to 1433, OR enable mixed-mode auth and repoint the connection string at 1434, OR switch to Integrated Security. Once resolved, DeepSeek can re-run the same browser pass immediately -- all three services (Intelligence, Chat.Api, Vite) were left running. | owner=Durai | change=CHG-20260829-002
+
+=== TEXTUAL Dependencies (Master Roadmap col J) for Dependencies & Blockers participant nodes ===
+  F-06-7  textDep='M-02-1.2 | M-01-1.1'  status=In Progress
+  F-07-6  textDep='M-07-1.2 | M-06-7.3'  status=Planned
+  M-02-1.2  textDep='M-02-1.1'  status=Implemented - Verify
+  M-01-1.1  textDep='M-02-1.4'  status=Planned
+  M-07-1.2  textDep='M-07-1.1'  status=Superseded
+  F-07-2  textDep=''  status=Planned
+  F-07-5  textDep=''  status=Planned

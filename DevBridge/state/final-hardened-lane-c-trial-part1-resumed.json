@@ -1,0 +1,98 @@
+{
+  "trial": "FINAL_HARDENED_LANE_C_TRIAL_PART1_RESUMED",
+  "runDateUtc": "2026-09-01T00:07:00Z",
+  "basis": "DB-M03.1 hardened implementable leaf-task selection & preflight resolution COMPLETE PASS (40/40 + regressions); prior post-closure run blocked at M03 SCOPE_INCOMPLETE because M03 auto-selected the Milestone container M-07-0.2. DB-M03.1 hardens M03 so a container is never the task. This run re-runs the governed preflight through the exact UI-button backend path against the still-blocked live state.",
+  "mode": "TRIAL",
+  "modeToken": "TRIAL",
+  "currentStateRefreshed": {
+    "configMode": "TRIAL",
+    "workbookAuthority": "WORKBOOK_AUTHORITY_CONFIRMED",
+    "workbookSha256": "6D42C3BF6D3307B4B1A45870CE12F41E403DFED412E59F33D7B487E93A83E4F5",
+    "roadmapFingerprint": "25BBECA448CC83B76F9A639BBF5A3E4A1599FDE536938A413FBE9DB5D67BE057",
+    "preRunCurrentTask": "M-07-0.2 / PREFLIGHTED / RESOLVE_PREFLIGHT / SCOPE_INCOMPLETE (the blocked pre-DB-M03.1 preflight record)",
+    "staleWriterLock": false,
+    "wi07024TrialClosed": true,
+    "nexusFalseCompleteTask": false
+  },
+  "step2M03Preflight": {
+    "command": "START_PREFLIGHT",
+    "path": "OperatorCommandService.Execute(live config, OperatorCommandCatalog[START_PREFLIGHT], ScriptProcessRunner) — the exact UI-button backend path; runs Get-NextTask.ps1 + Test-DevelopmentPreflight.ps1 (the same hardened pair START_NEXT_CYCLE runs; RequiredStates=any so it runs from the PREFLIGHTED state)",
+    "result": "SUCCESS",
+    "exitCode": 0,
+    "selectionStatus": "NO_IMPLEMENTABLE_DESCENDANT",
+    "currentWork": "M-07-0.2",
+    "selectedNode": null,
+    "selectedTask": null,
+    "anchorNode": "M-07-0.2",
+    "anchorNodeType": "Milestone",
+    "anchorClassification": "NON_IMPLEMENTABLE_CONTAINER",
+    "containerResolvedToLeaf": false,
+    "blockState": "NO_IMPLEMENTABLE_DESCENDANT",
+    "blockReason": "M-07-0.2 (Development Control Service (Excel-backed, Azure-SQL-ready)) is a governed NON_IMPLEMENTABLE_CONTAINER and no dependency-satisfied, non-trial-proven IMPLEMENTABLE_LEAF descendant exists to continue its work; a human governance decision is required to identify an implementation target.",
+    "selectionBasis": "CURRENT WORK FIRST: M-07-0.2 has Status In Progress and is named by 3 open reservation(s) in the Active Changes ledger; its freshest open reservation is CHG-20260830-015 (row 78) - the workbook's most recent governed activity. NOT skipped for higher-priority Planned work.",
+    "rankedCandidates": ["M-07-0.2", "M-07-10.3", "M-12-0.4"],
+    "trialProvingHistoryExclusion": "WI-07-0.2.4 / CHG-20260830-017 TRIAL_CYCLE_CLOSED (2026-08-31T15:24:45Z) excluded from candidates and planned children",
+    "selectedAutomatically": true,
+    "hardCodedNodeId": false,
+    "m0702ItselfBecameTask": false,
+    "previouslyUsedWi07024Reselected": false,
+    "preflightVerdict": "NO_IMPLEMENTABLE_DESCENDANT",
+    "preflightVerdictMeaning": "Non-CLEAR governed verdict = valid governed blocker per Test-DevelopmentPreflight.ps1. nextAllowedAction RESOLVE_GOVERNANCE_BLOCK (not RESERVE).",
+    "governedOutcome": "M03 BLOCKED (Outcome B) -> cycle STOPPED per instruction. No manual re-selection, no manual scope amendment, no RESERVE attempted."
+  },
+  "step3DependencyContext": {
+    "required": "Only for a selected implementable leaf",
+    "result": "N/A — no implementable leaf was selected by M03; the blocked anchor M-07-0.2 has no derived scope or target, so no dependency lineage/freshness context is materializable. DB-M18.1-owned files untouched."
+  },
+  "step4M04Reserve": "NOT_RUN (M03 is not CLEAR; only an IMPLEMENTABLE_LEAF with M03=CLEAR may be reserved)",
+  "step5M05Handoff": "NOT_RUN (no reservation exists; handoff requires a RESERVED IMPLEMENTABLE_LEAF)",
+  "stopPoint": {
+    "reached": "STOP at M03 (NO_IMPLEMENTABLE_DESCENDANT)",
+    "m04": "NOT_RUN",
+    "m05": "NOT_RUN",
+    "handoffToken": "CHATGPT_HANDOFF_NOT_READY (not attempted — no implementable leaf selected, cycle blocked at M03)",
+    "deepseek": "NOT_INVOKED",
+    "m06": "NOT_RUN",
+    "m07": "NOT_RUN",
+    "m08": "NOT_RUN",
+    "m10": "NOT_RUN",
+    "nexusSourceModified": false,
+    "gitModified": false,
+    "workbookModified": false,
+    "automaticGitMerge": false,
+    "structuralRoadmapEdit": false
+  },
+  "postRunState": {
+    "status": "PREFLIGHTED",
+    "nodeId": "M-07-0.2",
+    "nextAllowedAction": "RESOLVE_GOVERNANCE_BLOCK",
+    "preflightVerdict": "NO_IMPLEMENTABLE_DESCENDANT",
+    "workbookSha256": "6D42C3BF6D3307B4B1A45870CE12F41E403DFED412E59F33D7B487E93A83E4F5",
+    "staleWriterLock": false
+  },
+  "scopeProof": {
+    "filesWrittenThisRun": [
+      "state/final-hardened-lane-c-trial-part1-resumed.json (this evidence record)",
+      "tasks/FINAL_HARDENED_LANE_C_TRIAL_PART1_RESUMED_REPORT.md (this report)",
+      "state/current-task.json (governed backend re-wrote its own output: PREFLIGHTED / RESOLVE_GOVERNANCE_BLOCK / NO_IMPLEMENTABLE_DESCENDANT)",
+      "state/preflight.json (governed backend re-wrote its own output: verdict NO_IMPLEMENTABLE_DESCENDANT)",
+      "tasks/NEXT_TASK.md (governed backend regenerated)",
+      "tasks/PREFLIGHT_REPORT.md (governed backend regenerated)"
+    ],
+    "backendScriptsModified": false,
+    "workbookModified": false,
+    "nexusSourceModified": false,
+    "nexusGitDeltaIntroducedByRun": "0 lines (13 pre-existing untracked DevelopmentControl trial-source files + 1 pre-existing DB-M12.4-closure workbook modification, all untouched)",
+    "sharedStateFilesModified": "Only the governed backend command rewrote its own outputs as designed behavior.",
+    "dbM181Collision": "NONE — DB-M18.1-owned files untouched.",
+    "dbM28Collision": "NONE — no DB-M28-owned AI Model Configuration UI files touched."
+  },
+  "evidence": [
+    "state/current-task.json (PREFLIGHTED M-07-0.2 / RESOLVE_GOVERNANCE_BLOCK / NO_IMPLEMENTABLE_DESCENDANT)",
+    "state/preflight.json (verdict NO_IMPLEMENTABLE_DESCENDANT, blockReason, candidates, workbookSha256)",
+    "tasks/NEXT_TASK.md (regenerated by Get-NextTask.ps1)",
+    "tasks/PREFLIGHT_REPORT.md (regenerated by Test-DevelopmentPreflight.ps1)",
+    "state/final-hardened-lane-c-trial-part1-resumed.json (this record)",
+    "tasks/FINAL_HARDENED_LANE_C_TRIAL_PART1_RESUMED_REPORT.md (this report)"
+  ]
+}

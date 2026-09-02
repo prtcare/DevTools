@@ -1,0 +1,60 @@
+== Group A: classification ==
+  [PASS] A1 Milestone classified NON_IMPLEMENTABLE_CONTAINER; resolved to eligible leaf descendant
+  [PASS] A2 Feature classified NON_IMPLEMENTABLE_CONTAINER; resolved to WI-07-0.2.4
+  [PASS] A3 Layer classified NON_IMPLEMENTABLE_CONTAINER; resolved to WI-07-0.2.4
+81
+  [PASS] A4 leaf WorkItem classified IMPLEMENTABLE_LEAF; selected as itself
+81
+  [PASS] A5 WorkItem BreakdownComplete=No -> INCOMPLETE_WORK_ITEM -> HUMAN_GOVERNANCE_REQUIRED
+  [PASS] A6 WorkItem with children classified NON_IMPLEMENTABLE_CONTAINER; resolved to WI-07-0.2.4
+  [PASS] A7 Task with children classified NON_IMPLEMENTABLE_CONTAINER; resolved to WI-07-0.2.4
+81
+  [PASS] A8 leaf Task classified IMPLEMENTABLE_LEAF; selected as itself
+81
+  [PASS] A9 Subtask classified IMPLEMENTABLE_LEAF; selected as itself
+81
+  [PASS] A10 unknown NodeType leaf -> IMPLEMENTATION_TARGET_UNKNOWN (never a task)
+== Group B: container resolution & block states ==
+  [PASS] B11 container resolves to the eligible planned leaf WI-07-0.2.4 (deps satisfied, not trial-proven)
+  [PASS] B12 deep chain (M-07-0.2 -> WI-07-0.2.4 -> S-01-1.1.1.1.1) resolves to the leaf Subtask
+  [PASS] B13 dependency-unsatisfied descendants -> NO_IMPLEMENTABLE_DESCENDANT (container never the task)
+  [PASS] B14 trial-proven-excluded-only child -> NO_IMPLEMENTABLE_DESCENDANT
+  [PASS] B15 completing the dep-blocker unblocks the next sibling; WI-07-0.2.5 selected in governed order
+  [PASS] B16 INCOMPLETE child skipped; ready sibling WI-07-0.2.5 selected
+  [PASS] B17 unknown child subtree skipped; ready sibling WI-07-0.2.5 selected
+== Group C: selection flow ==
+81
+  [PASS] C18 freshest reservation anchors the leaf T-01-1.1.3.1 over container M-07-0.2
+  [PASS] C19 CURRENT WORK FIRST: M-07-0.2 anchors (not F-06-2); resolved to WI-07-0.2.4
+  [PASS] C20 NEXT WORK fallback: container F-06-2 blocked honestly (never the task)
+  [PASS] C21 NEXT WORK selects the top-ranked Planned leaf WI-06-8.1.1 (container never the task)
+  [PASS] C22 both siblings eligible; first in governed order WI-07-0.2.5 selected (not 6)
+81
+  [PASS] C23 trial-proven node excluded even with a fresh reservation; never reselected
+== Group D: preflight integration ==
+  [PASS] D24 leaf preflight CLEAR with implementability IMPLEMENTABLE_LEAF / RESERVE
+  [PASS] D25 container block preflight -> NO_IMPLEMENTABLE_DESCENDANT, anchor PREFLIGHTED, RESOLVE_GOVERNANCE_BLOCK
+81
+  [PASS] D26 incomplete anchor -> HUMAN_GOVERNANCE_REQUIRED, node WI-07-0.2.4, INCOMPLETE_WORK_ITEM
+81
+  [PASS] D27 unknown anchor -> IMPLEMENTATION_TARGET_UNKNOWN, UNKNOWN_NODE_TYPE
+  [PASS] D28 leafValidation ledger emitted on CLEAR with identity PASS
+  [PASS] D28 acceptance-criteria honestly AC_ABSENT_WARN (no governed AC in ancestry)
+  [PASS] D28 dependencies ledger PASS
+== Group E: M04 / M05 gates ==
+  [PASS] E29 M04 refuses NON_IMPLEMENTABLE_CONTAINER target
+  [PASS] E30 M04 legacy state (no implementability) is not refused by the DB-M03.1 gate
+  [PASS] E31 M05 refuses NON_IMPLEMENTABLE_CONTAINER target
+  [PASS] E32 M05 legacy state (no implementability) is not refused by the DB-M03.1 gate
+== invariants ==
+  [PASS] I1 authoritative workbook untouched by suite
+  [PASS] I2 Nexus repo status unchanged
+  [PASS] I3 live state current-task.json untouched
+== I4 solution build ==
+  [PASS] I4 solution build passes
+  [PASS] I4 build has no compiler warnings
+  [PASS] I4 build has no compiler errors
+
+DB-M03.1 SAFETY SUMMARY: 40 checks, 40 passed, 0 failed
+DB-M03.1 SUITE: PASS
+SUITE_EXIT=0

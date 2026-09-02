@@ -1,0 +1,21 @@
+== Group A: classification ==
+  [PASS] A1 Milestone classified NON_IMPLEMENTABLE_CONTAINER; resolved to eligible leaf descendant
+  [PASS] A2 Feature classified NON_IMPLEMENTABLE_CONTAINER; resolved to WI-07-0.2.4
+  [PASS] A3 Layer classified NON_IMPLEMENTABLE_CONTAINER; resolved to WI-07-0.2.4
+81
+  [PASS] A4 leaf WorkItem classified IMPLEMENTABLE_LEAF; selected as itself
+81
+  [PASS] A5 WorkItem BreakdownComplete=No -> INCOMPLETE_WORK_ITEM -> HUMAN_GOVERNANCE_REQUIRED
+  [PASS] A6 WorkItem with children classified NON_IMPLEMENTABLE_CONTAINER; resolved to WI-07-0.2.4
+  [PASS] A7 Task with children classified NON_IMPLEMENTABLE_CONTAINER; resolved to WI-07-0.2.4
+81
+  [FAIL] A8 leaf Task classified IMPLEMENTABLE_LEAF; selected as itself - got  task=
+Exception calling "Open" with "4" argument(s): "Could not find a part of the path 
+'C:\Personal\DevTools\DevBridge\logs\selftest\db-m03-1\a9_subtask\workbook.xlsx'."
+At C:\Personal\DevTools\DevBridge\scripts\Test-DBM031ImplementableLeafSelection.ps1:226 char:5
++     $fs = [System.IO.File]::Open($path, [System.IO.FileMode]::Open, [ ...
++     ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : NotSpecified: (:) [], ParentContainsErrorRecordException
+    + FullyQualifiedErrorId : DirectoryNotFoundException
+ 
+SUITE2_EXIT=1

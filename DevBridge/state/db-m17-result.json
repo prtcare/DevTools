@@ -1,0 +1,141 @@
+{
+  "milestone": "DB-M17",
+  "lane": "B",
+  "phase": "AI_ATTEMPT_USAGE_HISTORY_FOUNDATION",
+  "status": "IMPLEMENTED",
+  "completedAtUtc": "2026-08-30T17:46:29Z",
+  "projectRoot": "C:\\Personal\\DevTools\\DevBridge",
+  "technology": "PowerShell 5.1 + lightweight local JSON persistence (no database) + versioned JSON contracts (schemaVersion=1)",
+  "implementationLocation": {
+    "library": "scripts\\ai-routing\\AttemptStore.ps1",
+    "tests": "scripts\\ai-routing\\Test-AttemptStore.ps1",
+    "designDocs": "design\\ai-routing\\DB-M17_ATTEMPT_HISTORY.md, design\\ai-routing\\DB-M17_FAILURE_TAXONOMY.md",
+    "storage": "logs\\tasks\\<NodeId>\\<ChangeId>\\ai-attempts\\ (canonical + history.json) + state\\attempts\\<ChangeId>\\index.json (discovery mirror)"
+  },
+  "implementation": {
+    "result": "PASS",
+    "attemptRecordV1": "PASS",
+    "attemptHistoryV1": "PASS",
+    "appendOnlyHistory": "PASS - attempt set immutable; single-record lifecycle fields update in place; later success never erases earlier failures",
+    "attemptIdConvention": "PASS - ATT-<ChangeId>-NNN, one id per execution attempt; never reuses Activity/Change id",
+    "lifecycleOperations": "PASS - Start/Usage/Outcome/Verification/Escalation/HumanIntervention",
+    "usageSourceSemantics": "PASS - ACTUAL stored verbatim; ESTIMATED explicit; UNKNOWN preserves condition (counts rejected with UNKNOWN)",
+    "costFieldsStoredOnly": "PASS - EstimatedCost/ActualCost/Currency/ExchangeRate/PricingRecordId stored, NEVER calculated",
+    "verificationLinkage": "PASS - VerificationResult + VerificationEvidencePath, no verification execution",
+    "sensitivePromptProtection": "PASS - PromptHash/ContextHash (64-hex validated)/PromptArtifactReference only; secret-value guard scans free text",
+    "manualWorkflowPreserved": "YES - ExecutionMode defaults MANUAL; store records, never drives/routes/escalates",
+    "schemaFreeze": "PASS - AiAttemptRecordVersion=1, AiAttemptHistoryVersion=1 frozen; incompatible change requires v2",
+    "queryAggregationFoundation": "PASS - ByModel/ByResult/ByTaskType/FailuresByCategory/Success/Failure/FirstAttemptSuccess/Escalation/AverageDuration (DB-M24 dimensions, no recommendations)",
+    "automaticExecutionEnabled": "NO"
+  },
+  "contracts": {
+    "frozenAt": "DB-M17",
+    "schemaVersions": {
+      "AiAttemptRecordVersion": 1,
+      "AiAttemptHistoryVersion": 1
+    },
+    "registry": "Get-AiAttemptSchemaVersions in scripts\\ai-routing\\AttemptStore.ps1 (DB-M17-owned; DB-M14's Get-AiRoutingSchemaVersions in AiRoutingContracts.ps1 NOT modified - parallel-safety)",
+    "v2Rule": "incompatible changes require v2 with own schemaVersion and validator; additive optional fields allowed within v1 (per DB-M14_SHARED_CONTRACT_FREEZE.md)"
+  },
+  "vocabularies": {
+    "resultStates": ["PENDING", "RUNNING", "SUCCESS", "FAILED", "CANCELLED", "ESCALATED", "BLOCKED", "WAITING_HUMAN", "BUDGET_STOPPED"],
+    "terminalStates": ["SUCCESS", "FAILED", "CANCELLED", "ESCALATED", "BLOCKED", "BUDGET_STOPPED"],
+    "failureCategories": ["MODEL_QUALITY", "PROVIDER_AVAILABILITY", "RATE_LIMIT", "AUTHENTICATION", "TOOL_FAILURE", "BUILD_FAILURE", "TEST_FAILURE", "CONTEXT_FAILURE", "BUDGET_FAILURE", "VALIDATION_FAILURE", "UNKNOWN"],
+    "usageSources": ["ACTUAL", "ESTIMATED", "UNKNOWN"],
+    "verificationResults": ["VERIFIED", "FAILED", "PENDING"],
+    "references": "ProviderId/ModelId/UnderlyingModelId/GatewayProviderId resolved against frozen DB-M14 catalogues when provided; unknown optional values stay null"
+  },
+  "tests": {
+    "suite": "scripts\\ai-routing\\Test-AttemptStore.ps1",
+    "passed": 99,
+    "failed": 0,
+    "paidApiCalls": 0,
+    "scenarios": [
+      "S1 single successful attempt",
+      "S2 failed attempt",
+      "S3 three attempts ending in success",
+      "S4 append-oriented history (earlier failures preserved)",
+      "S5 cancelled",
+      "S6 blocked (provider availability)",
+      "S7 waiting human (transitional, no end time)",
+      "S8 budget stopped",
+      "S9 escalated attempt links",
+      "S10 retry numbering (parent+1)",
+      "S11-13 failure categories valid and distinct",
+      "S14 missing usage (UNKNOWN preserved, counts rejected with UNKNOWN)",
+      "S15 actual usage stored verbatim",
+      "S16 estimated vs actual distinction",
+      "S17-18 human intervention / manual override",
+      "S19 provider/model reference lookup",
+      "S20 history by task",
+      "S21 history by change",
+      "S22 history by model",
+      "S23 schema v1 round-trip (nulls preserved)",
+      "S24 duplicate AttemptId rejected / numbering advances",
+      "S25 secret leakage rejected (Notes + EscalationReason + hashes)",
+      "S26 validation rules (self-refs, timing, negatives, contradictory state, evidence)",
+      "S27 state discovery mirror",
+      "S28 no network / no pricing / no execution scan",
+      "S29 aggregate foundation",
+      "S30 per-change isolation"
+    ],
+    "dbM14Regression": {
+      "suite": "scripts\\ai-routing\\Test-AiRoutingFoundation.ps1",
+      "passed": 51,
+      "failed": 0,
+      "paidApiCalls": 0
+    },
+    "diskValidation": {
+      "realRepoPollution": "REMOVED - 5 synthetic ATT-*.json + history.json + state index created by an earlier unfixed test run were deleted; logs/tasks/WI-07-0.2.4/CHG-20260830-017 legitimate content untouched"
+    }
+  },
+  "hardConstraintsHonored": {
+    "paidApiCalls": 0,
+    "dbM14FrozenContractsModified": false,
+    "dbM15Overlap": "NONE - no DB-M15 file (AiPricingContracts.ps1, AiPricingTimeBands.ps1, AiRoutingPricingFoundation.ps1, PricingCatalogue.ps1, Test-AiPricingCatalogue.ps1) read-write or modified",
+    "dbM12Overlap": "NONE - no src\\DevBridge.* file read-write or modified",
+    "laneCOverlap": "NONE - state/current-task.json (WI-07-0.2.4 PREFLIGHTED/CLEAR/RESERVE) untouched",
+    "workbookModified": false,
+    "nexusRepositoriesModified": false,
+    "nexusDeveloperModified": false,
+    "dbM03ToM11BehaviorModified": false,
+    "dbM13HistoryRewritten": false,
+    "automaticAiExecutionImplemented": false,
+    "liveProviderApiCallsImplemented": false,
+    "automaticRoutingImplemented": false,
+    "automaticEscalationImplemented": false,
+    "pricingCalculationsImplemented": false,
+    "budgetEnforcementImplemented": false,
+    "completePromptsStoredByDefault": false,
+    "secretValuesStored": false,
+    "dbM24FoundationReady": true
+  },
+  "parallelSafety": {
+    "isolation": "PowerShell-first, additive-only, DB-M17-owned files under scripts/ai-routing/, design/ai-routing/, state/; schema versions registered in DB-M17 library, NOT in DB-M14's AiRoutingContracts.ps1",
+    "sharedFileChangesRequired": "NONE",
+    "parallelScopeChangeRequired": "NO"
+  },
+  "deliverables": {
+    "attemptHistoryDoc": "design\\ai-routing\\DB-M17_ATTEMPT_HISTORY.md",
+    "failureTaxonomyDoc": "design\\ai-routing\\DB-M17_FAILURE_TAXONOMY.md",
+    "resultState": "state\\db-m17-result.json"
+  },
+  "filesCreated": [
+    "scripts/ai-routing/AttemptStore.ps1",
+    "scripts/ai-routing/Test-AttemptStore.ps1",
+    "design/ai-routing/DB-M17_ATTEMPT_HISTORY.md",
+    "design/ai-routing/DB-M17_FAILURE_TAXONOMY.md",
+    "state/db-m17-result.json"
+  ],
+  "filesModified": [],
+  "doNotImplement": [
+    "DB-M15 (pricing) - NOT implemented in DB-M17",
+    "DB-M16 - NOT implemented",
+    "DB-M18 - NOT implemented",
+    "DB-M19 (routing) - NOT implemented",
+    "DB-M20, DB-M21, DB-M22, DB-M23 - NOT implemented",
+    "DB-M24 (model recommendations) - foundation queries only; recommendations NOT implemented",
+    "DB-M25 - NOT implemented"
+  ],
+  "notes": "NO AUTOMATIC AI EXECUTION EXISTS YET. DB-M17 records attempt history for the existing manual workflow (ChatGPT -> DeepSeek -> DevBridge verification -> Claude); it never executes, routes, prices, or escalates. Cost fields are stored, not calculated (DB-M16 prices). Complete prompts are never stored by default. Stop after DB-M17."
+}

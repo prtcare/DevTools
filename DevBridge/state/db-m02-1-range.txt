@@ -1,0 +1,65 @@
+dimension(ref) = A1:AG675
+
+=== STRUCTURALLY VALID RoadmapNode records: 659 ===
+First record: row 6 node=01 type=Layer
+Last  record: row 675 node=WI-12-0.4.2 type=WorkItem
+Formal Excel table (MasterRoadmapTable) ref = A5:AG630
+Records within  table range (rows <= 630): 625
+Records BEYOND  table range (rows  > 630): 34   <-- previously omitted from governed set
+
+=== BEYOND-TABLE RECORDS (recovered set) ===
+  R631 F-12-4 | parent=12 | type=Feature | sort=12.004 | phase=P4 | status=Planned | path=12 PRODUCTS > F-12-4 Career
+  R632 F-12-5 | parent=12 | type=Feature | sort=12.005 | phase=P4 | status=Planned | path=12 PRODUCTS > F-12-5 Education
+  R633 F-12-6 | parent=12 | type=Feature | sort=12.006 | phase=P4 | status=Planned | path=12 PRODUCTS > F-12-6 Truck
+  R634 F-12-7 | parent=12 | type=Feature | sort=12.007 | phase=P5 | status=Planned | path=12 PRODUCTS > F-12-7 Games
+  R635 F-12-8 | parent=12 | type=Feature | sort=12.008 | phase=P2 | status=Planned | path=12 PRODUCTS > F-12-8 Business OS / ERP Core
+  R636 F-12-9 | parent=12 | type=Feature | sort=12.009 | phase=P2 | status=Planned | path=12 PRODUCTS > F-12-9 CRM and Field Data
+  R637 F-12-10 | parent=12 | type=Feature | sort=12.010 | phase=P2 | status=Planned | path=12 PRODUCTS > F-12-10 Engine Works
+  R638 F-12-11 | parent=12 | type=Feature | sort=12.011 | phase=P2 | status=Planned | path=12 PRODUCTS > F-12-11 Retreads
+  R639 F-12-12 | parent=12 | type=Feature | sort=12.012 | phase=P2 | status=Planned | path=12 PRODUCTS > F-12-12 Transport
+  R640 F-12-13 | parent=12 | type=Feature | sort=12.013 | phase=P2 | status=Planned | path=12 PRODUCTS > F-12-13 Knowledge Systems
+  R641 F-12-14 | parent=12 | type=Feature | sort=12.014 | phase=P2 | status=Planned | path=12 PRODUCTS > F-12-14 Internal Tools
+  R642 F-12-15 | parent=12 | type=Feature | sort=12.015 | phase=P2 | status=Planned | path=12 PRODUCTS > F-12-15 Machine Development
+  R643 F-12-16 | parent=12 | type=Feature | sort=12.016 | phase=P5 | status=Planned | path=12 PRODUCTS > F-12-16 Machine Automation
+  R655 F-07-10 | parent=07 | type=Feature | sort=07.010 | phase=P1 | status=In Progress | path=07 DEVELOPER > F-07-10 Developer Domain Foundation
+  R656 M-07-10.1 | parent=F-07-10 | type=Milestone | sort=07.010.001 | phase=P1 | status=Implemented - Verify | path=07 DEVELOPER > F-07-10 Developer Domain Foundation > M-07-10.1 Develop...
+  R657 WI-07-10.1.1 | parent=M-07-10.1 | type=WorkItem | sort=07.010.001.001 | phase=P1 | status=In Progress | path=07 DEVELOPER > ... > WI-07-10.1.1 Feature, Task and Subtask aggregates
+  R658 WI-07-10.1.2 | parent=M-07-10.1 | type=WorkItem | sort=07.010.001.002 | phase=P1 | status=In Progress | path=07 DEVELOPER > ... > WI-07-10.1.2 Milestone grouping object and Milest...
+  R659 WI-07-10.1.3 | parent=M-07-10.1 | type=WorkItem | sort=07.010.001.003 | phase=P1 | status=In Progress | path=07 DEVELOPER > ... > WI-07-10.1.3 Issue aggregate and IssueLink
+  R660 M-07-10.2 | parent=F-07-10 | type=Milestone | sort=07.010.002 | phase=P1 | status=Planned | path=07 DEVELOPER > F-07-10 Developer Domain Foundation > M-07-10.2 WorkIte...
+  R661 WI-07-10.2.1 | parent=M-07-10.2 | type=WorkItem | sort=07.010.002.001 | phase=P1 | status=Planned | path=07 DEVELOPER > ... > WI-07-10.2.1 Map WorkItem rows to Task, preserve ...
+  R662 M-07-10.3 | parent=F-07-10 | type=Milestone | sort=07.010.003 | phase=P1 | status=In Progress | path=07 DEVELOPER > F-07-10 Developer Domain Foundation > M-07-10.3 Develop...
+  R663 WI-07-10.3.1 | parent=M-07-10.3 | type=WorkItem | sort=07.010.003.001 | phase=P1 | status=Complete | path=07 DEVELOPER > ... > WI-07-10.3.1 DevelopmentRun minimal aggregate and...
+  R664 WI-07-10.3.2 | parent=M-07-10.3 | type=WorkItem | sort=07.010.003.002 | phase=P1 | status=Planned | path=07 DEVELOPER > ... > WI-07-10.3.2 DEVELOP action UI location, Phase 2 ...
+  R665 M-07-10.4 | parent=F-07-10 | type=Milestone | sort=07.010.004 | phase=P1 | status=In Progress | path=07 DEVELOPER > F-07-10 Developer Domain Foundation > M-07-10.4 Object ...
+  R666 WI-07-10.4.1 | parent=M-07-10.4 | type=WorkItem | sort=07.010.004.001 | phase=P1 | status=Completed | path=07 DEVELOPER > ... > WI-07-10.4.1 ObjectChatLink many-to-many model
+  R667 F-06-8 | parent=06 | type=Feature | sort=06.008 | phase=P1 | status=In Progress | path=06 PRODUCT CORE > F-06-8 Scope Trunk - Subproject
+  R668 M-06-8.1 | parent=F-06-8 | type=Milestone | sort=06.008.001 | phase=P1 | status=Implemented - Verify | path=06 PRODUCT CORE > F-06-8 Scope Trunk - Subproject > M-06-8.1 Subprojec...
+  R669 WI-06-8.1.1 | parent=M-06-8.1 | type=WorkItem | sort=06.008.001.001 | phase=P1 | status=Planned | path=06 PRODUCT CORE > ... > WI-06-8.1.1 Subproject under Project, interim ...
+  R670 M-04-3.3 | parent=F-04-3 | type=Milestone | sort=04.003.003 | phase=P1 | status=Complete | path=04 AI > F-04-3 Agents > M-04-3.3 AI Role, Provider and Model abstracti...
+  R671 WI-04-3.3.1 | parent=M-04-3.3 | type=WorkItem | sort=04.003.003.001 | phase=P1 | status=Planned | path=04 AI > ... > WI-04-3.3.1 AiRole and AiRoleAssignment model
+  R672 WI-04-3.3.2 | parent=M-04-3.3 | type=WorkItem | sort=04.003.003.002 | phase=P1 | status=Planned | path=04 AI > ... > WI-04-3.3.2 Wire Discussion role through RoutingModelGat...
+  R673 M-12-0.4 | parent=F-12-0 | type=Milestone | sort=12.000.004 | phase=P1 | status=In Progress | path=12 PRODUCTS > F-12-0 Developer Chat > M-12-0.4 General Developer UI sh...
+  R674 WI-12-0.4.1 | parent=M-12-0.4 | type=WorkItem | sort=12.000.004.001 | phase=P1 | status=Planned | path=12 PRODUCTS > ... > WI-12-0.4.1 Navigation shell and routing
+  R675 WI-12-0.4.2 | parent=M-12-0.4 | type=WorkItem | sort=12.000.004.002 | phase=P1 | status=Planned | path=12 PRODUCTS > ... > WI-12-0.4.2 Work item detail page
+
+=== NON-RECORD / MALFORMED / PARTIAL rows (content but not a valid node record) ===
+  R1 A='MASTER ROADMAP — CURRENT STATE' C='' cols=[A,AE,AF,AG]
+  R2 A='Current approved roadmap only. Historica...' C='' cols=[A,AE,AF,AG]
+  R3 A='Phase 1: verify only the necessary found...' C='' cols=[A,AE,AF,AG]
+  R5 A='Node ID' C='Node Type' cols=[A,AA,AB,AC,AD,AE,AF,AG,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z]
+  R644 A='' C='' cols=[A,AA,AB,AC,AD,AE,AF,AG,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z]
+  R645 A='' C='' cols=[A,AA,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z]
+  R646 A='' C='' cols=[A,AA,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z]
+  R647 A='' C='' cols=[A,AA,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z]
+  R648 A='' C='' cols=[A,AA,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z]
+  R649 A='' C='' cols=[A,AA,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z]
+  R650 A='' C='' cols=[A,AA,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z]
+  R651 A='' C='' cols=[A,AA,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z]
+  R652 A='' C='' cols=[A,AA,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z]
+  R653 A='' C='' cols=[A,AA,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z]
+  R654 A='' C='' cols=[A,AA,B,C,D,E,F,G,H,I,J,K,L,M,N,O,P,Q,R,S,T,U,V,W,X,Y,Z]
+Non-record rows with content: 15
+
+=== DUPLICATE NODE IDs in full governed set ===
+  NONE

@@ -1,0 +1,18 @@
+{
+    "nodeId":  "WI-07-0.2.5",
+    "taskId":  "WI-07-0.2.5",
+    "name":  "DB-M03.2 M05 fixture debug",
+    "nodeType":  "WorkItem",
+    "phase":  "P0",
+    "layer":  "App",
+    "status":  "AWAITING_CHATGPT_PROMPT",
+    "nextAllowedAction":  "COPY_TO_CHATGPT",
+    "changeId":  "CHG-20260901-040",
+    "selectedAt":  "2026-09-01T00:00:00Z",
+    "mode":  "TRIAL",
+    "pendingGovernanceItems":  [
+
+                               ],
+    "chatgptHandoffGeneratedAt":  "2026-08-31T20:22:39Z",
+    "chatgptHandoffPath":  "C:\\Personal\\DevTools\\DevBridge\\logs\\dbm032-debug\\c18_repro\\tasks\\CHATGPT_HANDOFF.md"
+}

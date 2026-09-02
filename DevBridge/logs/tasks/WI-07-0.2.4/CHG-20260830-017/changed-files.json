@@ -1,0 +1,43 @@
+{
+  "milestone": "DB-M06",
+  "taskId": "WI-07-0.2.4",
+  "changeId": "CHG-20260830-017",
+  "capturedAtUtc": "2026-08-31T00:00:00Z",
+  "repository": "C:\\Personal\\Nexus.Developer",
+  "head": "ea39db910a6e3b00bff880316996a696ae7460dc",
+  "branch": "feature/m-08-1-2-ci-pipeline",
+  "baselines": {
+    "A_originalTaskStart": "DB-M04 reservation (ACT-20260830-018): Core-only scope src/Nexus.Developer.Core/DevelopmentControl/**; no concurrency files existed; Infra adapter files pre-existed as WI-07-0.2.3 deliverables (untracked).",
+    "B_scopeAmendment": "2026-08-30T18:53:38Z: ExcelDevelopmentControlStore.cs baseline SHA256 6160c4fea3185ec48701d2934c55d354b4780ecedd7a2b2363d4ac16ce3d9a80 (90279 bytes, untracked, prior owner WI-07-0.2.3 / CHG-20260830-016); 9 original Core files baseline hashes recorded in state/scope-amendment.json originalCoreFileBaselines."
+  },
+  "deltaAttribution": [
+    { "kind": "C_continuation_delta_created", "path": "src/Nexus.Developer.Core/DevelopmentControl/IDevelopmentControlAtomicWorkUnitRunner.cs", "sha256": "2e7bffdff21516bba93a86897ec34c30e0b6d79c6d38ad4362859b421cee3883", "note": "New in-scope Core contract (adapter integration surface), created by the continuation. Did not exist at baseline B." },
+    { "kind": "C_continuation_delta_modified", "path": "src/Nexus.Developer.Core/DevelopmentControl/DevelopmentControlAtomicWriteCoordinator.cs", "baselineB": "c085fbc04dddd44dbef75d2bd03a803dc74ab289b1e51ae31079163ca1513c28", "currentSha256": "ac70df47d088fd75", "note": "Runner routing only (in-scope Core)." },
+    { "kind": "C_continuation_delta_modified", "path": "src/Nexus.Developer.Core/DevelopmentControl/ConcurrencyGuardedDevelopmentControlStore.cs", "baselineB": "5624eebaf7722d36356d8110b9cb90abf5f89c9a836241090189e3a5a86e3392", "currentSha256": "429480228c89557a", "note": "Runner routing only (in-scope Core)." },
+    { "kind": "C_continuation_delta_modified", "path": "src/Nexus.Developer.Infrastructure/DevelopmentControl/ExcelDevelopmentControlStore.cs", "baselineB": "6160c4fea3185ec48701d2934c55d354b4780ecedd7a2b2363d4ac16ce3d9a80 (90279 bytes)", "currentSha256": "17a25a566a7e23f25586bd88ee63a40f9173ea9309e196ae63cd79ce77228657 (104070 bytes)", "note": "THE single approved Infrastructure file. PRE-EXISTING WI-07-0.2.3 adapter content preserved; current-task delta = IDevelopmentControlAtomicWorkUnitRunner batch entry (ExecuteAtomicWorkUnitAsync, RunAtomicWorkUnitCore, ValidateTempAndCommit, AtomicWritePreconditionException, SnapshotBoundDevelopmentControlStore), _batchWorkbook shared-workbook field, RunMutation batch branch, WithSnapshotRead batch-aware read wrappers, GetNodeCore made static. NOT classified as a new file." },
+    { "kind": "B_preserved_unchanged", "paths": [
+      "src/Nexus.Developer.Core/DevelopmentControl/AtomicWriteResult.cs (6f7741f1 matches baseline)",
+      "src/Nexus.Developer.Core/DevelopmentControl/DevelopmentControlConcurrencyOutcome.cs (802914ef matches baseline)",
+      "src/Nexus.Developer.Core/DevelopmentControl/DevelopmentControlMutexIdentity.cs (d7fb7618 matches baseline)",
+      "src/Nexus.Developer.Core/DevelopmentControl/DevelopmentControlWriteLock.cs (99412bbd matches baseline)",
+      "src/Nexus.Developer.Core/DevelopmentControl/IDevelopmentControlWriteLockFactory.cs (35a7cf42 matches baseline)",
+      "src/Nexus.Developer.Core/DevelopmentControl/NamedDevelopmentControlMutex.cs (31c51f54 matches baseline)",
+      "src/Nexus.Developer.Core/DevelopmentControl/SemaphoreDevelopmentControlWriteLock.cs (324d382a matches baseline)",
+      "src/Nexus.Developer.Infrastructure/DevelopmentControl/DevelopmentControlCellCodec.cs (79488e96, mtime 2026-08-30, NOT modified this task)",
+      "src/Nexus.Developer.Infrastructure/DevelopmentControl/ExcelWorkbookColumnMap.cs (35592cf5, mtime 2026-08-30, NOT modified this task)",
+      "src/Nexus.Developer.Infrastructure/DevelopmentControl/WorkbookSchemaValidator.cs (dc76e648 matches WI-07-0.2.3 reservation baseline, mtime 2026-08-30)",
+      "src/Nexus.Developer.Infrastructure/DevelopmentControl/WorkbookSchemaReport.cs (e8d05329 matches WI-07-0.2.3 reservation baseline, mtime 2026-08-30)",
+      "src/Nexus.Developer.Infrastructure/DevelopmentControl/ActivityLogMigration.cs (d9051fcd matches WI-07-0.2.3 reservation baseline, mtime 2026-08-30)"
+    ]}
+  ],
+  "currentTaskSourceChangesExistOnlyInsideAuthorizedScope": true,
+  "scopeCheck": {
+    "authorizedGlobs": [
+      "src/Nexus.Developer.Core/DevelopmentControl/**",
+      "src/Nexus.Developer.Infrastructure/DevelopmentControl/ExcelDevelopmentControlStore.cs"
+    ],
+    "violations": [],
+    "result": "PASS"
+  },
+  "verdict": "NO_SCOPE_VIOLATION"
+}

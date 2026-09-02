@@ -1,0 +1,137 @@
+# Set-ClaudeReviewResult.ps1 - DB-M08 governed Claude decision recording
+# (DB-M12.2 reusable lifecycle command for RECORD_CLAUDE_RESULT).
+#
+# Records the CURRENT task's Claude review verdict verbatim and routes the cycle:
+#   PASS + TRIAL                 -> CLAUDE_REVIEW_PASSED_TRIAL / TRIAL_CYCLE_SAFE_STOP
+#   PASS + REAL_NEXUS_DEVELOPMENT-> CLAUDE_REVIEW_PASSED_REAL / AWAITING_HUMAN_PR
+#   FIX                          -> DB_M09_FIX_REQUIRED / CORRECT_CURRENT_ATTEMPT
+#   GOVERNANCE_ISSUE             -> GOVERNANCE_ISSUE / human review
+#   HUMAN_DECISION_REQUIRED      -> HUMAN_DECISION_REQUIRED / human decision
+#
+# The decision + verbatim review text come from DB08_DECISION / DB08_REVIEW_TEXT
+# (fixture/operator channel) or from the DB-M12.2 one-command input parameters
+# (DB_COMMAND_INPUT_PARAMETERS = {"decision": "...", "reviewText": "..."}).
+# Writes tasks\CLAUDE_REVIEW_RESULT.md + state\claude-review.json and transitions
+# current-task.json. Never modifies the workbook.
+#
+# Backend contract: ALWAYS exits 0; outcomes ONLY via stdout markers (DB08_*).
+# State/tasks dirs redirect with DB08_STATE_DIR / DB08_TASKS_DIR.
+#
+# ASCII-only source (PS 5.1 + BOM-safe).
+param()
+Set-StrictMode -Version Latest
+$ErrorActionPreference = "Stop"
+
+. (Join-Path $PSScriptRoot "Set-DevBridgeStateEntry.ps1")
+
+$script:Root = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
+$script:StateDir = Join-Path $script:Root "state"
+$script:TasksDir = Join-Path $script:Root "tasks"
+$script:CfgPath = Join-Path $script:Root "config\devbridge.json"
+if ($env:DB08_STATE_DIR) { $script:StateDir = $env:DB08_STATE_DIR }
+if ($env:DB08_TASKS_DIR) { $script:TasksDir = $env:DB08_TASKS_DIR }
+$script:CurrentTaskPath = Join-Path $script:StateDir "current-task.json"
+$script:ResultMdPath = Join-Path $script:TasksDir "CLAUDE_REVIEW_RESULT.md"
+$script:JsonPath = Join-Path $script:StateDir "claude-review.json"
+$script:NowUtc = (Get-Date).ToUniversalTime().ToString("yyyy-MM-ddTHH:mm:ssZ")
+
+function Out-Markers([string]$token, [bool]$pass, [string[]]$evidence, [bool]$human, [string]$humanType) {
+    Write-Output ("DB08_OUTCOME: " + $token)
+    Write-Output ("DB08_RESULT_PASS: " + $(if ($pass) { "True" } else { "False" }))
+    Write-Output ("DB08_RESULT_CODE: " + $token)
+    Write-Output "DB08_WORKBOOK_MODIFIED: False"
+    Write-Output "DB08_NEXUS_SOURCE_MODIFIED: False"
+    Write-Output "DB08_GIT_MODIFIED: False"
+    Write-Output ("DB08_REQUIRES_HUMAN_ACTION: " + $(if ($human) { "True" } else { "False" }))
+    Write-Output ("DB08_HUMAN_ACTION_TYPE: " + $humanType)
+    foreach ($e in $evidence) { Write-Output ("DB08_EVIDENCE: " + $e) }
+    exit 0
+}
+
+$ct = Read-DevBridgeJson $script:CurrentTaskPath
+if ($null -eq $ct) { Out-Markers "STOP_NO_CURRENT_TASK" $false @("No current-task.json; run DB-M03 preflight first.") $false "" }
+
+$nodeId = [string](Get-DevBridgeField $ct "nodeId")
+$changeId = [string](Get-DevBridgeField $ct "changeId")
+$taskName = [string](Get-DevBridgeField $ct "name")
+if (-not $nodeId) { $nodeId = [string](Get-DevBridgeField $ct "taskId") }
+
+# ---- decision + verbatim text (one-command parameters or DB08_* env) ----
+$decision = ""
+$reviewText = ""
+if ($env:DB_COMMAND_INPUT_PARAMETERS) {
+    $p = ConvertFrom-DevBridgeJsonString $env:DB_COMMAND_INPUT_PARAMETERS
+    if ($null -ne $p) {
+        $decision = [string](Get-DevBridgeField $p "decision")
+        $reviewText = [string](Get-DevBridgeField $p "reviewText")
+    }
+}
+if (-not $decision) { $decision = [string]$env:DB08_DECISION }
+if (-not $reviewText -and $env:DB08_REVIEW_TEXT) { $reviewText = [string]$env:DB08_REVIEW_TEXT }
+if (-not $reviewText) { $reviewText = "(no review text supplied)" }
+
+$valid = @("PASS", "FIX", "GOVERNANCE_ISSUE", "HUMAN_DECISION_REQUIRED")
+if ($valid -notcontains $decision) {
+    Out-Markers "STOP_INVALID_DECISION" $false @("Decision must be one of: " + ($valid -join ", ")) $false ""
+}
+
+$mode = Get-DevBridgeMode $ct $script:CfgPath
+if ($env:DB_COMMAND_INPUT_MODE) { $mode = $env:DB_COMMAND_INPUT_MODE }
+$trial = ($mode -eq "TRIAL")
+
+# ---- route ----
+$dbM09Required = ($decision -eq "FIX")
+$routeLifecycleState = ""
+$routeNextAllowedAction = ""
+switch ($decision) {
+    "PASS" {
+        if ($trial) { $routeLifecycleState = "CLAUDE_REVIEW_PASSED_TRIAL"; $routeNextAllowedAction = "TRIAL_CYCLE_SAFE_STOP" }
+        else { $routeLifecycleState = "CLAUDE_REVIEW_PASSED_REAL"; $routeNextAllowedAction = "AWAITING_HUMAN_PR" }
+    }
+    "FIX" { $routeLifecycleState = "DB_M09_FIX_REQUIRED"; $routeNextAllowedAction = "CORRECT_CURRENT_ATTEMPT" }
+    "GOVERNANCE_ISSUE" { $routeLifecycleState = "GOVERNANCE_ISSUE"; $routeNextAllowedAction = "HUMAN_GOVERNANCE_REVIEW" }
+    "HUMAN_DECISION_REQUIRED" { $routeLifecycleState = "HUMAN_DECISION_REQUIRED"; $routeNextAllowedAction = "HUMAN_DECISION" }
+}
+$requiresHuman = ($decision -eq "GOVERNANCE_ISSUE" -or $decision -eq "HUMAN_DECISION_REQUIRED")
+
+# ---- idempotency: the same decision for the same change is REUSED, never duplicated ----
+$existing = Read-DevBridgeJson $script:JsonPath
+if ($null -ne $existing -and [string](Get-DevBridgeField $existing "changeId") -eq $changeId -and [string](Get-DevBridgeField $existing "decision") -eq $decision) {
+    Out-Markers "REUSED" $true @("tasks/CLAUDE_REVIEW_RESULT.md", "state/claude-review.json") $requiresHuman $(if ($decision -eq "GOVERNANCE_ISSUE") { "HUMAN_GOVERNANCE_REVIEW" } elseif ($decision -eq "HUMAN_DECISION_REQUIRED") { "HUMAN_DECISION" } else { "" })
+}
+
+# ---- evidence files ----
+$md = "DecisionToken: " + $decision + "`n`n" + $reviewText + "`n"
+[System.IO.File]::WriteAllText($script:ResultMdPath, $md, (New-Object System.Text.UTF8Encoding($false)))
+
+$json = [ordered]@{
+    milestone            = "DB-M08"
+    nodeId               = $nodeId
+    changeId             = $changeId
+    name                 = $taskName
+    decision             = $decision
+    dbM09Required        = $dbM09Required
+    trialMode            = $trial
+    routeLifecycleState  = $routeLifecycleState
+    routeNextAllowedAction = $routeNextAllowedAction
+    reviewedAt           = $script:NowUtc
+    recordedVia          = "Set-ClaudeReviewResult.ps1 (DB-M12.2 RECORD_CLAUDE_RESULT command)"
+    reviewText           = $reviewText
+}
+Write-DevBridgeJson $script:JsonPath $json
+
+$db8 = [ordered]@{
+    result       = "CLAUDE_RESULT_RECORDED"
+    decision     = $decision
+    nodeId       = $nodeId
+    changeId     = $changeId
+    trialMode    = $trial
+    routeLifecycleState = $routeLifecycleState
+    reviewedAt   = $script:NowUtc
+    evidence     = @("tasks/CLAUDE_REVIEW_RESULT.md", "state/claude-review.json")
+}
+Set-DevBridgeStateEntry $script:CurrentTaskPath @{
+    status = $routeLifecycleState; nextAllowedAction = $routeNextAllowedAction; dbM08 = $db8
+}
+
+Out-Markers "CLAUDE_RESULT_RECORDED" $true @("tasks/CLAUDE_REVIEW_RESULT.md", "state/claude-review.json") $requiresHuman $(if ($decision -eq "GOVERNANCE_ISSUE") { "HUMAN_GOVERNANCE_REVIEW" } elseif ($decision -eq "HUMAN_DECISION_REQUIRED") { "HUMAN_DECISION" } else { "" })

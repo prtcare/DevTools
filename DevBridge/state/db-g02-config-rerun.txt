@@ -1,0 +1,21 @@
+=== V3/V14 CONFIG CONSISTENCY (corrected configs) ===
+map schemaVersion: 2.1 | sheet-governance schemaVersion: 1.0
+Sheets in map: 14 | in sheet-governance: 14
+Role mismatches map vs sheet-governance: NONE
+sheet-governance structural field check: ALL 14 SHEETS x 9 FIELDS PRESENT + VALID ENUMS
+Session Protocol mutation: NONE | writeWhen count: 0 (must be NONE / 0)
+Master Roadmap new-node trigger uses 'governed data range': True
+Master Roadmap formalExcelTableRange: A5:AG630
+Master Roadmap governedDataRange: A6:AG675 rows=6-675 count=659 within=625 beyond=34
+Master Roadmap detection rule present: True
+Mandatory read conditions covering the full governed range: 1 of 5
+  Read the full governed data range (A6:AG675, 659 records): every row in the sheet used range with a valid RoadmapNode Node ID and a Node Type in the roadmap vocabulary is a governed current-state record, including the 34 records beyond the formal Excel table (A5:AG630). The Excel table boundary is metadata, not the governance boundary.
+mappingReady: True | mappingReadyCriteria.noUnresolvedIssuePreventsSafePreflight: True | safeForAutomatedPreflight: True
+Session Protocol verdicts: CLEAR, DEPENDENCY FOUND, OVERLAP FOUND, CONFLICT FOUND, ARCHITECTURE CONFLICT
+Preflight verdicts       : CLEAR, DEPENDENCY FOUND, OVERLAP FOUND, CONFLICT FOUND, ARCHITECTURE CONFLICT
+Verdict vocabulary consistent: True
+Map unresolved mention of beyond-table rows: True -> 
+Correction field: DB-M02.1 Master Roadmap Full-Range Governance Correction: governed range extended from the formal Excel table (A5:AG630, 625 records) to the full structurally valid used range (A6:AG675, 659 records). Resolves DB-G02 critical issue C-1.
+correctedAtUtc: 2026-08-30T12:05:00Z
+
+CONFIG CHECK: PASS

@@ -1,0 +1,207 @@
+SHEETS (count=14)
+  [1] Control Center
+  [2] Master Roadmap
+  [3] Active Changes
+  [4] Audit Findings
+  [5] Session Protocol
+  [6] Version History
+  [7] Phase Plan
+  [8] Architecture Decisions
+  [9] Open Decisions
+  [10] Dependencies & Blockers
+  [11] Tool & Integration Registry
+  [12] Activity Log
+  [13] Development Guide
+  [14] Existing Assets
+DUPLICATE_SHEET_NAMES: NONE
+
+MASTER ROADMAP rows=674
+MR M-07 CHAIN rows 324-327 (A..AD selected):
+  row 324: A=[M-07-0.2] B=[07] C=[Milestone] J=[M-07-0.1] P=[GATE_A] R=[In Progress] T=[30] U=[] V=[] Z=[CHG-20260830-006] AA=[Added CHG-20260830-006 (2026-08-30). Designed in DEVELOPMENT_CONTROL_SERVICE_ARCHITECTURE.md (2026-08-25) as 'added unde] AC=[] AD=[Build after its declared dependency.]
+  row 325: A=[WI-07-0.2.1] B=[M-07-0.2] C=[WorkItem] J=[] P=[GATE_A] R=[Complete] T=[100] U=[] V=[] Z=[CHG-20260830-006] AA=[Added CHG-20260830-006 (2026-08-30). Designed in DEVELOPMENT_CONTROL_SERVICE_ARCHITECTURE.md (2026-08-25) as 'added unde] AC=[Implemented and independently verified file-by-file on 2026-08-30: all 18 DTO/enum files under Nexus.Developer.Core/Deve] AD=[None -- complete. Unblocks WI-07-0.2.2.]
+  row 326: A=[WI-07-0.2.2] B=[M-07-0.2] C=[WorkItem] J=[WI-07-0.2.1] P=[GATE_A] R=[Complete] T=[100] U=[] V=[] Z=[CHG-20260830-006] AA=[Added CHG-20260830-006 (2026-08-30). Designed in DEVELOPMENT_CONTROL_SERVICE_ARCHITECTURE.md (2026-08-25) as 'added unde] AC=[Implemented and independently verified 2026-08-30: WorkbookSchemaValidator (reflection-based, compares live sheet header] AD=[None -- complete. Unblocks WI-07-0.2.3 (Excel persistence adapter).]
+  row 327: A=[WI-07-0.2.3] B=[M-07-0.2] C=[WorkItem] J=[WI-07-0.2.2] P=[GATE_A] R=[Complete] T=[100] U=[] V=[] Z=[CHG-20260830-006] AA=[Added CHG-20260830-006 (2026-08-30). Designed in DEVELOPMENT_CONTROL_SERVICE_ARCHITECTURE.md (2026-08-25) as 'added unde] AC=[Implemented and governed-verified 2026-08-30: ExcelWorkbookColumnMap (workbook column map; Required() throws on a missin] AD=[None -- complete. Unblocks WI-07-0.2.4.]
+
+MR NODE ID count=663 dupes=NONE
+MR WORK ITEM count=142 orphan parent refs=NONE
+M-07-0.2 children (B=M-07-0.2): count=10
+   WI-07-0.2.1 status=[Complete] T=[100]
+   WI-07-0.2.10 status=[Planned] T=[0]
+   WI-07-0.2.2 status=[Complete] T=[100]
+   WI-07-0.2.3 status=[Complete] T=[100]
+   WI-07-0.2.4 status=[Planned] T=[0]
+   WI-07-0.2.5 status=[Planned] T=[0]
+   WI-07-0.2.6 status=[Planned] T=[0]
+   WI-07-0.2.7 status=[Planned] T=[0]
+   WI-07-0.2.8 status=[Planned] T=[0]
+   WI-07-0.2.9 status=[Planned] T=[0]
+
+ACTIVE CHANGES rows=78
+  row 75: A=[CHG-20260830-012] C=[M-04-3.3 correction verified and marked Complete. Two stale-dependency corrections applied (invalid dependency references, per governance rule permitting minimal correction on discovered contradiction). Next critical-path item identified and started: WI-07-2.1.1 (Dependency model and traversal).] L=[Applying the standing rule that a discovered invalid/stale dependency justifies a minimal correction, not a redesign -- both corrections here are single-field fixes on existing nodes, not restructuring.] U=[46264] W=[1.0] AC=[Verification / Minimal Governance Correction] AD=[Pass -- M-04-3.3 re-verified clean; both dependency corrections traced directly to Superseded status and actual repo file listing before being applied, not assumed.] -> classify=Open
+  row 76: A=[CHG-20260830-013] C=[WI-07-2.1.1 (Dependency model and traversal) independently verified and marked Complete; M-07-2.1 marked Complete; git-commit catch-up applied; WI-07-6.1.1 unblocked and set as next item.] L=[Applying the standing rule that a discovered invalid/stale dependency justifies a minimal correction -- the M-07-6.1 fix mirrors the WI-07-6.1.1 fix already applied under CHG-012 for consistency. WI-07-2.1.1/M-07-2.1 Complete reflects a clean, independently-verified implementation with zero deviations.] U=[46264] W=[1.0] AC=[Verification / Git Catch-up / Minimal Governance Correction] AD=[Pass -- WI-07-2.1.1 re-verified clean file-by-file; git catch-up confirmed via git log/git status; dependency corrections traced to Superseded status before being applied.] -> classify=Open
+  row 77: A=[CHG-20260830-014] C=[WI-07-0.2.1 (Development Control domain model and contracts) implemented and independently verified Complete.] L=[Clean implementation verified against every written acceptance criterion; no correction needed.] U=[46264] W=[1.0] AC=[Implementation Verification] AD=[Pass -- WI-07-0.2.1 re-verified clean file-by-file; git diff confirmed no existing file touched.] -> classify=Open
+  row 78: A=[CHG-20260830-015] C=[WI-07-0.2.2 (workbook schema validation + Activity Log migration to 34 columns) implemented and independently verified Complete.] L=[Clean implementation verified against every written acceptance criterion, including confirming the live-file effect (not just tests) directly; no correction needed.] U=[46264] W=[1.0] AC=[Implementation Verification] AD=[Pass -- WI-07-0.2.2 re-verified clean file-by-file; live workbook re-opened and the migration's actual effect confirmed directly, not assumed from test results alone.] -> classify=Open
+  row 79: A=[CHG-20260830-016] C=[WI-07-0.2.3 (Excel persistence adapter) reserved via DB-M04 governed reservation; preflight CLEAR; implementation pending.] L=[Completed -- WI-07-0.2.3 (Excel persistence adapter) implemented via DB-M05 ChatGPT handoff, deterministically verified (DB-M06 VERIFICATION_PASSED, 22/22 parts, 8/8 acceptance criteria, 199/199 tests + 32/32 harness checks), Claude focused review PASS (DB-M08, 0 blocking / 1 residual non-blocking observation carried forward), governed multi-sheet completion applied (DB-M10).] U=[2026-08-30T16:46:12Z] W=[1.0] AC=[Governed Multi-Sheet Completion] AD=[Pass -- DB-M06 VERIFICATION_PASSED (22/22 parts, 8/8 acceptance); DB-M08 Claude review PASS (0 blocking / 1 residual non-blocking); DB-M10 post-write verification confirmed workbook write.] -> classify=Terminal
+AC classified: open=22 terminal=32
+
+ACTIVITY LOG rows=53 maxRow=54
+  row 50: A=[ACT-20260830-013] B=[2026-08-30T00:00:00.0000000Z] E=[Claude (Cowork)] J=[CHG-20260830-013] L=[Verification + Git Catch-up + Minimal Governance Correction] N=[WI-07-2.1.1 | M-07-2.1 | WI-07-6.1.1 | M-07-6.1 | M-07-10.3] AA=[] AG=[]
+  row 51: A=[ACT-20260830-014] B=[2026-08-30T00:00:00.0000000Z] E=[Claude (Cowork)] J=[CHG-20260830-014] L=[Implementation Verification] N=[WI-07-0.2.1 | M-07-0.2] AA=[] AG=[]
+  row 52: A=[ACT-20260830-015] B=[2026-08-30T00:00:00+00:00] E=[Claude (Cowork)] J=[CHG-20260830-015] L=[Implementation Verification] N=[WI-07-0.2.2 | M-07-0.2] AA=[] AG=[]
+  row 53: A=[ACT-20260830-016] B=[2026-08-30T13:35:28Z] E=[Claude Code (DevBridge)] J=[CHG-20260830-016] L=[Governed Change Reservation + Git Baseline Capture] N=[WI-07-0.2.3 | M-07-0.2] AA=[CLEAR] AG=[Not Reviewed]
+  row 54: A=[ACT-20260830-017] B=[2026-08-30T16:46:12Z] E=[Claude Code (DevBridge)] J=[CHG-20260830-016] L=[Governed Multi-Sheet Completion] N=[WI-07-0.2.3 | M-07-0.2] AA=[CLEAR] AG=[Not Reviewed]
+AL ACT-ID unique check: dupes=NONE
+
+VERSION HISTORY rows=958 maxRow=959
+  row 954: A=[F-12-0] R=[In Progress] T=[44] Z=[1.0] AA=[v8.0] AB=[46263] AC=[No] AD=[CHG-20260829-005] AE=[v7.0] AH=[Progress Update]
+  row 955: A=[M-12-0.1] R=[Implemented - Verify] T=[95] Z=[1.0] AA=[v9.0] AB=[46263] AC=[No] AD=[CHG-20260829-005] AE=[v8.0] AH=[Verification]
+  row 956: A=[F-12-0] R=[In Progress] T=[45] Z=[1.0] AA=[v9.0] AB=[46263] AC=[Yes] AD=[CHG-20260829-007] AE=[v8.0] AH=[Progress Update]
+  row 957: A=[M-12-0.1] R=[Completed] T=[100] Z=[1.0] AA=[v10.0] AB=[46263] AC=[Yes] AD=[CHG-20260829-007] AE=[v9.0] AH=[Verification]
+  row 958: A=[WI-07-0.2.3] R=[Complete] T=[100] Z=[1.0] AA=[v1.0] AB=[46264] AC=[Yes] AD=[CHG-20260830-016] AE=[] AH=[Completion]
+  row 959: A=[M-07-0.2] R=[In Progress] T=[30] Z=[1.0] AA=[v1.0] AB=[46264] AC=[Yes] AD=[CHG-20260830-016] AE=[] AH=[Progress Update]
+VH records for WI-07-0.2.3 and M-07-0.2:
+   row 958: A=[WI-07-0.2.3] R=[Complete] T=[100] AA=[v1.0] AB=[46264] AC(IsCurrent)=[Yes] AD=[CHG-20260830-016] AE=[]
+   row 959: A=[M-07-0.2] R=[In Progress] T=[30] AA=[v1.0] AB=[46264] AC(IsCurrent)=[Yes] AD=[CHG-20260830-016] AE=[]
+
+AUDIT FINDINGS rows=21
+   AF-010 row 15: A=[AF-010] B=[High] C=[Documentation truth] D=[Platform] E=[CURRENT_STATE and several architecture documents still claim CI/local-feed states contradicted by current files.] F=[Mandatory-reading files can direct agents to obsolete work.]
+Audit Findings reference CHG-20260830-016: False | MutationEnvelope: False
+
+SESSION PROTOCOL rows=34 A1=[MANDATORY DEVELOPMENT SESSION PROTOCOL]
+
+PHASE PLAN rows=28 rowsReferencingM-07-0.2=NONE
+
+ARCHITECTURE DECISIONS rows=8
+   ADR-002 row 6: A=[ADR-002] B=[46259] C=[Approved] D=[Developer Chat is a Layer 12 Product. It is integrated into Nexus development internally but remains standalone-capable.] E=[12 PRODUCTS]
+   ADR-003 row 7: A=[ADR-003] B=[46259] C=[Approved] D=[Master Roadmap stores current state only; all version history is append-only in a separate Version History sheet.] E=[Development Control]
+   ADR-005 row 9: A=[ADR-005] B=[46260] C=[Approved] D=[Phase 1 is redefined and deliberately small. Its exit condition is: open Nexus Developer, choose a Workspace/Project, open Developer Chat, discuss, convert the discussion into a Feature/Issue/Milestone/Task/Subtask, save it, see it in the Developer UI, reopen it with its chat/context intact. The old M-07-5.3 three-simultaneous-worker Foundation Gate is reclassified into Phase 2 -- it no longer gates Phase 1. The Developer hierarchy is permanently Workspace > Project > Subproject > Feature > Task > Subtask, with Milestone as a grouping/delivery link (not a hierarchy parent) and Issue attachable to any relevant object including Chat and DevelopmentRun. WorkItem is retired as a hierarchy level (folds into Task, with traceable migration, not deletion). Developer Chat stays physically inside the Nexus.Developer repository for now rather than a separate product repository. AI capability is abstracted as AiRole -> Provider -> Model -> Configuration; no business logic may branch on provider name. DevelopmentRun's Result/Report/Check/Verification reuse Layer 09 Assurance's existing traceability model rather than a second competing verification system.] E=[Cross-layer Phase 1/Phase 2 (06 Product Core, 07 Developer, 11 Experience, 12 Products, 04 AI, 09 Assurance)]
+
+OPEN DECISIONS rows=7
+   row 6: A=[DEC-002] B=[46259] C=[Developer tool integration] D=[Choose the first minimum tool adapters required for Developer Chat MVP and their approval levels.] E=[F-07-6 | M-12-0.2]
+   row 7: A=[DEC-003] B=[46259] C=[Developer Chat packaging] D=[Define the packaging boundary that keeps Developer Chat standalone-capable while integrated into Nexus internally.] E=[F-12-0]
+   row 8: A=[DEC-003] B=[46261] C=[Azure SQL migration -- local dev database] D=[When to move off SQL Server LocalDB onto a Docker-hosted full SQL Server instance (or straight to real Azure SQL) for local development/testing.] E=[ADR-014 | M-02-1.2]
+
+DEPENDENCIES & BLOCKERS rows=14
+   row 6: [Yes | Dependency | Chat needs real identity/session ownership rather than placeholder identity. | Open | F-06-7 | CHG-20260825-004 | Unassigned | M-01-1.1 |  | REL-002]
+   row 7: [Yes | Dependency | Tool execution needs a resolvable work graph and API. | Open | F-07-6 | CHG-20260825-004 | Unassigned | M-07-1.2 |  | REL-003]
+   row 8: [Yes | Dependency | Developer tools must use common tool-call/approval lifecycle. | Open | F-07-6 | CHG-20260825-004 | Unassigned | M-06-7.3 |  | REL-004]
+   row 9: [Yes | Dependency | Experience consumes Chat Core contracts. | Open | F-11-1 | CHG-20260825-004 | Unassigned | M-06-7.5 |  | REL-005]
+   row 10: [Yes | Dependency | Developer Chat requires reusable Chat Core. | Open | F-12-0 | CHG-20260825-004 | Unassigned | M-06-7.5 |  | REL-006]
+   row 11: [Yes | Dependency | Developer Chat requires development capability/tool evidence. | Open | F-12-0 | CHG-20260825-004 | Unassigned | M-07-6.3 |  | REL-007]
+   row 12: [Yes | Dependency | Developer Chat requires shared chat interaction states. | Open | F-12-0 | CHG-20260825-004 | Unassigned | M-11-1.2 |  | REL-008]
+   row 13: [No | External Blocker | DevTools.zip is now supplied and contains the expected source files. | Satisfied | T-07-0.1.3.2 | CHG-20260825-003 | Durai | DevTools source ZIP | Next step is execution/verifi]
+   row 14: [Yes | Exit Gate Dependency | Phase 1 exit requires Foundation Gate acceptance and controlled review/integration. | Open | M-12-0.3 | CHG-20260825-004 | Unassigned | M-07-5.3 |  | REL-010]
+   row 15: [Yes | External Blocker | Nexus.Products.Chat.Api's connection string targets TCP 1433 with SQL authentication; the local SQL Server instance (MSSQL17.MSSQLSERVER) now actually listens on 1434 and is i]
+
+TOOL & INTEGRATION REGISTRY rows=19
+   row 15: A=[Nexus DevTools shell] B=[Developer desktop shell] D=[07 DEVELOPER] E=[Local file/PowerShell adapter now; service/API later] F=[Source available] G=[Required] J=[DevTools.zip now contains NexusDev.ps1, LayerShell.ps1, notify/checkpoint/verify/start-dev and launcher files.]
+   row 16: A=[ClosedXML] B=[Office/OpenXML library] D=[07 DEVELOPER] E=[Library/API (NuGet package, direct .NET reference)] F=[Existing / evolving] G=[Required] J=[Added by DB-M10 governed completion (CHG-20260830-016). NuGet dependency already used by WI-07-0.2.2 (ActivityLogMigration) and WI-07-0.2.3 (ExcelDeve]
+Tool Registry ClosedXML rows: 16
+
+EXISTING ASSETS rows=15
+   row 15: A=[Developer desktop tools] B=[NexusDev/LayerShell launchers plus notify/checkpoint/verify/start-dev tools are supplied.] C=[DevTools.zip] D=[Existing local developer shell that can be migrated into Nexus.Developer.] E=[Source available] F=[Run copy-first migration, remove hard-coded paths and test all functions.]
+   row 16: A=[Development control service (Excel-backed)] B=[IDevelopmentControlStore (22 ops) with DTO/enum contracts (WI-07-0.2.1); WorkbookSchemaValidator + ActivityLogMigration (WI-07-0.2.2); ExcelDevelopmentControlStore ClosedXML adapter implementing read ] C=[Nexus.Developer | src/Nexus.Developer.Infrastructure/DevelopmentControl/** and src/Nexus.Developer.Core/DevelopmentControl/**] D=[Substantial progress on M-07-0.2 (Development Control Service, Excel-backed, Azure-SQL-ready).] E=[Working foundation] F=[Concurrency/locking/atomic multi-op writes (WI-07-0.2.4), full 22-op application surface (WI-07-0.2.5), remaining WI-07-0.2.x slices, DB-backed store later.]
+Existing Assets 'Development control service' rows: 16
+
+DEVELOPMENT GUIDE rows=163 maxRow=164
+Development Guide rows matching M-07/DevControl: NONE
+
+CONTROL CENTER A2 len=8250
+  A2 head: Workbook v3.27 * CHG-20260830-016 (2026-08-30): WI-07-0.2.3 (Excel persistence adapter) completed through the governed pipeline -- DB-M05 implementation handoff, DB-M06 deterministic verification (VERIFICATION_PASSED, 22/22 parts, 8/8 acceptance criteria, 199/199 tests + 32/32 harness checks, canonical workbook hash unchanged), DB-M07 focused review package, DB-M08 Claude focused review PASS (0 blocking, 1 residual non-blocking observation carried forward -- MutationEnvelope validation on no-op Add/RemoveDependencyAsync paths), DB-M10 governed multi-sheet completion. ExcelDevelopmentControlSto
+Master Roadmap: rowElements=674 minRow=1 maxRow=675 missingRows=[4]
+Active Changes: rowElements=78 minRow=1 maxRow=79 missingRows=[4]
+Activity Log: rowElements=53 minRow=1 maxRow=54 missingRows=[3]
+Version History: rowElements=958 minRow=1 maxRow=959 missingRows=[4]
+Audit Findings: rowElements=21 minRow=1 maxRow=23 missingRows=[3,4]
+Tool & Integration Registry: rowElements=19 minRow=1 maxRow=20 missingRows=[3]
+Existing Assets: rowElements=15 minRow=1 maxRow=16 missingRows=[3]
+Open Decisions: rowElements=7 minRow=1 maxRow=8 missingRows=[3]
+Dependencies & Blockers: rowElements=14 minRow=1 maxRow=15 missingRows=[3]
+Architecture Decisions: rowElements=8 minRow=1 maxRow=9 missingRows=[3]
+Phase Plan: rowElements=28 minRow=1 maxRow=29 missingRows=[3]
+Development Guide: rowElements=163 minRow=1 maxRow=164 missingRows=[3]
+Control Center: rowElements=22 minRow=1 maxRow=30 missingRows=[3,8,10,18,20,27,28,29]
+Session Protocol: rowElements=34 minRow=1 maxRow=34 missingRows=[NONE]
+
+MR hierarchy columns D/E for M-07 chain and beyond-table rows:
+  row 324: A=[M-07-0.2] B=[07] C=[Milestone] D=[] E=[] F=[07] G=[P0]
+  row 325: A=[WI-07-0.2.1] B=[M-07-0.2] C=[WorkItem] D=[] E=[] F=[07] G=[P0]
+  row 326: A=[WI-07-0.2.2] B=[M-07-0.2] C=[WorkItem] D=[] E=[] F=[07] G=[P0]
+  row 327: A=[WI-07-0.2.3] B=[M-07-0.2] C=[WorkItem] D=[] E=[] F=[07] G=[P0]
+  row 675: A=[WI-12-0.4.2] B=[M-12-0.4] C=[WorkItem] D=[12.000.004.002] E=[12 PRODUCTS > ... > WI-12-0.4.2 Work item detail page] F=[12 PRODUCTS] G=[P1]
+MR column D (sort key) unique values=646 dupes=[NONE]
+M-07-0.2 dependency J=[M-07-0.1]
+M-07-0.1 row 314: R=[Completed] T=[100] J=[]
+WI-07-0.2.4 row 328: R=[Planned] T=[0] J=[WI-07-0.2.3] P=[GATE_A]
+
+AC row inventory (rn -> ChangeID / Status-lead):
+  row 1: A=[ACTIVE CHANGE LEDGER] L-lead=[]
+  row 2: A=[Reserve implementation scope before editing. Completed rows stay forever. Link governed changes to Version History and ADRs.] L-lead=[]
+  row 3: A=[Conflict fields: repositories · projects · files/globs · schema/DbContext · contracts/API · dependencies · architecture boundary · affected roadmap nodes] L-lead=[]
+  row 5: A=[Change ID] L-lead=[Status]
+  row 6: A=[CHG-20260825-001] L-lead=[Completed]
+  row 7: A=[CHG-20260825-002] L-lead=[Completed]
+  row 8: A=[CHG-20260825-003] L-lead=[Completed]
+  row 9: A=[CHG-20260825-004] L-lead=[Completed]
+  row 31: A=[CHG-20260826-001] L-lead=[Completed]
+  row 32: A=[CHG-20260826-002] L-lead=[Completed]
+  row 33: A=[CHG-20260826-003] L-lead=[Completed]
+  row 34: A=[CHG-20260826-004] L-lead=[Completed]
+  row 35: A=[CHG-20260826-005] L-lead=[Completed]
+  row 36: A=[CHG-20260826-006] L-lead=[Completed]
+  row 37: A=[CHG-20260826-007] L-lead=[Completed]
+  row 41: A=[CHG-20260827-001] L-lead=[Completed]
+  row 42: A=[CHG-20260827-002] L-lead=[Completed]
+  row 43: A=[CHG-20260827-003] L-lead=[Completed]
+  row 44: A=[CHG-20260827-004] L-lead=[Completed]
+  row 45: A=[CHG-20260827-005] L-lead=[Completed]
+  row 46: A=[CHG-20260827-006] L-lead=[Completed]
+  row 47: A=[CHG-20260827-007] L-lead=[Completed (implementatio]
+  row 48: A=[CHG-20260827-008] L-lead=[Completed]
+  row 49: A=[CHG-20260827-010] L-lead=[Completed (Part A merged]
+  row 50: A=[CHG-20260827-011] L-lead=[Completed -- pushed dire]
+  row 51: A=[CHG-20260827-012] L-lead=[Completed]
+  row 52: A=[CHG-20260828-004] L-lead=[Completed -- committed l]
+  row 53: A=[CHG-20260828-005] L-lead=[Completed -- committed l]
+  row 54: A=[CHG-20260828-006] L-lead=[Completed -- committed l]
+  row 55: A=[CHG-20260828-007] L-lead=[Completed -- committed l]
+  row 56: A=[CHG-20260828-008] L-lead=[Completed -- committed l]
+  row 57: A=[CHG-20260829-001] L-lead=[Completed -- committed l]
+  row 58: A=[CHG-20260829-002] L-lead=[Blocked -- environment S]
+  row 59: A=[CHG-20260829-003] L-lead=[Completed -- P1-3 accept]
+  row 60: A=[CHG-20260829-004] L-lead=[Completed -- workbook co]
+  row 61: A=[CHG-20260829-005] L-lead=[Verified locally, PASSES]
+  row 62: A=[CHG-20260829-006] L-lead=[PR #5 open, reviewed and]
+  row 63: A=[CHG-20260829-007] L-lead=[Completed -- PR #5 merge]
+  row 64: A=[CHG-20260830-001] L-lead=[PR #2 open, CI genuinely]
+  row 65: A=[CHG-20260830-002] L-lead=[Nexus.Experience: Comple]
+  row 66: A=[CHG-20260830-003] L-lead=[PR #6 open, CI genuinely]
+  row 67: A=[CHG-20260830-004] L-lead=[Comparison report delive]
+  row 68: A=[CHG-20260830-005] L-lead=[Spec precision only -- c]
+  row 69: A=[CHG-20260830-006] L-lead=[Both new capability area]
+  row 70: A=[CHG-20260830-007] L-lead=[Both edits are additive/]
+  row 71: A=[CHG-20260830-008] L-lead=[Additive acceptance-crit]
+  row 72: A=[CHG-20260830-009] L-lead=[Additive acceptance-crit]
+  row 73: A=[CHG-20260830-010] L-lead=[First real code change o]
+  row 74: A=[CHG-20260830-011] L-lead=[Second real code change ]
+  row 75: A=[CHG-20260830-012] L-lead=[Applying the standing ru]
+  row 76: A=[CHG-20260830-013] L-lead=[Applying the standing ru]
+  row 77: A=[CHG-20260830-014] L-lead=[Clean implementation ver]
+  row 78: A=[CHG-20260830-015] L-lead=[Clean implementation ver]
+  row 79: A=[CHG-20260830-016] L-lead=[Completed -- WI-07-0.2.3]
+AC rows with ChangeID CHG-20260830-016: [79]
+
+VH nodes with Is Current=Yes: count=647 nodes-with-multiple-Yes=[NONE]
+VH duplicate (node,record-version) pairs: NONE
+
+AF-010 row 15: A=[AF-010] B=[High] C=[Documentation truth] D=[Platform] E=[CURRENT_STATE and several architecture documents still claim CI/local-feed states contradicted by current files.] F=[Mandatory-reading files can direct agents to obsolete work.] G=[Update CURRENT_STATE and archive/supersede stale operational claims in the same change.] H=[M-07-0.1]
+Audit Finding IDs count=18 dupes=[NONE]
+
+AL row 53: A=[ACT-20260830-016] B=[2026-08-30T13:35:28Z] J=[CHG-20260830-016] N=[WI-07-0.2.3 | M-07-0.2] P=[] AA=[CLEAR] AB=[Reservation CHG-20260830-016 appended to Active Changes; workbook backup created; git baseline captured; Nexus source unmodified.] AC-evidence=[Active Changes row 79; Activity Log row 53; backup NEXUS_DEVELOPMENT_CONTROL_20260830_190528.xlsx; baseline HEAD ea39db910a6e3b00bff880316996a696ae7460dc on fea] AG=[Not Reviewed]
+AL row 54: A=[ACT-20260830-017] B=[2026-08-30T16:46:12Z] J=[CHG-20260830-016] N=[WI-07-0.2.3 | M-07-0.2] P=[] AA=[CLEAR] AB=[Active Changes row 79 closed (Status=Completed); Master Roadmap WI-07-0.2.3 Status->Complete/100% and M-07-0.2 Manual Progress 20->30%; Version History rows 958-959 appended; Tool & Integration Registry row 16 (ClosedXML) appended; Existing Assets row 16 appended; Control Center changelog prepended (Workbook v3.27). Workbook saved/closed/reopened from disk and verified (DB-M10 Part 19).] AC-evidence=[Backup C:\Personal\DevTools\DevBridge\logs\workbook-backups\NEXUS_DEVELOPMENT_CONTROL_20260830_220538.xlsx; pre-write SHA256 F52A1A8FE491B6C91809EAC92DB2F0DCCD4] AG=[Not Reviewed]
+
+DG row 1: A=[NEXUS DEVELOPMENT GUIDE — MILESTONES IN PLAIN ENGLISH]
+DG row 2: A=[Use this sheet for day-to-day planning. It shows every milestone, what it means, what actually exists now, and what should happen next.]
+DG row 4: A=[Phase] B=[Layer] C=[Milestone ID] D=[Milestone] E=[In Plain Words] F=[Status] G=[Progress %] H=[What Exists Now] I=[Next Step] J=[Depends On] K=[Gate]
+DG row 5: A=[P1] B=[01 CORE] C=[M-01-1.1] D=[Identity domain and schema] E=[User, Credential and Session exist as real records in the identity database structure, replacing the 240-byte IdentityProvider stub.] F=[Planned] G=[0] H=[No implementation evidence reviewed yet.] I=[Start after: M-02-1.4.] J=[M-02-1.
+DG row 6: A=[P1] B=[01 CORE] C=[M-01-1.2] D=[Authentication flow] E=[A real user signs in and receives a token that every Nexus host validates.] F=[Planned] G=[0] H=[No implementation evidence reviewed yet.] I=[Start after: M-01-1.1.] J=[M-01-1.1] K=[GATE_A]

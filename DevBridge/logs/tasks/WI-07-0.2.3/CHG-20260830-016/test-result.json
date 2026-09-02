@@ -1,0 +1,44 @@
+{
+  "milestone": "DB-M06",
+  "taskId": "WI-07-0.2.3",
+  "changeId": "CHG-20260830-016",
+  "capturedAtUtc": "2026-08-30T00:00:00Z",
+  "verifier": "DB-M06 (independent re-run)",
+  "testRun": {
+    "command": "dotnet test tests/Nexus.Developer.Core.Tests/Nexus.Developer.Core.Tests.csproj -c Release --no-build",
+    "passed": 199,
+    "failed": 0,
+    "skipped": 0,
+    "total": 199,
+    "allPassed": true
+  },
+  "harnessRun": {
+    "description": "22-op IDevelopmentControlStore harness against a FRESH copy of the canonical workbook in %TEMP% (mutations land only on the copy)",
+    "location": "%TEMP%\\WI07023-verify",
+    "checksPassed": 32,
+    "checksFailed": 0,
+    "allPassed": true,
+    "coverage": [
+      "GetControlStateAsync",
+      "GetNodeAsync",
+      "GetSubtreeAsync",
+      "SearchNodesAsync",
+      "GetActiveChangesAsync",
+      "GetActivityLogAsync",
+      "ValidateControlStoreAsync",
+      "GetNextExecutableWorkItemAsync",
+      "CreateNodeAsync (success, duplicate-id validation error)",
+      "UpdateNodeAsync (success, stale-token Conflict, idempotent replay)",
+      "AddDependencyAsync (add, existing-edge no-op)",
+      "RemoveDependencyAsync",
+      "ReparentNodeAsync (success, self-parent validation error)",
+      "ReserveWorkItemAsync (success, double-reserve Conflict)",
+      "RunPreflightAsync (ConflictFound on file overlap)",
+      "CompleteWorkItemAsync (reservation closed atomically)",
+      "StartActivityAsync / RecordHeartbeatAsync / FailActivityAsync",
+      "ReleaseReservationAsync (error on no-open-reservation)",
+      "RetireNodeAsync (Superseded + IsDeleted)",
+      "atomicity: failed mutation leaves file byte-identical"
+    ]
+  }
+}

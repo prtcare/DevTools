@@ -1,0 +1,143 @@
+{
+  "milestone": "DB-M18",
+  "lane": "B",
+  "phase": "TASK_CLASSIFICATION_CONTEXT_PACKAGE_FOUNDATION",
+  "status": "IMPLEMENTED",
+  "completedAtUtc": "2026-08-30T18:41:14Z",
+  "projectRoot": "C:\\Personal\\DevTools\\DevBridge",
+  "technology": "PowerShell 5.1 + deterministic rule engines (zero AI calls, zero paid API calls) + versioned JSON contracts (schemaVersion=1)",
+  "implementationLocation": {
+    "libraries": "scripts\\ai-routing\\TaskClassification.ps1, scripts\\ai-routing\\ContextPackage.ps1",
+    "tests": "scripts\\ai-routing\\Test-DbM18Classification.ps1",
+    "designDocs": "design\\ai-routing\\DB-M18_TASK_CLASSIFICATION.md, design\\ai-routing\\DB-M18_CONTEXT_PACKAGING.md",
+    "resultState": "state\\db-m18-result.json"
+  },
+  "implementation": {
+    "result": "PASS",
+    "taskClassificationV1": "PASS - deterministic task-type/complexity/risk/capability/reasoning/context classification; ClassificationSource=DETERMINISTIC; unknown values stay null",
+    "taskTypeVocabulary": "PASS - frozen DB-M14 TaskTypes (PLANNING/IMPLEMENTATION/VERIFICATION/REVIEW/RESEARCH/GOVERNANCE); ordered keyword rules, first match wins",
+    "complexityDerivation": "PASS - LOW base + additive governed signals (code scope/contract/affected-nodes -> MEDIUM; schema/multi-repo/governance/architecture -> HIGH); small/simple revert rule",
+    "riskPreservation": "PASS - governed risk preserved verbatim; derived only when absent (FAIL/BLOCKED verdict or blocker -> HIGH; conflict WARN -> MEDIUM); no signal -> UNKNOWN",
+    "capabilityRequirement": "PASS - requires coding/reasoning/vision/tool-use/structured-output/human-review derived by fixed rules; null when no signal",
+    "minimumReasoningLevel": "PASS - DB-M13 rule encoded (HIGH risk/complexity/schema -> at least HIGH, ReasoningRuleApplied=true); MEDIUM defaults not rule-applied",
+    "contextRequirement": "PASS - weighted signal score (>=5 VERY_HIGH, >=3 HIGH, >=2 MEDIUM, else LOW); governed fixture lands HIGH (score 4)",
+    "tokenPlanning": "PASS - RequiredContextTokens + ExpectedOutputTokens approximate, labeled, one method (chars/4)",
+    "capabilityRequirementContractReuse": "PASS - New-CapabilityRequirement derives DB-M14 v1 AiCapabilityRequirement (SchemaVersion 1); AllowedProviders/AllowedModels empty, ExecutionMode MANUAL, MaxAllowedCost null",
+    "contextBudgetV1": "PASS - plan per section; FITS/REDUCED/EXCEEDS; INCLUDE/EXCERPT/EXCLUDE; mandatory never excluded; EXCEEDS produces explicit FAILED package",
+    "contextPackageV1": "PASS - 7 mandatory sections never dropped; deterministic reduction; secret guard + redaction; stable SHA-256 PackageHash; provenance recorded",
+    "smallestAuthoritativePackage": "PASS - never sends entire repo/workbook/history; low-value dropped first, then optional; large mandatory files excerpted deterministically with explicit marker",
+    "secretProtection": "PASS - DB-M17/DB-M14 secret guards reused; suspicious content excluded + SecretWarnings; raw secret never reaches package",
+    "manualWorkflowPreserved": "YES - ExecutionMode defaults MANUAL; package is a handoff artifact (CHATGPT/DeepSeek/Claude), does not replace DB-M05/DB-M07",
+    "schemaFreeze": "PASS - TaskClassificationVersion=1, ContextBudgetVersion=1, ContextPackageVersion=1 frozen; CapabilityRequirement stays DB-M14 v1; incompatible change requires v2"
+  },
+  "contracts": {
+    "frozenAt": "DB-M18",
+    "schemaVersions": {
+      "TaskClassificationVersion": 1,
+      "ContextBudgetVersion": 1,
+      "ContextPackageVersion": 1,
+      "CapabilityRequirement": "DB-M14 v1 (unchanged)"
+    },
+    "registry": "Get-DbM18SchemaVersions in scripts\\ai-routing\\TaskClassification.ps1 (DB-M18-owned; DB-M14's Get-AiRoutingSchemaVersions in AiRoutingContracts.ps1 NOT modified - parallel-safety)",
+    "v2Rule": "incompatible changes require v2 with own schemaVersion and validator; additive optional fields allowed within v1 (per DB-M14_SHARED_CONTRACT_FREEZE.md)"
+  },
+  "vocabularies": {
+    "taskTypes": ["PLANNING", "IMPLEMENTATION", "VERIFICATION", "REVIEW", "RESEARCH", "GOVERNANCE"],
+    "complexity": ["LOW", "MEDIUM", "HIGH"],
+    "risk": ["LOW", "MEDIUM", "HIGH"],
+    "minimumReasoningLevel": ["NONE", "MEDIUM", "HIGH"],
+    "contextRequirement": ["LOW", "MEDIUM", "HIGH", "VERY_HIGH"],
+    "sectionPriority": ["MANDATORY", "OPTIONAL", "LOW_VALUE"],
+    "budgetStatus": ["FITS", "REDUCED", "EXCEEDS"],
+    "budgetAction": ["INCLUDE", "EXCERPT", "EXCLUDE"],
+    "packageStatus": ["OK", "FAILED"],
+    "classificationSource": ["DETERMINISTIC"],
+    "references": "LatencyPreference/ExecutionMode validated against frozen DB-M14 RelativeSpeeds/ExecutionModes; TaskTypes/ReasoningLevels reused from DB-M14 vocabularies"
+  },
+  "tests": {
+    "suite": "scripts\\ai-routing\\Test-DbM18Classification.ps1",
+    "passed": 203,
+    "failed": 0,
+    "paidApiCalls": 0,
+    "scenarios": [
+      "S1 task-type classification (8 examples)",
+      "S2 complexity derivation",
+      "S3 risk preservation",
+      "S4 capability requirements",
+      "S5 reasoning rule",
+      "S6 mandatory context preservation",
+      "S7 optional context dropping",
+      "S8 token budget",
+      "S9 secret filtering",
+      "S10 history reduced first",
+      "S11 relevant file selection",
+      "S12 binary/generated rejection",
+      "S13 stable package hash",
+      "S14 schema v1 round-trip",
+      "S15 unknown fields remain null",
+      "S16 provider-name independence",
+      "S17 no model selection",
+      "S18-25 context-budget scenarios (8)",
+      "S26 CapabilityRequirement reuse",
+      "S27 WI-07-0.2.4 governed fixture (READ-ONLY)",
+      "S28 no AI / no routing / no pricing scan",
+      "S29 context-package summary",
+      "S30 DB-M14 frozen contract regression"
+    ],
+    "dbM14Regression": {
+      "suite": "scripts\\ai-routing\\Test-AiRoutingFoundation.ps1",
+      "passed": 51,
+      "failed": 0,
+      "paidApiCalls": 0
+    }
+  },
+  "hardConstraintsHonored": {
+    "paidApiCalls": 0,
+    "modelSelected": false,
+    "automaticAiExecutionImplemented": false,
+    "providerNamesInClassificationLogic": false,
+    "dbM14FrozenContractsModified": false,
+    "dbM16Overlap": "NONE - no DB-M16 cost/FX file read-write or modified",
+    "dbM17Overlap": "NONE - DB-M17 attempt/history files read-only integration references only",
+    "dbM12Overlap": "NONE - no src\\DevBridge.* file read-write or modified",
+    "laneCOverlap": "NONE - state/current-task.json (WI-07-0.2.4) untouched",
+    "workbookModified": false,
+    "nexusRepositoriesModified": false,
+    "nexusDeveloperModified": false,
+    "completeReposWorkbookHistoryPackaged": false,
+    "aiSummarizerImplemented": false,
+    "secretValuesPackaged": false,
+    "inventedValuesInClassification": false,
+    "dbM19Ready": true
+  },
+  "parallelSafety": {
+    "isolation": "PowerShell-first, additive-only, DB-M18-owned files under scripts/ai-routing/, design/ai-routing/, state/; schema versions registered in the DB-M18 library, NOT in DB-M14's AiRoutingContracts.ps1",
+    "sharedFileChangesRequired": "NONE",
+    "parallelScopeChangeRequired": "NO",
+    "frozenContractHash": "AiRoutingContracts.ps1 SHA256 CAF41E6E52B5B98904326C7E5CD8A7BF361B8C8CDFC395AAD2B4C53F357A4408 (byte-identical; S30 re-hash + DB-M14 regression green)"
+  },
+  "deliverables": {
+    "classificationDoc": "design\\ai-routing\\DB-M18_TASK_CLASSIFICATION.md",
+    "contextPackagingDoc": "design\\ai-routing\\DB-M18_CONTEXT_PACKAGING.md",
+    "resultState": "state\\db-m18-result.json"
+  },
+  "filesCreated": [
+    "scripts/ai-routing/TaskClassification.ps1",
+    "scripts/ai-routing/ContextPackage.ps1",
+    "scripts/ai-routing/Test-DbM18Classification.ps1",
+    "design/ai-routing/DB-M18_TASK_CLASSIFICATION.md",
+    "design/ai-routing/DB-M18_CONTEXT_PACKAGING.md",
+    "state/db-m18-result.json"
+  ],
+  "filesModified": [],
+  "doNotImplement": [
+    "DB-M15 (pricing) - NOT implemented in DB-M18",
+    "DB-M16 - NOT implemented",
+    "DB-M17 - NOT implemented",
+    "DB-M19 (routing) - NOT implemented; DB-M18 produces the TaskClassification/CapabilityRequirement/ContextBudget/ContextPackage inputs DB-M19 will route on",
+    "DB-M20, DB-M21, DB-M22, DB-M23 - NOT implemented",
+    "DB-M24 (model recommendations) - NOT implemented",
+    "DB-M25 - NOT implemented"
+  ],
+  "notes": "NO AUTOMATIC AI EXECUTION, NO MODEL SELECTION, ZERO AI CALLS. DB-M18 deterministically classifies a governed task (TaskClassification v1), derives a DB-M14-v1 CapabilityRequirement, budgets the context (ContextBudget v1), and builds the smallest authoritative sanitized package (ContextPackage v1) for the existing manual CHATGPT -> DeepSeek -> DevBridge verification -> Claude loop. It never picks a model, calls an API, prices, routes, or escalates. Stop after DB-M18."
+}

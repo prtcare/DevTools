@@ -1,0 +1,119 @@
+{
+  "Milestone": "DB-M25",
+  "Title": "Quality-Adjusted Cost + Savings Analytics",
+  "Lane": "B",
+  "DateUtc": "2026-08-31T12:55:00Z",
+  "Implementation": "PASS",
+  "Summary": "Answers the brief's question - 'what is the real expected cost of obtaining a VERIFIED successful result?' - NOT 'which model is cheapest per attempt?'. The unit of analysis is the attempt-chain cost per verified success (failed attempts + retry/escalation included), never the single attempt price. Core principle proven by S02: Model A Rs.2/attempt x 4 = Rs.8 verified success vs Model B Rs.5/attempt x 1 = Rs.5; cheap attempt price does not win. Verified success is authoritative: VerificationResult=VERIFIED plus an accepted Claude review state where review is required, over model self-reported success (S07-S12); FAILED verification contradicts a model PASS and a review PENDING rejects the chain. Every paid/real attempt contributes to chain cost (fail Rs.3 + fail Rs.6 + pass Rs.10 = Rs.19, never Rs.10; S01/S03); BUDGET_STOPPED/BLOCKED/WAITING_HUMAN/PENDING are never fabricated as AI attempts and never add cost (S05/S06). Missing cost is counted only for EXECUTED attempts (S04). ExpectedCostPerVerifiedSuccess is OBSERVED_CHAINS at MODERATE/HIGH confidence and a clearly-labelled COLD_START_SIMPLE estimate otherwise (S15-S17). Savings compare equivalent verified outcomes only, with an explicit baseline type and basis; AbsoluteSavings = baseline - candidate observed cost-per-success, SavingsPercent = absolute / baseline when baseline > 0 (S18-S23); AvoidedRetryCost is labelled ESTIMATED/COUNTERFACTUAL (S24). Provider-failure cost (rate-limit/gateway/outage) is kept separate from model-quality failure cost (S25/S26); escalation cost is visible as the full cheap->fail->stronger->success chain (S27). Currency: only reporting-currency cost evidence contributes; historic cost in another currency is NEVER re-converted (S28/S29). LOCAL is NEVER automatically FREE: LOCAL_COST_UNKNOWN with operational cost unknown, never invented (S30/S31); remote is PRICE_UNKNOWN/FREE/CONFIGURED (S32). Confidence reuses DB-M24 bands READ-ONLY (INSUFFICIENT/LOW/MODERATE/HIGH; S33/S34). Filters/grouping cover ProviderId/ModelId/UnderlyingModelId/Gateway/TaskType/Complexity/Risk/ReasoningLevel/ExecutionMode/LocalOrRemote and ModelRoute default; time windows; LocalOrRemote group-by (S37-S41). Policy comparison is ANALYSIS ONLY (CHEAPEST_ELIGIBLE/CHEAPEST_RELIABLE/BEST_COST_PER_SUCCESS/HIGHEST_SUCCESS/BALANCED), PolicyVersion stays the immutable 0.0.0, rows are labelled COUNTERFACTUAL unless observed, config/ai-routing.json byte-identical (S49). AUTO_EXECUTION_ENABLED=FALSE; no provider/model executed; 0 paid API calls; 0 network calls. All 17 DB-M14/M16/M17/M19/M20/M21/M22/M23/M24 frozen implementation files verified byte-identical (SHA-256 before/after, S43-S45). NO workbook/Nexus/lifecycle writes (S46, grep-verified zero write tokens).",
+  "QualityAdjustedCostResultV1": "PASS",
+  "SavingsAnalysisV1": "PASS",
+  "PolicyComparisonV1": "PASS",
+  "VerifiedSuccessSemantics": "PASS",
+  "AttemptChainCost": "PASS",
+  "FailedAttemptsIncluded": "PASS",
+  "FirstAttemptSuccess": "PASS",
+  "CostPerVerifiedSuccess": "PASS",
+  "ExpectedCostPerVerifiedSuccess": "PASS",
+  "EscalationCostVisible": "PASS",
+  "CorrectionLoopCost": "PASS",
+  "ProviderFailureCostSeparation": "PASS",
+  "ModelQualityFailureCostSeparation": "PASS",
+  "BaselineHandling": "PASS",
+  "AbsoluteSavings": "PASS",
+  "SavingsPercent": "PASS",
+  "ConfidenceHandling": "PASS",
+  "ObservedVsEstimated": "PASS",
+  "CounterfactualLabelling": "PASS",
+  "RouteLevelAnalysis": "PASS",
+  "LocalModelCostHandling": "PASS",
+  "CurrencyIntegration": "PASS",
+  "PolicyComparison": "PASS",
+  "RouterPolicyModified": "NO",
+  "RoadmapModificationCapability": "NO",
+  "GitPrMergeCapability": "NO",
+  "AutoExecutionEnabled": "FALSE",
+  "ProviderModelExecuted": "NO",
+  "TemporaryDevBridgeBoundary": "PASS",
+  "Tests": {
+    "Passed": 337,
+    "Failed": 0,
+    "Total": 337,
+    "Scenarios": 52,
+    "ScenarioCount": "52/52",
+    "PaidApiCalls": 0,
+    "NetworkCalls": 0,
+    "Note": "Test-DbM25QualityCost.ps1: 337 assertions, 0 failed, exit 0; 52/52 scenarios. S01 fail+pass chain 3+6+10=19; S02 core principle Rs.2x4=8 vs Rs.5x1=5; S03 failed attempts always count (never 10); S04 missing cost only for executed; S05 non-attempts excluded; S06 budget block never fabricated; S07 FAILED verification contradicts; S08 review PENDING -> REVIEW_REJECTED; S09 review PASS accepted; S10 VERIFIED_PREFERRED flags model-returned; S11 MODEL_RETURNED comparison only; S12 default SuccessDefinition VERIFIED; S13 first-attempt rate 0.5; S14 first EXECUTED attempt; S15 OBSERVED_CHAINS at MODERATE; S16 COLD_START_SIMPLE labelled; S17 expected null at rate 0; S18 no verified success -> no savings; S19 Rs.40 vs Rs.22 -> Rs.18/45%; S20 savings only equivalent verified; S21 zero baseline -> percent null; S22 baseline type explicit + validator; S23 baseline basis COUNTERFACTUAL; S24 AvoidedRetryCost (4-1)x2=6 ESTIMATED; S25 provider vs model-quality cost separated (RATE_LIMIT 4 vs MODEL_QUALITY 7); S26 FailureCategoryCosts table sums; S27 escalation cost 3+6 visible, chain 19; S28 currency mismatch excluded never re-converted; S29 INR-only contribution; S30 LOCAL != FREE (LOCAL_COST_UNKNOWN); S31 LOCAL configured -> CONFIGURED; S32 remote PRICE_UNKNOWN/FREE; S33 INSUFFICIENT at sample 1; S34 MODERATE at 20 / HIGH at 60 (bands reused); S35 ActualCost preferred; S36 estimated fallback gated; S37 dimension filters; S38 LocalOrRemote filter; S39 time window + null-start excluded; S40 group-by LocalOrRemote; S41 default ModelRoute; S42 empty -> empty; S43 frozen files SHA-256 unchanged; S44 M19-M24 overlap byte-identical; S45 config unchanged; S46 no workbook/roadmap/lifecycle tokens; S47 no network/provider/paid tokens; S48 AUTO_EXECUTION_ENABLED=FALSE; S49 no policy mutation + PolicyVersion 0.0.0 + COUNTERFACTUAL rows; S50 schema validators pass on real artifacts; S51 query validator rejects invalid; S52 secret-leak guard (DB-M25 wrapper + M17 attempt guard read-only)."
+  },
+  "Regressions": {
+    "DBM14": "51/51 PASS, exit 0",
+    "DBM16": "167/167 PASS, exit 0",
+    "DBM17": "99/99 PASS, exit 0",
+    "DBM19": "136/136 PASS, exit 0",
+    "DBM20": "149/149 PASS, exit 0",
+    "DBM21": "Budget 77/77 PASS, exit 0; Fingerprints 74/74 PASS, exit 0",
+    "DBM22": "Health 68/68 PASS, exit 0; Failover 64/64 PASS, exit 0",
+    "DBM23": "203/203 PASS, exit 0",
+    "DBM24": "128/128 PASS, exit 0"
+  },
+  "FilesCreated": [
+    "scripts/ai-routing/quality-cost/AiQualityCostContracts.ps1",
+    "scripts/ai-routing/quality-cost/QualityCost.ps1",
+    "scripts/ai-routing/quality-cost/Test-DbM25QualityCost.ps1",
+    "design/ai-routing/DB-M25_QUALITY_ADJUSTED_COST.md",
+    "design/ai-routing/DB-M25_SAVINGS_ANALYTICS.md",
+    "state/db-m25-result.json"
+  ],
+  "FilesModified": [],
+  "AutomaticExecutionEnabled": "FALSE",
+  "AI_APICalls": 0,
+  "NetworkCalls": 0,
+  "DBM14Overlap": {
+    "Overlap": "NONE",
+    "Details": "AiRoutingContracts.ps1 consumed READ-ONLY (Get-ContractProperty, reasoning/task-type/execution-mode vocabularies, Test-AiRoutingSecretValueLeak). SHA-256 verified MATCH (byte-identical before/after; S43/S44). Untouched."
+  },
+  "DBM16Overlap": {
+    "Overlap": "NONE",
+    "Details": "Cost/FX files untouched. DB-M25 reuses DB-M16 cost semantics READ-ONLY: ActualCost preferred, EstimatedCost only under explicit query fallback, only reporting-currency evidence contributes, historic cost in another currency NEVER re-converted."
+  },
+  "DBM17Overlap": {
+    "Overlap": "NONE",
+    "Details": "AttemptStore.ps1 untouched. AiAttemptRecord v1 consumed READ-ONLY (Result/VerificationResult/FailureCategory/Escalation*/HumanIntervention/CostCurrency). LocalOrRemote and ClaudeReviewStatus are READ defensively via Get-ContractProperty (engine tests Add-Member them onto fixtures); the DB-M17 record shape is unchanged. Test-AiAttemptSecretLeak re-run read-only (S52)."
+  },
+  "DBM19Overlap": {
+    "Overlap": "NONE",
+    "Details": "router/* untouched. DB-M25 does NOT select models: it produces evidence (QualityAdjustedCostResult/SavingsAnalysis/PolicyComparison) for DB-M19 to consume. No routing decision read-for-decision, no silent routing policy mutation; config/ai-routing.json byte-identical."
+  },
+  "DBM20Overlap": {
+    "Overlap": "NONE",
+    "Details": "escalation/* untouched. Escalation cost is surfaced as the full cheap->fail->stronger->success chain cost (S27); DB-M25 never decides escalation. ClaudeReviewStatus vocabulary mirrored READ-ONLY from DB-M20."
+  },
+  "DBM21Overlap": {
+    "Overlap": "NONE",
+    "Details": "budget/* untouched. Budget blocks are reported as non-attempts (never fabricated as unsuccessful AI attempts; no model call happened); budget-prevented cost is never treated as model-quality failure."
+  },
+  "DBM22Overlap": {
+    "Overlap": "NONE",
+    "Details": "provider-health/* and failover/* untouched. Provider-failure cost (PROVIDER_AVAILABILITY/RATE_LIMIT/AUTHENTICATION) is kept distinct from model-quality failure cost; route-availability cost is distinct from quality cost (S25/S26)."
+  },
+  "DBM23Overlap": {
+    "Overlap": "NONE",
+    "Details": "providers/common/AdapterContracts.ps1 consumed READ-ONLY (Test-DbM23SecretLeak, price statuses CONFIGURED/FREE/LOCAL_COST_UNKNOWN/PRICE_UNKNOWN). LOCAL != FREE semantics reused; DB-M25 never invents electricity/hardware cost."
+  },
+  "DBM24Overlap": {
+    "Overlap": "NONE",
+    "Details": "performance/* untouched. AiPerformanceFoundation/ModelPerformance consumed READ-ONLY (Resolve-AiTaskChains/ChainFacts/GroupKey/Identity, Get-AiConfidenceLevel bands, Get-PerfMean/Median/String, ConvertTo-AiPerfUtc). DB-M25 owns cost-quality/savings; DB-M24 keeps ownership of performance intelligence."
+  },
+  "DBGH01Overlap": {
+    "Overlap": "NONE",
+    "Details": "DB-GH01 (Lane A) owns lifecycle/governance scripts in scripts\\ root and the workbook; DB-M25 wrote ONLY under scripts\\ai-routing\\quality-cost\\ + design\\ai-routing\\ (2 DB-M25 design docs) + state\\db-m25-result.json. S46 grep-verified zero disk-write tokens and zero workbook/current-task/preflight/logs references in every DB-M25 .ps1 file. NO PARALLEL_SCOPE_CONFLICT. Lane A activity observed today (lifecycle scripts, DevBridge.Engine/UI source, workbook-authority reconciliation state at 12:42) is external to DB-M25."
+  },
+  "WorkbookModified": "NO (by DB-M25; S46 grep-verified zero write references to any workbook)",
+  "NexusRepositoriesModified": "NO",
+  "RoadmapModificationCapability": "NO",
+  "GitPrMergeCapability": "NO",
+  "WorkbookSha256Current": "F520060CB753EC8EC96B44BCBD193BDAB69CA68D4CC27198663665D5FE63F884",
+  "WorkbookSha256Note": "Canonical workbook C:\\Personal\\Nexus.Developer\\NEXUS_DEVELOPMENT_CONTROL.xlsx per the Lane C workbook-authority reconciliation (state/workbook-authority-reconciliation.json, 2026-08-31T07:12Z): hash F520060C, protected roadmap fingerprint 25BBECA4, PROTECTED_STRUCTURE_UNCHANGED, WORKBOOK_AUTHORITY_CONFIRMED. DB-M25 itself performed ZERO workbook writes.",
+  "DBM26DashboardFoundationReady": "YES",
+  "DBM30IntegrationEvidenceReady": "YES",
+  "NotesForNextMilestones": "DB-M26 (dashboard foundation) can render QualityAdjustedCostResult v1 / SavingsAnalysis v1 / PolicyComparison v1 as the cost-quality evidence surface, with ConfidenceLevel, ExpectedCostBasis and counterfactual labels already attached. DB-M30 can feed attempt cost evidence through the same verified-success + chain-cost path. Real Nexus restart rule still holds: after DevBridge validation, restore the pre-DevBridge workbook backup + Nexus source/Git baseline; DB-M25 is DevBridge-only, temporary, and NOT designed for Nexus migration."
+}

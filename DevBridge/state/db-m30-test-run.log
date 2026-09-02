@@ -1,0 +1,9 @@
+DB-M30 TEST SUMMARY: 314 passed, 0 failed
+DB-M30 SCENARIOS: 39 scenarios
+DB-M30 REGRESSION DBM29: 391 passed, 0 failed, exit 0
+DB-M30 REGRESSION DBM26: 381 passed, 1 failed, exit 1
+DB-M30 REGRESSION DBM28: 359 passed, 0 failed, exit 0
+DB-M30 REGRESSION DBM181: 63 passed, 1 failed, exit 1
+DB-M30 EXTERNAL DRIFT: M26 S41 workbook-authority drift (suite records F520060C; live workbook is 6D42C3BF after DB-M12.4 closure)
+DB-M30 EXTERNAL DRIFT: DB-M18.1 R45 external drift (child DB-M18 regression exits non-zero)
+DB-M30: ALL PASS

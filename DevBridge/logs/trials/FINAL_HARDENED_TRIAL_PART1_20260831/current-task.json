@@ -1,0 +1,25 @@
+{
+    "taskId":  "WI-07-0.2.4",
+    "nodeId":  "WI-07-0.2.4",
+    "name":  "Concurrency, locking and atomic writes",
+    "nodeType":  "WorkItem",
+    "phase":  "P0",
+    "currentWorkNodeId":  "M-07-0.2",
+    "featureNodeId":  "F-07-0",
+    "status":  "PREFLIGHTED",
+    "selectedAt":  "2026-08-31T14:05:22Z",
+    "preflightVerdict":  "CLEAR",
+    "nextAllowedAction":  "RESERVE",
+    "sourceReferences":  [
+                             "Master Roadmap row 328: WI-07-0.2.4",
+                             "Active Changes CHG-20260830-015 (row 78): next development prompt WI-07-0.2.3",
+                             "Active Changes CHG-20260830-014 (row 77): WI-07-0.2.1 verified complete",
+                             "Development Control workbook (read-only) SHA256 F520060CB753EC8EC96B44BCBD193BDAB69CA68D4CC27198663665D5FE63F884"
+                         ],
+    "startedAt":  null,
+    "reservationId":  null,
+    "repositoryStates":  [
+
+                         ],
+    "workbookSha256":  "F520060CB753EC8EC96B44BCBD193BDAB69CA68D4CC27198663665D5FE63F884"
+}

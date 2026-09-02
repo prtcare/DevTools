@@ -1,0 +1,121 @@
+{
+  "Milestone": "DB-M28",
+  "Title": "MODEL CONFIGURATION UI",
+  "Lane": "B",
+  "DateUtc": "2026-08-31T18:49:00Z",
+  "Implementation": "PASS",
+  "Summary": "An operator-facing MODEL CONFIGURATION UI for the existing DevBridge AI subsystem. The UI lets the operator INSPECT which providers/routes/models and supported reasoning/capability options DevBridge may consider, and CONFIGURE operator policy (provider/model enablement and configuration status). Configuration/display only -- the UI never executes a provider/model, never makes a paid API call, never makes a network call, and AUTO_EXECUTION_ENABLED=FALSE. DB-M28 reuses (does NOT rebuild) DB-M14..M27 READ-ONLY: DB-M14 catalogue identity (gateway + underlying-model never collapsed), DB-M15 pricing reference (read-only authority), DB-M19 routing eligibility as the HARD capability gate (a model that fails a hard check stays CAPABILITY_MISMATCH even when enabled; the UI states 'Hard capability override: NO'), DB-M21 budget display-only, DB-M22 provider health READ-ONLY (no manual HEALTHY/circuit reset/AUTH_ERROR clear/failover), DB-M23 price-status table (LOCAL_COST_UNKNOWN never FREE), DB-M26 analytics (no duplicate dashboard), DB-M27 calculator for the VIEW COST ESTIMATE card (no duplicate cost formula). 10 sections: PROVIDERS / MODELS / ROUTES / REASONING (only NONE|LOW|MEDIUM|HIGH|MAX from the contracts) / LOCAL MODELS (LOCAL != FREE) / OPENROUTER+GATEWAY / PRICING REFERENCE / ROUTING ELIGIBILITY (ELIGIBLE|DISABLED|CAPABILITY_MISMATCH|PRICING_UNKNOWN|PROVIDER_UNHEALTHY|CONFIGURATION_INCOMPLETE) / HEALTH STATUS (read-only) / SECURITY+SECRET STATUS (CONFIGURED|NOT_CONFIGURED|INVALID_CONFIGURATION|NO_SECRET_REQUIRED; values never rendered or logged, env-var NAME only). Persistence: validated-before-save, atomic (temp+Move-Item), read-back verified, schema/version preserved, only the operator's field changes, audit record with secret values redacted (SecretReference always in RedactedFields), live config byte-identical. S1-S55: UI opens + provider/model/route/reasoning/capability display, direct/gateway/local routes, LOCAL_COST_UNKNOWN + LOCAL is NOT FREE, OpenRouter gateway identity + underlying model preserved, pricing reference + unknown states, health read-only + not fabricatable, routing eligibility + disabled exclusion + capability-mismatch-not-toggleable + configuration-incomplete, secrets never rendered/logged + configured/not-configured status, config validation/persistence/read-back/schema-version/audit/secret-redaction, DB-M27 integration + no duplicate cost calculation, DB-M26 preserved (381/1 external S41), DB-M18.1 preserved (R45 external + R50 standalone-green), DB-M19/22/23 regressions green, no budget/pricing/provider-health/routing override, no AI execution, paid calls 0, network calls 0, canonical workbook byte-identical, Nexus source unchanged, Lane C UI byte-identical, solution build 0 errors, frozen files/config/workbook SHA-256 byte-identical.",
+  "UiLaunches": "PASS",
+  "ProviderConfiguration": "PASS",
+  "ModelConfiguration": "PASS",
+  "RouteConfiguration": "PASS",
+  "ReasoningConfiguration": "PASS",
+  "CapabilityDisplay": "PASS",
+  "LocalModels": "PASS",
+  "OpenRouter": "PASS",
+  "UnderlyingModelIdentity": "PASS",
+  "PricingReference": "PASS",
+  "ProviderHealthReadOnly": "PASS",
+  "RoutingEligibility": "PASS",
+  "HardCapabilityOverride": "NO",
+  "SecretValuesDisplayed": "NO",
+  "SecretValuesLogged": "NO",
+  "ConfigurationPersistence": "PASS",
+  "ConfigurationReadBack": "PASS",
+  "ConfigurationAudit": "PASS",
+  "BudgetOverrideCapability": "NO",
+  "PricingModificationCapability": "NO",
+  "ProviderHealthModificationCapability": "NO",
+  "AutoExecutionEnabled": "FALSE",
+  "ProviderModelExecuted": "NO",
+  "PaidApiCalls": 0,
+  "NetworkCalls": 0,
+  "CanonicalWorkbookModified": "NO",
+  "NexusSourceModified": "NO",
+  "DBM27Preserved": "PASS",
+  "DBM181Preserved": "PASS",
+  "KnownDBM18R45Fixture": "PRESENT",
+  "KnownDBM26S41Fixture": "PRESENT",
+  "TemporaryDevBridgeBoundary": "PASS",
+  "Tests": {
+    "Passed": 359,
+    "Failed": 0,
+    "Total": 359,
+    "Scenarios": 55,
+    "ScenarioCount": "55/55",
+    "PaidApiCalls": 0,
+    "NetworkCalls": 0,
+    "Note": "Test-DbM28ModelConfig.ps1: 359 assertions, 0 failed, exit 0; 55/55 scenarios (S1-S55). Summary in state/db-m28-test-run.log. See tasks/DB-M28_IMPLEMENTATION_REPORT.md for the scenario-by-scenario walkthrough."
+  },
+  "Regressions": {
+    "DBM19": "136/136 PASS, exit 0",
+    "DBM22": "68/68 PASS, exit 0",
+    "DBM23": "203/203 PASS, exit 0",
+    "DBM26": "381/382 PASS, exit 1 -- SINGLE external failure S41: recorded workbook authority hash F520060C vs live 6D42C3BF (post DB-M12.4 closure), reported separately",
+    "DBM181": "63/64 PASS, exit 1 -- external R45 (DB-M18 classification fixture drift) reported separately; R50 (DB-M12.4 child) green standalone 54/54, only flakes under nested build load (environment artifact)",
+    "DBM27": "266/0 PASS, exit 0 (child)",
+    "Note": "DB-M16/M21/M24/M25 and the DB-M14/17/20/21Fingerprints/22Health/22Failover nested suites are covered by the DB-M26 child regression run (all 0 failures) and by DB-M27's 266/0."
+  },
+  "ExternalDrift": [
+    "M26 S41 workbook-authority drift: DB-M26 freezes recorded authority hash F520060C; live workbook is 6D42C3BF6D3307B4B1A45870CE12F41E403DFED412E59F33D7B487E93A83E4F5 after DB-M12.4 live trial-cycle closure 2026-08-31. DB-M28 S51 independently proves the workbook byte-identical across its own run.",
+    "DBM181 R45: pre-existing DB-M18 classification fixture drift. DB-M18.1 frozen and unmodified by DB-M28.",
+    "DBM181 R50 (intermittent): DB-M12.4 child suite green standalone (54/54, exit 0); flakes to exit 1 only under heavy sequential build load inside a parent suite. S40 proves the standalone green if it flakes and records it as an environment artifact."
+  ],
+  "FilesCreated": [
+    "design/DB-M28_MODEL_CONFIGURATION_UI.md",
+    "scripts/ai-routing/model-config/ModelConfigContracts.ps1",
+    "scripts/ai-routing/model-config/ModelConfigEngine.ps1",
+    "scripts/ai-routing/model-config/ModelConfigRender.ps1",
+    "scripts/ai-routing/model-config/Test-DbM28ModelConfig.ps1",
+    "state/db-m28-result.json",
+    "state/db-m28-test-run.log",
+    "tasks/DB-M28_IMPLEMENTATION_REPORT.md"
+  ],
+  "FilesModified": [],
+  "DBM14Overlap": {
+    "Overlap": "NONE",
+    "Details": "ModelCatalogue.ps1 / AiRoutingFoundation.ps1 consumed READ-ONLY. Provider/route/model identity, GatewayProviderId + UnderlyingModelId preserved separately (OpenRouter never collapsed)."
+  },
+  "DBM15Overlap": {
+    "Overlap": "NONE",
+    "Details": "AiPricingContracts.ps1 / PricingCatalogue.ps1 consumed READ-ONLY as the pricing reference authority. DB-M15 remains the pricing authority; DB-M28 has no pricing-write token (S47)."
+  },
+  "DBM19Overlap": {
+    "Overlap": "NONE",
+    "Details": "Router.ps1 / RoutingEligibility.ps1 consumed READ-ONLY. Test-AiModelCapabilityFit is the HARD capability gate: DB-M28 may enable/disable a model but never overrides an M19 hard check (CAPABILITY_CODING_MISSING / CAPABILITY_TOOL_USE_MISSING etc. -> CAPABILITY_MISMATCH, not toggle-fixable, HardCapabilityGate=true). UI states 'Hard capability override: NO' (S26/S45)."
+  },
+  "DBM21Overlap": {
+    "Overlap": "NONE",
+    "Details": "budget/* untouched. DB-M21 policy consumed READ-ONLY as informational context (InformationalOnly=true, OverrideAllowed=false); no budget-write token in the library (S44)."
+  },
+  "DBM22Overlap": {
+    "Overlap": "NONE",
+    "Details": "provider-health/* untouched. Health view is READ-ONLY: an OPTIONAL effective-health snapshot (DB-M22-shaped) is consumed as input; without one the view shows NO_EVIDENCE/UNKNOWN. No Set-ProviderHealth / Update-ProviderCircuitState token; no manual HEALTHY marking, circuit reset, AUTH_ERROR clear, or failover (S17/S18/S46)."
+  },
+  "DBM23Overlap": {
+    "Overlap": "NONE",
+    "Details": "providers/common/AdapterContracts.ps1 consumed READ-ONLY (Get-ProviderRoutePriceStatus: LOCAL_COST_UNKNOWN / PRICE_UNKNOWN / CONFIGURED / FREE). LOCAL never shown as FREE; LOCAL_COST_UNKNOWN never shown as a fabricated zero (S20/S21)."
+  },
+  "DBM26Overlap": {
+    "Overlap": "NONE",
+    "Details": "dashboard/* untouched. DB-M28 borrows the DB-M26 Contracts/Render/Test pattern (ReadOnlyGuard, secret-leak guard) but is configuration, not a duplicate analytics dashboard. The DB-M26 suite is preserved (S39) at its current external S41 signature."
+  },
+  "DBM27Overlap": {
+    "Overlap": "NONE",
+    "Details": "calculator/* untouched. The VIEW COST ESTIMATE card delegates to Invoke-DbM27Calculator (reference scenario deepseek/deepseek-v4-flash/DIRECT/MEDIUM, 12000/8000/100000 tokens); DB-M27 remains the cost authority. No cost formula duplicated (S37/S38); DB-M27 suite green 266/0 (child)."
+  },
+  "DBM181Overlap": {
+    "Overlap": "NONE",
+    "Details": "DependencyLineage.ps1 + Test-DbM181DependencyLineage.ps1 frozen and unmodified (S55 byte-identical). S40 runs the DB-M18.1 child suite and preserves its current external signature (R45 known fixture drift, reported separately; R50 intermittent nested build-contention artifact proven green standalone)."
+  },
+  "DBGH01Overlap": {
+    "Overlap": "NONE",
+    "Details": "DB-GH01 (Lane A) owns lifecycle/governance scripts and the workbook; DB-M28 wrote ONLY under scripts/ai-routing/model-config/ + design/DB-M28_MODEL_CONFIGURATION_UI.md + state/ (result + run log) + tasks/DB-M28_IMPLEMENTATION_REPORT.md. Grep-verified zero disk-write tokens in the model-config library except Export-DbM28ModelConfigurationHtml's WriteAllText of the operator-requested artifact (S18/S28/S29/S44-S50). NO PARALLEL_SCOPE_CONFLICT."
+  },
+  "WorkbookModified": "NO (by DB-M28; S51 canonical workbook SHA-256 byte-identical)",
+  "NexusRepositoriesModified": "NO",
+  "WorkbookSha256Current": "6D42C3BF6D3307B4B1A45870CE12F41E403DFED412E59F33D7B487E93A83E4F5",
+  "WorkbookSha256Note": "Canonical workbook C:\\Personal\\Nexus.Developer\\NEXUS_DEVELOPMENT_CONTROL.xlsx verified present and SHA-256 byte-identical across the DB-M28 run (S51). DB-M28 itself performed ZERO workbook writes.",
+  "DBM29Ready": "YES",
+  "NotesForNextMilestones": "DB-M28 delivers the operator-facing MODEL CONFIGURATION UI: 10-section view + read-only guard + validated atomic audited persistence adapter (providers.json/models.json only) + self-contained HTML renderer, all consuming the DB-M14..M27 chain READ-ONLY with DB-M19 as the hard capability gate and DB-M15 pricing as the authority. Real Nexus restart rule still holds: after DevBridge validation, restore the pre-DevBridge workbook backup + Nexus source/Git baseline; DB-M28 is DevBridge-only, temporary, and NOT designed for Nexus migration."
+}

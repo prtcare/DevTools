@@ -1,0 +1,51 @@
+{
+  "milestone": "DB-M06",
+  "taskId": "WI-07-0.2.3",
+  "changeId": "CHG-20260830-016",
+  "capturedAtUtc": "2026-08-30T00:00:00Z",
+  "criteriaSource": "CHATGPT_HANDOFF.md acceptance criteria 1-8 (derived from authoritative workbook fields; Master Roadmap row 327 carries no explicit Acceptance Criteria cell)",
+  "criteria": [
+    {
+      "criterion": "1. Implement ExcelDevelopmentControlStore - the ClosedXML-backed IDevelopmentControlStore adapter - under src/Nexus.Developer.Infrastructure/DevelopmentControl/**",
+      "result": "PASS",
+      "evidence": "src/Nexus.Developer.Infrastructure/DevelopmentControl/ExcelDevelopmentControlStore.cs (90,279 bytes, SHA256 6160C4FEA3185EC48701D2934C55D354B4780ECEDD7A2B2363D4AC16CE3D9A80) implements IDevelopmentControlStore and is the only implementation of it in the repo."
+    },
+    {
+      "criterion": "2. Implement the full IDevelopmentControlStore contract: all 22 named operations, every mutating operation takes a MutationEnvelope and returns MutationResult<T>",
+      "result": "PASS",
+      "evidence": "Independent count of IDevelopmentControlStore.cs = 22 operations (9 read/check + 13 mutating). Adapter public surface matches all 22 with identical signatures; all 13 mutating ops take MutationEnvelope and return MutationResult<T>. Contract file (Core/DevelopmentControl) not modified."
+    },
+    {
+      "criterion": "3. Deliver read + one safe mutation end-to-end, atomically. Concurrency/locking/multi-operation atomic writes are WI-07-0.2.4 - do not build them here",
+      "result": "PASS",
+      "evidence": "Harness: 32/32 checks PASS on a fresh temp copy. RunMutation = validate-in-memory -> SaveAs(temp) -> dispose -> File.Move(overwrite) same-volume replace; failed mutation leaves the workbook byte-identical (harness verified). No locking/concurrency/multi-op atomic writes built; subtree-carry explicitly deferred to WI-07-0.2.4 with a code comment."
+    },
+    {
+      "criterion": "4. Read and write against the canonical NEXUS_DEVELOPMENT_CONTROL.xlsx as the authoritative store, honoring Session Protocol append-only rules; never delete or rewrite history rows",
+      "result": "PASS",
+      "evidence": "Canonical SHA256 F52A1A8F... identical before and after all harness runs (not modified by implementation). Append-only probe: all 956 canonical Version History rows byte-identical in the mutated copy, only 9 rows appended (958-966); ADR-003 convention (flip previous Is Current to No, append new record) implemented in AppendVersionHistory. No history row deleted or rewritten."
+    },
+    {
+      "criterion": "5. Append Activity Log records using the current 34-column Activity Log schema, preserving the mapping conventions already established",
+      "result": "PASS",
+      "evidence": "Activity Log header verified at exactly 34 columns. AppendActivityLog writes all 34 mapped fields (Activity ID ... Created At). Append-only probe: all 52 canonical Activity Log rows byte-identical in the copy, 12 rows appended (54-65) using the 34-column schema."
+    },
+    {
+      "criterion": "6. Reuse existing assets - IDevelopmentControlStore contracts, WorkbookSchemaValidator, WorkbookSchemaReport, ActivityLogMigration, ClosedXML - and do not rebuild any working capability",
+      "result": "PASS",
+      "evidence": "Pre-existing scope files ActivityLogMigration.cs, WorkbookSchemaReport.cs, WorkbookSchemaValidator.cs are byte-identical to the reservation baseline (hashes D9051FCD/E8D05329/DC76E648 all match). IDevelopmentControlStore.cs not modified (only implementation added). ClosedXML reused (single Excel library in Infrastructure, no duplicate spreadsheet library)."
+    },
+    {
+      "criterion": "7. Stay strictly inside the reserved scope; if additional scope is required, STOP and report SCOPE_CHANGE_REQUIRED",
+      "result": "PASS",
+      "evidence": "All 3 new files are under src/Nexus.Developer.Infrastructure/DevelopmentControl/** (the reserved glob). git shows exactly 3 new untracked files (all in scope) + 1 modified workbook (GOVERNANCE_WORKBOOK, pre-existing). No out-of-scope file, no SCOPE_VIOLATION, no SCOPE_CHANGE_REQUIRED reported."
+    },
+    {
+      "criterion": "8. Build and test the change and provide evidence, matching the completion standard set by WI-07-0.2.1 and WI-07-0.2.2",
+      "result": "PASS",
+      "evidence": "All 4 src projects build Release with 0 warnings / 0 errors (independent). dotnet test: 199 passed / 0 failed / 0 skipped (independent re-run). Verification harness: 32/32 checks. Independent control-state count cross-check matches store output exactly (636/166/138/0/19/18)."
+    }
+  ],
+  "allPassed": true,
+  "result": "ACCEPTED"
+}

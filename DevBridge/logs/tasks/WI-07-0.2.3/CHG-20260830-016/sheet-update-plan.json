@@ -1,0 +1,121 @@
+{
+  "milestone": "DB-M10",
+  "nodeId": "WI-07-0.2.3",
+  "changeId": "CHG-20260830-016",
+  "name": "Excel persistence adapter",
+  "generatedAtUtc": "2026-08-30T16:35:00Z",
+  "authoritativeWorkbook": "C:\\Personal\\Nexus.Developer\\NEXUS_DEVELOPMENT_CONTROL.xlsx",
+  "workbookSha256Before": "F52A1A8FE491B6C91809EAC92DB2F0DCCD43FF7C5C80BA2618E19B64D3FDD4F7",
+  "prewriteSnapshot": {
+    "masterRoadmapMaxDataRow": 675,
+    "masterRoadmapNodeRow": { "WI-07-0.2.3": 327, "M-07-0.2": 324 },
+    "activeChangesMaxDataRow": 79,
+    "activeChangesChangeRow": { "CHG-20260830-016": 79 },
+    "activityLogMaxDataRow": 53,
+    "activityLogNextAppendRow": 54,
+    "versionHistoryMaxDataRow": 957,
+    "versionHistoryNextAppendRows": [958, 959],
+    "toolRegistryMaxDataRow": 15,
+    "toolRegistryNextAppendRow": 16,
+    "existingAssetsMaxDataRow": 15,
+    "existingAssetsNextAppendRow": 16,
+    "developmentGuideHasM072Row": false,
+    "effectiveFromOADate": 46264,
+    "gitBranch": "feature/m-08-1-2-ci-pipeline",
+    "gitHeadCommit": "ea39db910a6e3b00bff880316996a696ae7460dc"
+  },
+  "sheets": [
+    {
+      "index": 1,
+      "name": "Control Center",
+      "decision": "UPDATE_EXISTING",
+      "detail": "Prepend Workbook v3.27 * CHG-20260830-016 changelog entry to A2 narrative. Manual L12-L17 summary cells untouched (known-stale; reconciled against source, not propagated)."
+    },
+    {
+      "index": 2,
+      "name": "Master Roadmap",
+      "decision": "UPDATE_EXISTING",
+      "detail": "Row 327 WI-07-0.2.3 Status Planned->Complete, Manual Progress 0->100, Current Evidence populated, Next Action 'None -- complete. Unblocks WI-07-0.2.4.', Notes appended with CHG-20260830-016 entry. Row 324 M-07-0.2 Manual Progress 20->30 (3/10 children complete), Notes appended. U/V stay blank per WI-07-0.2.1/.2.2 convention."
+    },
+    {
+      "index": 3,
+      "name": "Active Changes",
+      "decision": "UPDATE_EXISTING",
+      "detail": "Row 79 lifecycle close: L leading keyword Completed, U Completed At, V Result / Evidence, AC Change Type 'Governed Multi-Sheet Completion', AD Validation Result 'Pass -- ...'. Row never deleted."
+    },
+    {
+      "index": 4,
+      "name": "Audit Findings",
+      "decision": "NO_CHANGE",
+      "detail": "Residual observation is MINOR/NON-BLOCKING (no data-integrity or architecture issue); no rule requires an Audit Finding. Carried forward in completion evidence, Active Changes Result, Activity Log record."
+    },
+    {
+      "index": 5,
+      "name": "Session Protocol",
+      "decision": "NO_CHANGE",
+      "detail": "Executable governance; DevBridge never modifies."
+    },
+    {
+      "index": 6,
+      "name": "Version History",
+      "decision": "APPEND",
+      "detail": "Append rows 958 (WI-07-0.2.3, RV 1.0, Is Current Yes, Status Complete, 100%) and 959 (M-07-0.2, RV 1.0, Is Current Yes, Status In Progress, 30%) per ADR-003. Effective From 46264, Change ID CHG-20260830-016."
+    },
+    {
+      "index": 7,
+      "name": "Phase Plan",
+      "decision": "NO_CHANGE",
+      "detail": "No phase/gate transition; M-07-0.2 is a P0/GATE_A roadmap node, not a Phase Plan row."
+    },
+    {
+      "index": 8,
+      "name": "Architecture Decisions",
+      "decision": "NO_CHANGE",
+      "detail": "No new ADR. ADR-003 already governs VH append semantics."
+    },
+    {
+      "index": 9,
+      "name": "Open Decisions",
+      "decision": "NO_CHANGE",
+      "detail": "No decision raised or resolved by this completion."
+    },
+    {
+      "index": 10,
+      "name": "Dependencies & Blockers",
+      "decision": "NO_CHANGE",
+      "detail": "WI-07-0.2.3 dependency on WI-07-0.2.2 already in Master Roadmap textual Dependencies (Complete/SATISFIED). Nothing blocked/unblocked; no new relation required."
+    },
+    {
+      "index": 11,
+      "name": "Tool & Integration Registry",
+      "decision": "APPEND",
+      "detail": "Append row 16 ClosedXML. Closes DB-M03 pending governance item. Category Office/OpenXML library, owning layer 07 DEVELOPER, Current State Existing / evolving, Phase 1 Need Required."
+    },
+    {
+      "index": 12,
+      "name": "Activity Log",
+      "decision": "APPEND",
+      "detail": "Append row 54 (34-column schema), Activity ID ACT-20260830-017, Operation 'Governed Multi-Sheet Completion', Change ID CHG-20260830-016, Preflight CLEAR, Human Review Status 'Not Reviewed'."
+    },
+    {
+      "index": 13,
+      "name": "Development Guide",
+      "decision": "NO_CHANGE",
+      "detail": "No M-07-0.2/WI-07-0.2.x mirror row exists; nothing to keep aligned. Appending a new Guide row is outside DB-M10 scope (flagged as governance observation for DB-M11)."
+    },
+    {
+      "index": 14,
+      "name": "Existing Assets",
+      "decision": "APPEND",
+      "detail": "Append row 16, Area 'Development control service (Excel-backed)' describing the WI-07-0.2.1/.2.2/.2.3 capability set as a reuse asset."
+    }
+  ],
+  "residualObservationDisposition": "CARRY_FORWARD_NON_BLOCKING",
+  "residualObservationAuditFindingCreated": false,
+  "nextGovernedCandidate": "WI-07-0.2.4",
+  "nextGovernedCandidateReserved": false,
+  "nextGovernedCandidateStarted": false,
+  "progressBefore": { "WI-07-0.2.3": 0, "M-07-0.2": 20 },
+  "progressAfter": { "WI-07-0.2.3": 100, "M-07-0.2": 30 },
+  "progressMethod": "Workbook-native manual progress (T column): WI-07-0.2.3 0->100 on completion; M-07-0.2 20->30 as the 3rd of its 10 tracked work items completes (1 completed child = 10%, matching the CHG-20260830-014/015 sibling convention). U/V left blank per sibling convention."
+}

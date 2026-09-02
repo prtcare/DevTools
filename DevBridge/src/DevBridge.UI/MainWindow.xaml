@@ -1,0 +1,877 @@
+<Window x:Class="DevBridge.UI.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        mc:Ignorable="d"
+        Title="DevBridge Operator Console"
+        Width="1360" Height="900" MinWidth="1120" MinHeight="700"
+        WindowStartupLocation="CenterScreen"
+        Background="{StaticResource BackgroundBrush}">
+
+    <Grid>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="Auto"/>
+            <RowDefinition Height="*"/>
+        </Grid.RowDefinitions>
+
+        <!-- ===================== HEADER ===================== -->
+        <Border Grid.Row="0" Background="{StaticResource HeaderBrush}" Padding="18,12">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <StackPanel>
+                    <TextBlock Text="DEVBridge OPERATOR CONSOLE" FontSize="18" FontWeight="Bold"
+                               Foreground="White"/>
+                    <TextBlock Text="Governed change control · Nexus.Developer · NEXUS_DEVELOPMENT_CONTROL.xlsx is the source of truth"
+                               FontSize="11" Foreground="#9FB0C1" Margin="0,2,0,0"/>
+                </StackPanel>
+                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,12,0">
+                        <TextBlock Text="{Binding LastRefreshTime}" Foreground="#9FB0C1" FontSize="11" VerticalAlignment="Center"/>
+                        <TextBlock Text="{Binding BusyText}" Foreground="#FFD54F" FontSize="11" Margin="10,0,0,0"
+                                   VerticalAlignment="Center">
+                            <TextBlock.Style>
+                                <Style TargetType="TextBlock">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsBusy}" Value="True">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TextBlock.Style>
+                        </TextBlock>
+                    </StackPanel>
+                    <Button Content="REFRESH" Style="{StaticResource SecondaryButton}"
+                            Command="{Binding RefreshCommand}" Padding="16,7"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- ===================== MODE BANNER (DB-M12.3, always visible) ===================== -->
+        <Border Grid.Row="1" Background="{Binding ModeBannerBrush}" Padding="18,8">
+            <StackPanel Orientation="Horizontal">
+                <TextBlock Text="MODE:" FontSize="12" FontWeight="Bold" Foreground="White" VerticalAlignment="Center"/>
+                <TextBlock Text="{Binding ModeBannerText}" FontSize="12.5" FontWeight="SemiBold" Foreground="White"
+                           VerticalAlignment="Center" Margin="10,0,0,0" TextWrapping="Wrap"/>
+            </StackPanel>
+        </Border>
+
+        <!-- ===================== STATUS BAR ===================== -->
+        <Border Grid.Row="2" Background="#E9EDF2" BorderBrush="#D6DCE2" BorderThickness="0,0,0,1" Padding="18,6">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="Auto"/>
+                </Grid.ColumnDefinitions>
+                <StackPanel Orientation="Horizontal">
+                    <TextBlock Text="{Binding WorkbookState}" FontSize="11" FontWeight="Bold" Foreground="{Binding WorkbookStateBrush}"
+                               VerticalAlignment="Center"/>
+                    <TextBlock Text="{Binding SheetCountText}" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}"
+                               Margin="10,0,0,0" VerticalAlignment="Center"/>
+                    <TextBlock Text="sheets" FontSize="11" Foreground="{StaticResource TextMutedBrush}" Margin="4,0,0,0" VerticalAlignment="Center"/>
+                    <TextBlock Text="·" FontSize="11" Foreground="{StaticResource TextMutedBrush}" Margin="14,0" VerticalAlignment="Center"/>
+                    <TextBlock Text="Last consistency" FontSize="11" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center"/>
+                    <TextBlock Text="{Binding LastConsistency}" FontSize="11" FontWeight="Bold" Foreground="{Binding ConsistencyBrush}"
+                               Margin="6,0,0,0" VerticalAlignment="Center"/>
+                    <TextBlock Text="{Binding ConsistencyAt}" FontSize="11" Foreground="{StaticResource TextMutedBrush}" Margin="10,0,0,0" VerticalAlignment="Center"/>
+                </StackPanel>
+                <TextBlock Grid.Column="1" Text="{Binding LastActionMessage}" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}"
+                           Margin="18,0" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
+                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock Text="{Binding StatusText}" FontSize="11" FontWeight="Bold" Foreground="{StaticResource GreenBrush}"/>
+                    <TextBlock Text="{Binding BackendRoot}" FontSize="11" Foreground="{StaticResource TextMutedBrush}" Margin="12,0,0,0"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- ===================== CONTENT ===================== -->
+        <TabControl Grid.Row="3" Margin="12,10,12,12" Background="Transparent" BorderThickness="0"
+                    Padding="0">
+            <!-- ========== DASHBOARD ========== -->
+            <TabItem Header="DASHBOARD">
+                <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="0,6,6,6">
+                    <StackPanel>
+                        <!-- WHAT YOU NEED TO DO NEXT -->
+                        <Border Background="{Binding InstructionBrush}" CornerRadius="8" Padding="22,18">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <StackPanel>
+                                    <TextBlock Text="WHAT YOU NEED TO DO NEXT" FontSize="12" FontWeight="Bold"
+                                               Foreground="#D9E6F5" TextOptions.TextFormattingMode="Display"/>
+                                    <TextBlock Text="{Binding Instruction}" FontSize="22" FontWeight="Bold" Foreground="White"
+                                               TextWrapping="Wrap" Margin="0,6,0,0"/>
+                                    <TextBlock Text="{Binding InstructionSub}" FontSize="12" Foreground="#D9E6F5" Margin="0,8,0,0"/>
+                                </StackPanel>
+                                <TextBlock Grid.Column="1" Text="DEVBridge" FontSize="13" FontWeight="Bold" Foreground="#A9C7E4"
+                                           VerticalAlignment="Top" Margin="20,0,0,0"/>
+                            </Grid>
+                        </Border>
+
+                        <!-- Current task + lifecycle stages -->
+                        <Grid Margin="0,12,0,0">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="16"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+
+                            <Border Style="{StaticResource CardBorder}">
+                                <StackPanel>
+                                    <TextBlock Text="CURRENT TASK" Style="{StaticResource SectionHeader}"/>
+                                    <Grid Margin="0,10,0,0">
+                                        <Grid.ColumnDefinitions>
+                                            <ColumnDefinition Width="110"/>
+                                            <ColumnDefinition Width="*"/>
+                                        </Grid.ColumnDefinitions>
+                                        <Grid.RowDefinitions>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                            <RowDefinition Height="Auto"/>
+                                        </Grid.RowDefinitions>
+
+                                        <TextBlock Text="Node ID" Style="{StaticResource LabelText}" Grid.Row="0"/>
+                                        <TextBlock Text="{Binding NodeId}" Style="{StaticResource ValueText}" Grid.Column="1" Grid.Row="0" Margin="10,1"/>
+
+                                        <TextBlock Text="Task" Style="{StaticResource LabelText}" Grid.Row="1" Margin="0,7,0,0"/>
+                                        <TextBlock Text="{Binding TaskName}" Style="{StaticResource ValueText}" Grid.Column="1" Grid.Row="1" Margin="10,8,0,0"/>
+
+                                        <TextBlock Text="Change ID" Style="{StaticResource LabelText}" Grid.Row="2" Margin="0,7,0,0"/>
+                                        <TextBlock Text="{Binding ChangeId}" Style="{StaticResource ValueText}" Grid.Column="1" Grid.Row="2" Margin="10,8,0,0"/>
+
+                                        <TextBlock Text="Phase" Style="{StaticResource LabelText}" Grid.Row="3" Margin="0,7,0,0"/>
+                                        <TextBlock Text="{Binding Phase}" Style="{StaticResource ValueText}" Grid.Column="1" Grid.Row="3" Margin="10,8,0,0"/>
+
+                                        <TextBlock Text="Layer" Style="{StaticResource LabelText}" Grid.Row="4" Margin="0,7,0,0"/>
+                                        <TextBlock Text="{Binding Layer}" Style="{StaticResource ValueText}" Grid.Column="1" Grid.Row="4" Margin="10,8,0,0"/>
+
+                                        <TextBlock Text="Status" Style="{StaticResource LabelText}" Grid.Row="5" Margin="0,7,0,0"/>
+                                        <TextBlock Text="{Binding Status}" Style="{StaticResource ValueText}" Grid.Column="1" Grid.Row="5" Margin="10,8,0,0"/>
+
+                                        <TextBlock Text="Next allowed" Style="{StaticResource LabelText}" Grid.Row="6" Margin="0,7,0,0"/>
+                                        <TextBlock Text="{Binding NextAllowed}" Style="{StaticResource ValueText}" Grid.Column="1" Grid.Row="6" Margin="10,8,0,0"/>
+
+                                        <TextBlock Text="Preflight" Style="{StaticResource LabelText}" Grid.Row="7" Margin="0,7,0,0"/>
+                                        <TextBlock Text="{Binding PreflightVerdict}" Style="{StaticResource ValueText}" Grid.Column="1" Grid.Row="7" Margin="10,8,0,0"/>
+                                    </Grid>
+                                </StackPanel>
+                            </Border>
+
+                            <Border Grid.Column="2" Style="{StaticResource CardBorder}">
+                                <StackPanel>
+                                    <TextBlock Text="LIFECYCLE STAGES" Style="{StaticResource SectionHeader}"/>
+                                    <TextBlock Text="Derived from state + evidence artifacts — never guessed" Style="{StaticResource SectionCaption}" Margin="0,2,0,10"/>
+                                    <ItemsControl ItemsSource="{Binding Stages}">
+                                        <ItemsControl.ItemsPanel>
+                                            <ItemsPanelTemplate>
+                                                <WrapPanel/>
+                                            </ItemsPanelTemplate>
+                                        </ItemsControl.ItemsPanel>
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Border Background="{Binding Background}" CornerRadius="4" Padding="9,5" Margin="0,3,6,3">
+                                                    <StackPanel>
+                                                        <TextBlock Text="{Binding Label}" FontSize="11" FontWeight="Bold" Foreground="{Binding Foreground}"/>
+                                                        <TextBlock Text="{Binding StateText}" FontSize="9" Foreground="{Binding Foreground}" Opacity="0.85"/>
+                                                    </StackPanel>
+                                                </Border>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </StackPanel>
+                            </Border>
+                        </Grid>
+
+                        <!-- DB-GH01 governance card -->
+                        <Border Style="{StaticResource CardBorder}" Margin="0,12,0,0">
+                            <StackPanel>
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="GOVERNANCE (DB-GH01)" Style="{StaticResource SectionHeader}"/>
+                                    <Border Background="{Binding ModeBadgeBrush}" CornerRadius="3" Padding="9,3"
+                                            Margin="12,0,0,0" VerticalAlignment="Center">
+                                        <TextBlock Text="{Binding ModeBadgeText}" FontSize="10" FontWeight="Bold" Foreground="White"/>
+                                    </Border>
+                                    <TextBlock Text="{Binding RetirementText}" FontSize="10" Foreground="{StaticResource TextMutedBrush}"
+                                               Margin="10,0,0,0" VerticalAlignment="Center"/>
+                                </StackPanel>
+                                <TextBlock Text="{Binding ModeCaption}" Style="{StaticResource SectionCaption}" Margin="0,2,0,8" TextWrapping="Wrap"/>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel>
+                                        <TextBlock Text="Human Git state" Style="{StaticResource LabelText}"/>
+                                        <TextBlock Text="{Binding HumanGitStateText}" Style="{StaticResource ValueText}" Margin="0,2,0,0"/>
+                                        <TextBlock Text="{Binding GitObservedText}" FontSize="10" Foreground="{StaticResource TextSecondaryBrush}"
+                                                   Margin="0,4,0,0" TextWrapping="Wrap"/>
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="1" Margin="14,0,0,0">
+                                        <TextBlock Text="DB-M06 verification" Style="{StaticResource LabelText}"/>
+                                        <TextBlock Text="{Binding VerificationResultText}" Style="{StaticResource ValueText}" Margin="0,2,0,0"/>
+                                        <TextBlock Text="Claude review" Style="{StaticResource LabelText}" Margin="0,10,0,0"/>
+                                        <TextBlock Text="{Binding ClaudeResultText}" Style="{StaticResource ValueText}" Margin="0,2,0,0"/>
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="2" Margin="14,0,0,0">
+                                        <TextBlock Text="Roadmap guard" Style="{StaticResource LabelText}"/>
+                                        <TextBlock Text="{Binding RoadmapGuardText}" Style="{StaticResource ValueText}" Margin="0,2,0,0"/>
+                                        <TextBlock Text="M10 eligibility" Style="{StaticResource LabelText}" Margin="0,10,0,0"/>
+                                        <TextBlock Text="{Binding M10EligibilityText}" Style="{StaticResource ValueText}" Margin="0,2,0,0" TextWrapping="Wrap"/>
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="3" Margin="14,0,0,0">
+                                        <TextBlock Text="Handoff gate" Style="{StaticResource LabelText}"/>
+                                        <TextBlock Text="{Binding HandoffReadyText}" Style="{StaticResource ValueText}" Margin="0,2,0,0"/>
+                                        <TextBlock Text="Advisory review" Style="{StaticResource LabelText}" Margin="0,10,0,0"/>
+                                        <TextBlock Text="{Binding AdvisoryReviewText}" Style="{StaticResource ValueText}" Margin="0,2,0,0"/>
+                                    </StackPanel>
+                                </Grid>
+                                <TextBlock Text="Pre-DevBridge baseline" Style="{StaticResource LabelText}" Margin="0,12,0,0"/>
+                                <TextBlock Text="{Binding PreBaselineText}" Style="{StaticResource ValueText}" Margin="0,2,0,0" TextWrapping="Wrap"/>
+                                <TextBlock Text="{Binding HumanGitGuidanceText}" FontSize="10.5" Foreground="{StaticResource AccentBrush}"
+                                           Margin="0,8,0,0" TextWrapping="Wrap"/>
+                                <TextBlock Text="This console has NO roadmap structural-edit controls. DevBridge never changes phases, milestones, hierarchy, sequencing, goals/outcomes, acceptance criteria, dependencies, or architecture — it may only update execution state."
+                                           FontSize="10.5" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,6,0,0" TextWrapping="Wrap"/>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- DB-M12.3 HUMAN ACTION PANEL — backend-derived, display only -->
+                        <Border Margin="0,12,0,0">
+                            <Border.Style>
+                                <Style TargetType="Border" BasedOn="{StaticResource CardBorder}">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding HasHumanAction}" Value="True">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Border.Style>
+                            <StackPanel>
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="HUMAN ACTION REQUIRED" Style="{StaticResource SectionHeader}"/>
+                                    <Border Background="{StaticResource PurpleBrush}" CornerRadius="3" Padding="9,3"
+                                            Margin="12,0,0,0" VerticalAlignment="Center">
+                                        <TextBlock Text="{Binding HumanActionType}" FontSize="10" FontWeight="Bold" Foreground="White"/>
+                                    </Border>
+                                </StackPanel>
+                                <TextBlock Text="This action is genuinely human — DevBridge only displays it and never performs it automatically."
+                                           Style="{StaticResource SectionCaption}" Margin="0,2,0,8"/>
+                                <TextBlock Text="Reason" Style="{StaticResource LabelText}"/>
+                                <TextBlock Text="{Binding HumanActionReason}" Style="{StaticResource ValueText}" Margin="0,2,0,0" TextWrapping="Wrap"/>
+                                <TextBlock Text="Instructions" Style="{StaticResource LabelText}" Margin="0,10,0,0"/>
+                                <TextBlock Text="{Binding HumanActionInstructions}" Style="{StaticResource ValueText}" Margin="0,2,0,0" TextWrapping="Wrap"/>
+                                <TextBlock Text="Evidence" Style="{StaticResource LabelText}" Margin="0,10,0,0"/>
+                                <TextBlock Text="{Binding HumanActionEvidence}" Style="{StaticResource ValueText}" FontFamily="Consolas" FontSize="11"
+                                           Margin="0,2,0,0" TextWrapping="Wrap"/>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Action buttons -->
+                        <Border Style="{StaticResource CardBorder}" Margin="0,12,0,0">
+                            <StackPanel>
+                                <TextBlock Text="ACTION BUTTONS" Style="{StaticResource SectionHeader}"/>
+                                <TextBlock Text="Only state-grounded actions are enabled. Governed writes call the existing backend scripts." Style="{StaticResource SectionCaption}" Margin="0,2,0,8"/>
+                                <ItemsControl ItemsSource="{Binding ActionButtons}">
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <WrapPanel/>
+                                        </ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Button Content="{Binding Label}" Style="{StaticResource ActionButton}"
+                                                    IsEnabled="{Binding IsEnabled}"
+                                                    Command="{Binding Command}"
+                                                    CommandParameter="{Binding Key}"/>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                                <TextBlock Margin="0,8,0,0" FontSize="10.5" Foreground="{StaticResource TextSecondaryBrush}">
+                                    <TextBlock.Style>
+                                        <Style TargetType="TextBlock">
+                                            <Setter Property="Visibility" Value="Collapsed"/>
+                                            <Style.Triggers>
+                                                <DataTrigger Binding="{Binding ClipboardStatusText}" Value="NOT APPLICABLE">
+                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                </DataTrigger>
+                                                <Trigger Property="Text" Value="">
+                                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                                </Trigger>
+                                            </Style.Triggers>
+                                        </Style>
+                                    </TextBlock.Style>
+                                    <Run Text="CLIPBOARD: "/>
+                                    <Run FontWeight="SemiBold" Text="{Binding ClipboardStatusText}"/>
+                                </TextBlock>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Live command output (DB-M12.1 Part 12) -->
+                        <Border Margin="0,12,0,0">
+                            <Border.Style>
+                                <Style TargetType="Border">
+                                    <Setter Property="Background" Value="#F7F9FB"/>
+                                    <Setter Property="BorderBrush" Value="{StaticResource CardBorderBrush}"/>
+                                    <Setter Property="BorderThickness" Value="1"/>
+                                    <Setter Property="CornerRadius" Value="6"/>
+                                    <Setter Property="Padding" Value="14,12"/>
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding CommandPanelVisible}" Value="True">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Border.Style>
+                            <StackPanel>
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="LIVE COMMAND OUTPUT" Style="{StaticResource SectionHeader}"/>
+                                    <Border Background="{Binding CommandStatusBrush}" CornerRadius="3" Padding="8,3"
+                                            Margin="12,0,0,0" VerticalAlignment="Center">
+                                        <TextBlock Text="{Binding CommandRunStatus}" FontSize="10" FontWeight="Bold" Foreground="White"/>
+                                    </Border>
+                                    <TextBlock Text="{Binding RunningCommandName}" FontSize="11" FontWeight="SemiBold"
+                                               Foreground="{StaticResource TextSecondaryBrush}" Margin="12,0,0,0" VerticalAlignment="Center"/>
+                                </StackPanel>
+                                <TextBlock Text="The result below is derived from the existing backend scripts + a refreshed-state transition check — never assumed."
+                                           Style="{StaticResource SectionCaption}" Margin="0,2,0,8"/>
+                                <TextBlock Text="{Binding CommandOutputSummary}" FontFamily="Consolas" FontSize="11"
+                                           Foreground="{StaticResource TextPrimaryBrush}" TextWrapping="Wrap"/>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Failure display (separate from residuals) -->
+                        <Border Margin="0,12,0,0">
+                            <Border.Style>
+                                <Style TargetType="Border">
+                                    <Setter Property="Background" Value="#FBE9E9"/>
+                                    <Setter Property="BorderBrush" Value="{StaticResource RedBrush}"/>
+                                    <Setter Property="BorderThickness" Value="1"/>
+                                    <Setter Property="CornerRadius" Value="6"/>
+                                    <Setter Property="Padding" Value="14,12"/>
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding HasFailure}" Value="True">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Border.Style>
+                            <StackPanel>
+                                <TextBlock Text="⚠ FAILED STAGE" FontSize="13" FontWeight="Bold" Foreground="{StaticResource RedBrush}"/>
+                                <Grid Margin="0,8,0,0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="150"/>
+                                        <ColumnDefinition Width="170"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel>
+                                        <TextBlock Text="Stage" Style="{StaticResource LabelText}"/>
+                                        <TextBlock Text="{Binding FailureStage}" Style="{StaticResource ValueText}" TextWrapping="Wrap" Margin="0,2,0,0"/>
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="1" Margin="12,0,0,0">
+                                        <TextBlock Text="Timestamp" Style="{StaticResource LabelText}"/>
+                                        <TextBlock Text="{Binding FailureTimestamp}" Style="{StaticResource ValueText}" Margin="0,2,0,0"/>
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="2" Margin="12,0,0,0">
+                                        <TextBlock Text="Error / result" Style="{StaticResource LabelText}"/>
+                                        <TextBlock Text="{Binding FailureResult}" Style="{StaticResource ValueText}" TextWrapping="Wrap" Margin="0,2,0,0"/>
+                                    </StackPanel>
+                                </Grid>
+                                <TextBlock Text="Recommended action" Style="{StaticResource LabelText}" Margin="0,12,0,0"/>
+                                <TextBlock Text="{Binding FailureRecommended}" Style="{StaticResource ValueText}" TextWrapping="Wrap" Margin="0,2,0,0"/>
+                                <TextBlock Text="No silent retry: resolve the failure, then continue through the governed stages."
+                                           FontSize="10.5" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,8,0,0"/>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Residual observations (shown separately from failures) -->
+                        <Border Margin="0,12,0,0">
+                            <Border.Style>
+                                <Style TargetType="Border" BasedOn="{StaticResource CardBorder}">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding HasResiduals}" Value="True">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Border.Style>
+                            <StackPanel>
+                                <TextBlock Text="RESIDUAL OBSERVATIONS" Style="{StaticResource SectionHeader}"/>
+                                <TextBlock Text="{Binding ResidualSummary}" Style="{StaticResource SectionCaption}" Margin="0,2,0,8"/>
+                                <ItemsControl ItemsSource="{Binding Residuals}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Border Background="#F0F4F7" CornerRadius="4" Padding="10,7" Margin="0,3">
+                                                <StackPanel>
+                                                    <StackPanel Orientation="Horizontal">
+                                                        <Border Background="{StaticResource PurpleBrush}" CornerRadius="3" Padding="6,2">
+                                                            <TextBlock Text="{Binding Severity}" FontSize="9" FontWeight="Bold" Foreground="White"/>
+                                                        </Border>
+                                                        <TextBlock Text="{Binding Subject}" FontSize="12" FontWeight="SemiBold"
+                                                                   Foreground="{StaticResource TextPrimaryBrush}" Margin="8,0,0,0" VerticalAlignment="Center"/>
+                                                        <TextBlock Text="{Binding Blocking}" FontSize="9" Foreground="{StaticResource TextMutedBrush}"
+                                                                   Margin="8,0,0,0" VerticalAlignment="Center"/>
+                                                    </StackPanel>
+                                                    <TextBlock Text="{Binding Detail}" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}"
+                                                               TextWrapping="Wrap" Margin="0,4,0,0"/>
+                                                </StackPanel>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Last script output -->
+                        <Expander Header="LAST SCRIPT OUTPUT (governed backend scripts)" IsExpanded="False" Margin="0,12,0,0">
+                            <Border Background="#F7F9FB" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" CornerRadius="4" Padding="10">
+                                <TextBlock Text="{Binding ScriptOutput}" FontFamily="Consolas" FontSize="11"
+                                           Foreground="{StaticResource TextPrimaryBrush}" TextWrapping="Wrap"/>
+                            </Border>
+                        </Expander>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+
+            <!-- ========== DEVELOPMENT FLOW ========== -->
+            <TabItem Header="DEVELOPMENT FLOW">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel Margin="6">
+                        <TextBlock Text="Governed Development Flow" Style="{StaticResource SectionHeader}" FontSize="16"/>
+                        <TextBlock Text="TASK → PREFLIGHT → RESERVATION → CHATGPT → DEEPSEEK → VERIFICATION → CLAUDE → FIX LOOP → COMPLETION → CONTROL VALIDATION → DONE"
+                                   Style="{StaticResource SectionCaption}" Margin="0,2,0,12" TextWrapping="Wrap"/>
+                        <ItemsControl ItemsSource="{Binding Stages}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Background="#F7F9FB" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1"
+                                            CornerRadius="6" Padding="14,10" Margin="0,0,0,6">
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="44"/>
+                                                <ColumnDefinition Width="170"/>
+                                                <ColumnDefinition Width="110"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+                                            <Border Background="#E4E8EC" CornerRadius="15" Width="28" Height="28" HorizontalAlignment="Left" VerticalAlignment="Center">
+                                                <TextBlock Text="{Binding StateText}" FontSize="9" FontWeight="Bold" Foreground="{StaticResource TextSecondaryBrush}"
+                                                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                            </Border>
+                                            <TextBlock Grid.Column="1" Text="{Binding Label}" FontSize="14" FontWeight="SemiBold"
+                                                       Foreground="{StaticResource TextPrimaryBrush}" VerticalAlignment="Center"/>
+                                            <Border Grid.Column="2" Background="{Binding Background}" CornerRadius="4" Padding="8,3"
+                                                    HorizontalAlignment="Left" VerticalAlignment="Center">
+                                                <TextBlock Text="{Binding StateText}" FontSize="9" FontWeight="Bold" Foreground="{Binding Foreground}"/>
+                                            </Border>
+                                            <TextBlock Grid.Column="3" FontSize="11" Foreground="{StaticResource TextMutedBrush}"
+                                                       VerticalAlignment="Center" Margin="10,0,0,0">
+                                                <TextBlock.Style>
+                                                    <Style TargetType="TextBlock">
+                                                        <Setter Property="Visibility" Value="Collapsed"/>
+                                                        <Style.Triggers>
+                                                            <DataTrigger Binding="{Binding DisplayToken}" Value="CURRENT">
+                                                                <Setter Property="Visibility" Value="Visible"/>
+                                                            </DataTrigger>
+                                                        </Style.Triggers>
+                                                    </Style>
+                                                </TextBlock.Style>
+                                                <Run Text="← CURRENT STAGE"/>
+                                            </TextBlock>
+                                        </Grid>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+
+            <!-- ========== CURRENT TASK ========== -->
+            <TabItem Header="CURRENT TASK">
+                <Grid Margin="6">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="1.1*"/>
+                        <ColumnDefinition Width="18"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Border Style="{StaticResource CardBorder}">
+                        <StackPanel>
+                            <TextBlock Text="Current Task Identity" Style="{StaticResource SectionHeader}"/>
+                            <TextBlock Text="{Binding SelectedAt}" Style="{StaticResource SectionCaption}" Margin="0,2,0,10"/>
+                            <ItemsControl ItemsSource="{Binding CurrentTaskFields}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid Margin="0,4">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="150"/>
+                                                <ColumnDefinition Width="*"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Text="{Binding Name}" Style="{StaticResource LabelText}"/>
+                                            <TextBlock Text="{Binding Value}" Style="{StaticResource ValueText}" Grid.Column="1" Margin="12,0,0,0"/>
+                                        </Grid>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </Border>
+                    <Border Grid.Column="2" Style="{StaticResource CardBorder}">
+                        <StackPanel>
+                            <TextBlock Text="Artifact Presence" Style="{StaticResource SectionHeader}"/>
+                            <TextBlock Text="Live evidence in tasks\ — the engine derives state from these artifacts" Style="{StaticResource SectionCaption}" Margin="0,2,0,10"/>
+                            <ItemsControl ItemsSource="{Binding Artifacts}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid Margin="0,3">
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="90"/>
+                                            </Grid.ColumnDefinitions>
+                                            <TextBlock Text="{Binding Stage}" FontFamily="Consolas" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}"/>
+                                            <TextBlock Grid.Column="1" Text="{Binding PresentText}" FontSize="10" FontWeight="Bold"
+                                                       Foreground="{Binding PresentBrush}" HorizontalAlignment="Right"/>
+                                        </Grid>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+            </TabItem>
+
+            <!-- ========== TASK HISTORY ========== -->
+            <TabItem Header="TASK HISTORY">
+                <Grid Margin="6">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <TextBlock Text="Task history from logs\tasks\&lt;NODE-ID&gt;\&lt;CHANGE-ID&gt;\ — failed attempts are never hidden."
+                               Style="{StaticResource SectionCaption}" Margin="0,0,0,8"/>
+                    <DataGrid Grid.Row="1" ItemsSource="{Binding History}" SelectedItem="{Binding SelectedHistory}"
+                              AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" CanUserDeleteRows="False"
+                              HeadersVisibility="Column" GridLinesVisibility="Horizontal" RowHeight="26"
+                              Background="White" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1"
+                              AlternatingRowBackground="#FAFBFD">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Node" Binding="{Binding NodeId}" Width="90"/>
+                            <DataGridTextColumn Header="Task" Binding="{Binding TaskName}" Width="230"/>
+                            <DataGridTextColumn Header="Change" Binding="{Binding ChangeId}" Width="120"/>
+                            <DataGridTemplateColumn Header="Result" Width="95">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Result}" FontWeight="Bold" Foreground="{Binding ResultBrush}" VerticalAlignment="Center"/>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                            <DataGridTextColumn Header="Started" Binding="{Binding StartedAt}" Width="120"/>
+                            <DataGridTextColumn Header="Completed" Binding="{Binding CompletedAt}" Width="130"/>
+                            <DataGridTextColumn Header="Preflight" Binding="{Binding Preflight}" Width="70"/>
+                            <DataGridTextColumn Header="Verification" Binding="{Binding Verification}" Width="80"/>
+                            <DataGridTextColumn Header="Claude" Binding="{Binding Claude}" Width="70"/>
+                            <DataGridTextColumn Header="Workbook" Binding="{Binding Workbook}" Width="70"/>
+                            <DataGridTextColumn Header="Build p/w/e" Binding="{Binding Build}" Width="90"/>
+                            <DataGridTextColumn Header="Tests" Binding="{Binding Tests}" Width="80"/>
+                            <DataGridTextColumn Header="Harness" Binding="{Binding Harness}" Width="60"/>
+                            <DataGridTextColumn Header="Fixes" Binding="{Binding Fixes}" Width="45"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </Grid>
+            </TabItem>
+
+            <!-- ========== TASK DETAIL ========== -->
+            <TabItem Header="TASK DETAIL">
+                <Grid Margin="6">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Text="{Binding SelectedDetailCaption}" Style="{StaticResource SectionCaption}" TextWrapping="Wrap"/>
+                        <Button Grid.Column="1" Content="OPEN TASK FOLDER" Style="{StaticResource SecondaryButton}"
+                                Command="{Binding OpenFolderCommand}"
+                                CommandParameter="{Binding SelectedHistory.Item.DetailDir}" Margin="12,0,0,6"/>
+                    </Grid>
+                    <DataGrid Grid.Row="1" ItemsSource="{Binding SelectedDetail}"
+                              AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" CanUserDeleteRows="False"
+                              HeadersVisibility="Column" GridLinesVisibility="Horizontal" RowHeight="26"
+                              Background="White" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Stage" Binding="{Binding Stage}" Width="120"/>
+                            <DataGridTextColumn Header="Artifact" Binding="{Binding Label}" Width="190"/>
+                            <DataGridTemplateColumn Header="Presence" Width="120">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding PresentText}" FontWeight="Bold" Foreground="{Binding PresentBrush}" VerticalAlignment="Center"/>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                            <DataGridTextColumn Header="Summary" Binding="{Binding Summary}" Width="*"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                    <TextBlock Grid.Row="2" Text="Missing artifacts read as NOT APPLICABLE — the UI never hides or fabricates evidence."
+                               Style="{StaticResource SectionCaption}" Margin="0,6,0,0"/>
+                </Grid>
+            </TabItem>
+
+            <!-- ========== CONTROL HEALTH ========== -->
+            <TabItem Header="CONTROL HEALTH">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel Margin="6">
+                        <Border Style="{StaticResource CardBorder}">
+                            <StackPanel>
+                                <TextBlock Text="Workbook Liveness" Style="{StaticResource SectionHeader}"/>
+                                <Grid Margin="0,10,0,0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel>
+                                        <TextBlock Text="State" Style="{StaticResource LabelText}"/>
+                                        <TextBlock Text="{Binding WorkbookState}" FontSize="15" FontWeight="Bold" Foreground="{Binding WorkbookStateBrush}" Margin="0,2,0,0"/>
+                                        <TextBlock Text="Sheets" Style="{StaticResource LabelText}" Margin="0,10,0,0"/>
+                                        <TextBlock Text="{Binding SheetCountText}" Style="{StaticResource ValueText}" Margin="0,2,0,0"/>
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="1" Margin="16,0,0,0">
+                                        <TextBlock Text="SHA-256" Style="{StaticResource LabelText}"/>
+                                        <TextBlock Text="{Binding WorkbookSha}" FontFamily="Consolas" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap" Margin="0,2,0,0"/>
+                                        <TextBlock Text="Read-only probe — the UI never edits the workbook." Style="{StaticResource SectionCaption}" Margin="0,8,0,0"/>
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="2" Margin="16,0,0,0">
+                                        <TextBlock Text="Open error (if any)" Style="{StaticResource LabelText}"/>
+                                        <TextBlock Text="{Binding WorkbookError}" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap" Margin="0,2,0,0"/>
+                                    </StackPanel>
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+
+                        <Border Style="{StaticResource CardBorder}" Margin="0,12,0,0">
+                            <StackPanel>
+                                <TextBlock Text="Backend Consistency Evidence" Style="{StaticResource SectionHeader}"/>
+                                <Grid Margin="0,10,0,0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel>
+                                        <TextBlock Text="Last consistency" Style="{StaticResource LabelText}"/>
+                                        <TextBlock Text="{Binding LastConsistency}" FontSize="15" FontWeight="Bold" Foreground="{Binding ConsistencyBrush}" Margin="0,2,0,0"/>
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="1" Margin="14,0,0,0">
+                                        <TextBlock Text="Validated at (UTC)" Style="{StaticResource LabelText}"/>
+                                        <TextBlock Text="{Binding ConsistencyAt}" Style="{StaticResource ValueText}" Margin="0,2,0,0"/>
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="2" Margin="14,0,0,0">
+                                        <TextBlock Text="Open changes" Style="{StaticResource LabelText}"/>
+                                        <TextBlock Text="{Binding OpenActiveChanges}" Style="{StaticResource ValueText}" Margin="0,2,0,0"/>
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="3" Margin="14,0,0,0">
+                                        <TextBlock Text="Open blockers" Style="{StaticResource LabelText}"/>
+                                        <TextBlock Text="{Binding OpenBlockers}" Style="{StaticResource ValueText}" Margin="0,2,0,0"/>
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="4" Margin="14,0,0,0">
+                                        <TextBlock Text="Open decisions" Style="{StaticResource LabelText}"/>
+                                        <TextBlock Text="{Binding OpenDecisions}" Style="{StaticResource ValueText}" Margin="0,2,0,0"/>
+                                    </StackPanel>
+                                </Grid>
+                                <TextBlock Text="Audit findings" Style="{StaticResource LabelText}" Margin="0,14,0,0"/>
+                                <TextBlock Text="{Binding OpenAuditFindings}" Style="{StaticResource ValueText}" Margin="0,2,0,0"/>
+                                <TextBlock Text="Known mirror gap" Style="{StaticResource LabelText}" Margin="0,14,0,0"/>
+                                <TextBlock Text="{Binding KnownMirrorGap}" Style="{StaticResource ValueText}" Margin="0,2,0,0"/>
+                                <TextBlock Text="{Binding EvidenceNote}" Style="{StaticResource SectionCaption}" Margin="0,14,0,0" TextWrapping="Wrap"/>
+                                <TextBlock Text="Open decisions and audit findings are shown as counts — they are NOT classified as blockers by the UI."
+                                           Style="{StaticResource SectionCaption}" Margin="0,4,0,0" TextWrapping="Wrap"/>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- DB-M12.3 WORKBOOK HEALTH PANEL (read-only) -->
+                        <Border Style="{StaticResource CardBorder}" Margin="0,12,0,0">
+                            <StackPanel>
+                                <TextBlock Text="Workbook Health &amp; Authority (DB-M12.3)" Style="{StaticResource SectionHeader}"/>
+                                <TextBlock Text="Read-only. The console never writes the workbook directly — execution-state writes flow through the hardened DB-M12.2 backend commands only."
+                                           Style="{StaticResource SectionCaption}" Margin="0,2,0,8" TextWrapping="Wrap"/>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel>
+                                        <TextBlock Text="Canonical workbook" Style="{StaticResource LabelText}"/>
+                                        <TextBlock Text="{Binding BackendRoot}" Style="{StaticResource ValueText}" FontFamily="Consolas" FontSize="11" Margin="0,2,0,0" TextWrapping="Wrap"/>
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="1" Margin="16,0,0,0">
+                                        <TextBlock Text="Authority status" Style="{StaticResource LabelText}"/>
+                                        <TextBlock Text="{Binding WorkbookAuthorityText}" Style="{StaticResource ValueText}" Margin="0,2,0,0" TextWrapping="Wrap"/>
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="2" Margin="16,0,0,0">
+                                        <TextBlock Text="Writer busy state" Style="{StaticResource LabelText}"/>
+                                        <TextBlock Text="{Binding WriterBusyText}" Style="{StaticResource ValueText}" Margin="0,2,0,0" TextWrapping="Wrap"/>
+                                    </StackPanel>
+                                </Grid>
+                                <TextBlock Text="Last governed write" Style="{StaticResource LabelText}" Margin="0,12,0,0"/>
+                                <TextBlock Text="{Binding LastGovernedWriteText}" Style="{StaticResource ValueText}" Margin="0,2,0,0" TextWrapping="Wrap"/>
+                                <TextBlock Text="The historical DB-M23 hash note is a resolved different-file-reference discrepancy (documented in state/workbook-authority-reconciliation.json) — it is NOT an active corruption warning."
+                                           FontSize="10.5" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,10,0,0" TextWrapping="Wrap"/>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+
+            <!-- ========== PARALLEL CHANGES ========== -->
+            <TabItem Header="PARALLEL CHANGES">
+                <Grid Margin="6">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="Auto"/>
+                    </Grid.RowDefinitions>
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="Active Changes ledger — backend evidence (DB-M11 extraction)" Style="{StaticResource SectionCaption}"/>
+                        <TextBlock Text="{Binding ActiveCounts}" FontSize="11" FontWeight="Bold" Foreground="{StaticResource AccentBrush}" Margin="14,0,0,0"/>
+                        <TextBlock Text="snapshot" Style="{StaticResource SectionCaption}" Margin="6,0,0,0"/>
+                        <TextBlock Text="{Binding ActiveTimestamp}" Style="{StaticResource SectionCaption}" Margin="6,0,0,0"/>
+                    </StackPanel>
+                    <DataGrid Grid.Row="1" Margin="0,8,0,8" ItemsSource="{Binding ActiveChanges}"
+                              AutoGenerateColumns="False" IsReadOnly="True" CanUserAddRows="False" CanUserDeleteRows="False"
+                              HeadersVisibility="Column" GridLinesVisibility="Horizontal" RowHeight="26"
+                              Background="White" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1"
+                              AlternatingRowBackground="#FAFBFD">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Change ID" Binding="{Binding ChangeId}" Width="120"/>
+                            <DataGridTextColumn Header="Node / Scope" Binding="{Binding NodeContext}" Width="260">
+                                <DataGridTextColumn.ElementStyle>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
+                                        <Setter Property="ToolTip" Value="{Binding NodeContext}"/>
+                                    </Style>
+                                </DataGridTextColumn.ElementStyle>
+                            </DataGridTextColumn>
+                            <DataGridTextColumn Header="Worker / TS" Binding="{Binding Worker}" Width="90"/>
+                            <DataGridTextColumn Header="Repository" Binding="{Binding RepositoryDisplay}" Width="90"/>
+                            <DataGridTextColumn Header="Activity" Binding="{Binding Activity}" Width="180">
+                                <DataGridTextColumn.ElementStyle>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
+                                        <Setter Property="ToolTip" Value="{Binding Activity}"/>
+                                    </Style>
+                                </DataGridTextColumn.ElementStyle>
+                            </DataGridTextColumn>
+                            <DataGridTextColumn Header="Status" Binding="{Binding StatusLead}" Width="260">
+                                <DataGridTextColumn.ElementStyle>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
+                                        <Setter Property="ToolTip" Value="{Binding StatusLead}"/>
+                                    </Style>
+                                </DataGridTextColumn.ElementStyle>
+                            </DataGridTextColumn>
+                            <DataGridTextColumn Header="Risk" Binding="{Binding RiskDisplay}" Width="70"/>
+                            <DataGridTemplateColumn Header="Parallel Safe" Width="105">
+                                <DataGridTemplateColumn.CellTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Classification}" FontWeight="Bold" VerticalAlignment="Center">
+                                            <TextBlock.Style>
+                                                <Style TargetType="TextBlock">
+                                                    <Setter Property="Foreground" Value="#E65100"/>
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding Classification}" Value="Terminal">
+                                                            <Setter Property="Foreground" Value="#2E7D32"/>
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </TextBlock.Style>
+                                        </TextBlock>
+                                    </DataTemplate>
+                                </DataGridTemplateColumn.CellTemplate>
+                            </DataGridTemplateColumn>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                    <TextBlock Grid.Row="2" Text="{Binding ParallelEvidenceNote}" Style="{StaticResource SectionCaption}" TextWrapping="Wrap"/>
+                </Grid>
+            </TabItem>
+
+            <!-- ========== AI ANALYTICS (DB-M26, SEPARATE_MODULE — read-only) ========== -->
+            <TabItem Header="AI ANALYTICS">
+                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                    <StackPanel Margin="6">
+                        <Border Style="{StaticResource CardBorder}">
+                            <StackPanel>
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="AI Usage / Cost Dashboard (DB-M26)" Style="{StaticResource SectionHeader}"/>
+                                    <Border Background="{StaticResource PurpleBrush}" CornerRadius="3" Padding="9,3"
+                                            Margin="12,0,0,0" VerticalAlignment="Center">
+                                        <TextBlock Text="SEPARATE_MODULE · READ-ONLY" FontSize="10" FontWeight="Bold" Foreground="White"/>
+                                    </Border>
+                                </StackPanel>
+                                <TextBlock Text="A safe read-only navigation entry to the DB-M26 analytics module. This tab only renders DB-M26's own recorded result (state/db-m26-result.json) and opens its design document. It contains no lifecycle logic, performs no provider/model execution, and never writes anything."
+                                           Style="{StaticResource SectionCaption}" Margin="0,2,0,10" TextWrapping="Wrap"/>
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="*"/>
+                                    </Grid.ColumnDefinitions>
+                                    <StackPanel>
+                                        <TextBlock Text="Implementation" Style="{StaticResource LabelText}"/>
+                                        <TextBlock Text="{Binding AnalyticsImplementation}" Style="{StaticResource ValueText}" Margin="0,2,0,0"/>
+                                        <TextBlock Text="Tests" Style="{StaticResource LabelText}" Margin="0,10,0,0"/>
+                                        <TextBlock Text="{Binding AnalyticsTests}" Style="{StaticResource ValueText}" Margin="0,2,0,0"/>
+                                        <TextBlock Text="Scenarios" Style="{StaticResource LabelText}" Margin="0,10,0,0"/>
+                                        <TextBlock Text="{Binding AnalyticsScenarios}" Style="{StaticResource ValueText}" Margin="0,2,0,0"/>
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="1" Margin="16,0,0,0">
+                                        <TextBlock Text="AUTO AI execution" Style="{StaticResource LabelText}"/>
+                                        <TextBlock Text="{Binding AnalyticsAutoExecution}" Style="{StaticResource ValueText}" Margin="0,2,0,0"/>
+                                        <TextBlock Text="Provider / model executed" Style="{StaticResource LabelText}" Margin="0,10,0,0"/>
+                                        <TextBlock Text="{Binding AnalyticsProviderModelExecuted}" Style="{StaticResource ValueText}" Margin="0,2,0,0"/>
+                                        <TextBlock Text="Roadmap modification capability" Style="{StaticResource LabelText}" Margin="0,10,0,0"/>
+                                        <TextBlock Text="{Binding AnalyticsRoadmapCapability}" Style="{StaticResource ValueText}" Margin="0,2,0,0"/>
+                                        <TextBlock Text="Git PR / merge capability" Style="{StaticResource LabelText}" Margin="0,10,0,0"/>
+                                        <TextBlock Text="{Binding AnalyticsGitPrMergeCapability}" Style="{StaticResource ValueText}" Margin="0,2,0,0"/>
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="2" Margin="16,0,0,0">
+                                        <TextBlock Text="Paid API calls" Style="{StaticResource LabelText}"/>
+                                        <TextBlock Text="{Binding AnalyticsPaidApiCalls}" Style="{StaticResource ValueText}" Margin="0,2,0,0"/>
+                                        <TextBlock Text="Network calls" Style="{StaticResource LabelText}" Margin="0,10,0,0"/>
+                                        <TextBlock Text="{Binding AnalyticsNetworkCalls}" Style="{StaticResource ValueText}" Margin="0,2,0,0"/>
+                                        <TextBlock Text="Workbook SHA-256 (current)" Style="{StaticResource LabelText}" Margin="0,10,0,0"/>
+                                        <TextBlock Text="{Binding AnalyticsWorkbookSha}" FontFamily="Consolas" FontSize="11" Style="{StaticResource ValueText}" Margin="0,2,0,0" TextWrapping="Wrap"/>
+                                    </StackPanel>
+                                </Grid>
+                                <Button Content="OPEN DB-M26 DASHBOARD DESIGN DOCUMENT" Style="{StaticResource SecondaryButton}"
+                                        Command="{Binding OpenCommand}" CommandParameter="{Binding AnalyticsDesignDocPath}"
+                                        HorizontalAlignment="Left" Margin="0,14,0,0" Padding="14,7"/>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+        </TabControl>
+    </Grid>
+</Window>

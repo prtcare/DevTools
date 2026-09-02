@@ -1,0 +1,137 @@
+{
+  "milestone": "DB-M13",
+  "lane": "B",
+  "phase": "AI_ROUTING_DISCOVERY",
+  "type": "DISCOVERY_AND_DESIGN_ONLY",
+  "completedAtUtc": "2026-08-30T17:10:00Z",
+  "status": "DESIGN_DELIVERED",
+  "projectRoot": "C:\\Personal\\DevTools\\DevBridge",
+  "deliverables": {
+    "discovery": "design\\ai-routing\\DB-M13_DISCOVERY.md",
+    "architecture": "design\\ai-routing\\AI_ROUTING_ARCHITECTURE.md",
+    "milestoneDependencies": "design\\ai-routing\\AI_ROUTING_MILESTONE_DEPENDENCIES.md",
+    "parallelPlan": "design\\ai-routing\\AI_ROUTING_PARALLEL_PLAN.md"
+  },
+  "hardConstraintsHonored": {
+    "workingLifecycleModified": false,
+    "dbM03ToM11Modified": false,
+    "dbM12UiModified": "NONE_IMPLEMENTED",
+    "workbookModified": false,
+    "nexusRepositoriesModified": false,
+    "executableModelRouterAdded": false,
+    "autoModeImplemented": false
+  },
+  "discovery": {
+    "stack": "PowerShell 5.1 + JSON state + Markdown artifacts; OOXML workbook via System.IO.Compression + XDocument; atomic temp-copy replace",
+    "notAGitRepo": true,
+    "sourceOfTruth": "C:\\Personal\\Nexus.Developer\\NEXUS_DEVELOPMENT_CONTROL.xlsx (14 sheets)",
+    "devBridgeCallsAiApis": false,
+    "stateMachine": {
+      "record": "state/current-task.json",
+      "transitions": [
+        "PREFLIGHTED -> RESERVE",
+        "RESERVED -> CHATGPT_HANDOFF",
+        "AWAITING_CHATGPT_PROMPT -> COPY_TO_CHATGPT",
+        "VERIFIED -> CLAUDE_REVIEW",
+        "COMPLETION_WRITTEN -> CONTROL_VALIDATE",
+        "CONTROL_VALIDATED -> START_NEW_PREFLIGHT"
+      ]
+    },
+    "lifecycle": {
+      "dbM03": "Selection + preflight (Get-NextTask, Test-DevelopmentPreflight) -> preflight.json/current-task.json/NEXT_TASK.md",
+      "dbM04": "Reservation (Reserve-DevelopmentChange) -> reservation.json, Active Changes + Activity Log append",
+      "dbM05": "ChatGPT handoff + context package (New-ChatGptHandoff, implemented 656 lines) -> CHATGPT_HANDOFF.md + DEEPSEEK_PROMPT.md; no AI API called",
+      "dbM06": "Verification (Verify-Task stub, executed interactively, 22-part evidence) -> verification.json",
+      "dbM07": "Claude review packet (New-ReviewPacket stub) -> REVIEW_PACKET.md + CLAUDE_REVIEW_FILES.md + CLAUDE_REVIEW_PROMPT.md",
+      "dbM08": "Review result (interactive) -> claude-review.json + CLAUDE_REVIEW_RESULT.md",
+      "dbM09": "Fix loop (not required on CHG-20260830-016)",
+      "dbM10": "Completion write (Complete-Workbook-DBM10, implemented, 26/26 checks) -> completion.json",
+      "dbM11": "Control validation -> CONTROL_VALIDATED; DB-M12 NOT implemented"
+    },
+    "stableContracts": [
+      "state/preflight.json",
+      "state/current-task.json",
+      "state/reservation.json",
+      "state/verification.json",
+      "state/claude-review.json",
+      "state/completion.json",
+      "state/sheet-update-plan.json",
+      "tasks/CHATGPT_HANDOFF.md",
+      "tasks/DEEPSEEK_PROMPT.md",
+      "tasks/REVIEW_PACKET.md",
+      "tasks/CLAUDE_REVIEW_FILES.md",
+      "tasks/CLAUDE_REVIEW_PROMPT.md",
+      "scripts/Read-DevelopmentControl.ps1"
+    ],
+    "secrets": "External C:\\Personal\\UserSecrets\\usersecrets.txt -> env vars via Load-Secrets.ps1; deepcode.ps1 maps DEEPSEEK_API_KEY to ANTHROPIC_AUTH_TOKEN and ANTHROPIC_BASE_URL=https://api.deepseek.com/anthropic with deepseek-v4-flash; DevBridge config contains no keys",
+    "governingAbstraction": "ADR-005: AiRole -> Provider -> Model -> Configuration (no business logic branches on provider name)",
+    "existingAiAssetsInformational": [
+      "Model gateway (Nexus.Platform.Core/Models, Nexus.Platform.Providers.OpenAI - working foundation)",
+      "Intelligence turn pipeline",
+      "Developer agent shell (stub)",
+      "Chat API / domain / UI"
+    ],
+    "externalAiGovernance": "C:\\Personal\\DevTools\\AI-Config: GLOBAL-RULES, EXECUTION-RULES, ESCALATION-RULES (12 conditions), COMPLETION-RULES, deepcode.ps1",
+    "dbM12Status": "NOT_IMPLEMENTED",
+    "dbM12Overlap": "NONE - no UI files; design against stable backend contracts"
+  },
+  "design": {
+    "mode": {
+      "manual": "CURRENT - preserved byte-for-byte; router inert/observability only",
+      "assisted": "FUTURE - DevBridge recommends model/cost/reasoning/budget/fallback; human executes; enabled after DB-M19 G3 dry-run gate",
+      "auto": "NOT_IMPLEMENTED - gated by new ADR + workbook governance update + enable flag + kill switch + human approval for spend above budget"
+    },
+    "capabilityBasedRouting": "TaskProfile (TaskType, RequiresCoding, Complexity, Risk, ContextRequirement, CostLimit, LatencyPreference, ReasoningLevel) -> filter eligible models -> score (quality-adjusted cost, success likelihood, latency) -> choose + fallback chain -> cost estimate -> budget verdict. NO if-model==provider-name branching; policy is config data.",
+    "futureComponents": [
+      "IAiProvider -> scripts/ai-routing/AiProvider.ps1 + config/providers.json",
+      "IAiModel -> config/models.json + ModelCatalog.ps1",
+      "IModelRouter -> scripts/ai-routing/ModelRouter.ps1 + config/routing-policy.json",
+      "IModelPricingService -> scripts/ai-routing/ModelPricing.ps1 + config/pricing/*.json",
+      "ICostCalculator -> scripts/ai-routing/CostCalculator.ps1",
+      "IEscalationEngine -> scripts/ai-routing/EscalationEngine.ps1 + config/escalation-policy.json",
+      "IModelPerformanceService -> scripts/ai-routing/ModelPerformance.ps1 + state/attempts/",
+      "ITaskClassifier -> scripts/ai-routing/TaskClassifier.ps1",
+      "IContextBudgetService -> scripts/ai-routing/ContextBudget.ps1"
+    ],
+    "attemptSchemaV1": "TaskId, MilestoneId, WorkItemId, ChangeId, AttemptId, Provider, Model, Gateway, ReasoningLevel, TaskType, Complexity, Risk, StartedAt, EndedAt, Duration, InputTokens, CachedInputTokens, OutputTokens, EstimatedCost, ActualCost, Currency, ExchangeRate, Result, VerificationResult, FailureCategory, EscalatedFrom, EscalatedTo, RetryNumber, HumanIntervention, ContextTokens, FilesChanged, TestsPassed, TestsFailed",
+    "attemptPersistence": "JSON records only: logs/tasks/<node>/<change>/attempts/<AttemptId>.json + state/attempts/<changeId>/; NO DB migrations",
+    "pricingSchemaV1": "Provider, Model, Currency, EffectiveFromUtc, EffectiveToUtc, ProcessingTier, TimeBand, Input, CachedInput, CacheWrite, Output, Reasoning, ToolCalls, Images, Audio, Storage, Source, VerifiedAt",
+    "pricingPersistence": "config/pricing/*.json data files; rates are data, never hard-coded into business logic",
+    "routerIntegrationPoints": [
+      "task classification (after DB-M03, before DB-M05)",
+      "context packaging (alongside DB-M05, advisory)",
+      "model recommendation (before execution)",
+      "cost estimation (recommendation + execution)",
+      "budget gate (before execution + at verification)",
+      "model execution (manual/assisted: human launcher; auto: provider)",
+      "verification (attempt finalize, DB-M06)",
+      "retry (failed verification)",
+      "reasoning escalation",
+      "model escalation",
+      "provider failover (human fallback)",
+      "human review (DB-M07/M08 evidence only)"
+    ],
+    "manualWorkflowPreserved": true,
+    "dbM05RemainsUsable": "Handoff deterministic and untouched; router emits separate tasks/ROUTING_RECOMMENDATION.md",
+    "dbM07RemainsUsable": "Review prompt + file manifest untouched; router may append attempt/cost summary as evidence in REVIEW_PACKET.md",
+    "noSingleProviderDependence": "Capability-based routing + mandatory human fallback when no provider healthy"
+  },
+  "parallelPlan": {
+    "lanes": {
+      "A_ContractsAndDataFoundation": ["DB-M14", "DB-M15", "DB-M17"],
+      "B_DecisionEngines": ["DB-M16", "DB-M18", "DB-M19", "DB-M20", "DB-M21", "DB-M22"],
+      "C_OperationalIntelligence": ["DB-M23", "DB-M24", "DB-M25"]
+    },
+    "sharedContractsFrozenAt": "DB-M14",
+    "integrationGates": [
+      "G1 contract freeze (DB-M14)",
+      "G2 data correctness (DB-M15/DB-M17)",
+      "G3 ASSISTED dry-run (DB-M19)",
+      "G4 multi-provider (DB-M22/DB-M23)",
+      "G5 intelligence loop (DB-M24/DB-M25)",
+      "G6 AUTO governance (future, NOT in DB-M13 scope)"
+    ],
+    "parallelSafe": "Additive-only files; read-only consumption of DB-M03-M11 contracts; frozen schemas; manual flow smoke test after every milestone"
+  },
+  "nextMilestone": "DB-M14 (Provider abstraction) - contract freeze, mode=manual only valid runtime value"
+}

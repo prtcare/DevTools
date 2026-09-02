@@ -1,0 +1,434 @@
+Workbook SHA256: E866D3C4D260031D3C067F4C9C272A497FD913AD7C8D0CBFD0BF42F76BCD2941
+Roadmap nodes loaded: 659  (expected 659)
+
+=== Master Roadmap Status distribution ===
+  Planned                      522
+  In Progress                  47
+  Completed                    39
+  Superseded                   23
+  Implemented - Verify         22
+  Complete                     6
+
+=== Nodes with current-work statuses ===
+  01                     Layer               CORE  (row 6)
+  F-01-6                 Feature      P0     Model Gateway and Routing  (row 70)
+  WI-01-6.1.1            WorkItem     P0     Restore live provider access  (row 72)
+  T-01-6.1.1.1           Task         P0     Add OpenAI credit and confirm key resolution  (row 73)
+  02                     Layer               DATA  (row 81)
+  F-02-1                 Feature      P0     Persistence Foundation  (row 82)
+  WI-02-1.1.1            WorkItem     P0     Commit and push  (row 84)
+  T-02-1.1.1.1           Task         P0     Review git status, stage by explicit path, commit, push  (row 85)
+  S-02-1.1.1.1.1         Subtask      P0     Confirm .git-broken is not staged  (row 86)
+  M-02-1.2               Milestone    P0     Stage 2a - Project, Conversation, ConversationMessage  (row 87)
+  WI-02-1.2.1            WorkItem     P0     Aggregate configurations and migration  (row 88)
+  T-02-1.2.1.1           Task         P0     IEntityTypeConfiguration for each of the three aggregates  (row 89)
+  T-02-1.2.1.2           Task         P0     Hot-path index on ConversationMessage by conversation and sequence  (row 90)
+  T-02-1.2.1.3           Task         P0     SQL repository implementations replacing Dataverse equivalents  (row 91)
+  M-02-1.3               Milestone    P0     Stage 2b and 2c - remaining seven aggregates  (row 92)
+  WI-02-1.3.1            WorkItem     P0     Stage 2b - Knowledge, Adr, WorkItem, Artifact  (row 93)
+  T-02-1.3.1.1           Task         P0     Configure four aggregates with cascade discipline  (row 94)
+  S-02-1.3.1.1.1         Subtask      P0     Only the owning parent cascades; reference FKs Restrict  (row 95)
+  S-02-1.3.1.1.2         Subtask      P0     Drop the redundant WorkItem.workitempriority column  (row 96)
+  WI-02-1.3.2            WorkItem     P0     Stage 2c - Session, Branch, Snapshot  (row 97)
+  T-02-1.3.2.1           Task         P0     Resolve the Session-Branch-Snapshot diamond cascade  (row 98)
+  S-02-1.3.2.1.1         Subtask      P0     Self-references set to NoAction  (row 99)
+  04                     Layer               AI  (row 206)
+  F-04-1                 Feature      P0     Durable Turn State  (row 207)
+  M-04-1.1               Milestone    P0     Durable turn trace and result report  (row 208)
+  M-04-1.2               Milestone    P2     Durable memory store  (row 215)
+  F-04-2                 Feature      P0     Context Engine  (row 219)
+  M-04-2.1               Milestone    P0     Citations proven against a live model  (row 220)
+  F-04-3                 Feature      P1     Agents  (row 225)
+  M-04-3.1               Milestone    P1     Developer agent  (row 226)
+  06                     Layer               PRODUCT CORE  (row 268)
+  WI-06-1.1.2            WorkItem     P1     Scope contract for consumers  (row 279)
+  M-06-1.2               Milestone    P1     Extensible scope registration  (row 283)
+  F-06-7                 Feature      P1     Chat Core  (row 299)
+  M-06-7.1               Milestone    P1     Conversation, message and session model  (row 300)
+  M-06-7.2               Milestone    P1     Attachments and artifacts  (row 304)
+  M-06-7.4               Milestone    P1     Streaming, model and memory hooks  (row 308)
+  07                     Layer               DEVELOPER  (row 312)
+  F-07-0                 Feature      P0     Development Control Baseline  (row 313)
+  M-07-0.2               Milestone    P0     Development Control Service (Excel-backed, Azure-SQL-ready)  (row 324)
+  08                     Layer               DELIVERY  (row 444)
+  F-08-1                 Feature      P0     Continuous Integration  (row 445)
+  WI-08-1.1.1            WorkItem     P0     Migrate off the local file feed  (row 447)
+  T-08-1.1.1.1           Task         P0     Publish Nexus.Platform.* packages to GitHub Packages  (row 448)
+  S-08-1.1.1.1.1         Subtask      P0     Replace pack-local.ps1 with a publish step  (row 449)
+  S-08-1.1.1.1.2         Subtask      P0     Feed credential resolved through ISecretResolver, never committed  (row 450)
+  T-08-1.1.1.2           Task         P0     Publish Nexus.Intelligence.* packages  (row 451)
+  WI-08-1.2.1            WorkItem     P0     Nexus.Platform pipeline  (row 454)
+  WI-08-1.2.2            WorkItem     P0     Nexus.Intelligence pipeline  (row 458)
+  WI-08-1.2.3            WorkItem     P0     Nexus.Experience pipeline  (row 460)
+  11                     Layer               EXPERIENCE  (row 586)
+  F-11-1                 Feature      P1     Chat Experience  (row 587)
+  M-11-1.1               Milestone    P1     Reusable chat shell and message rendering  (row 588)
+  WI-11-1.1.1            WorkItem     P1     Shared chat shell  (row 589)
+  M-11-1.2               Milestone    P1     Interaction states and user feedback  (row 590)
+  F-11-2                 Feature      P1     Contextual Navigation and Scope UX  (row 592)
+  M-11-2.1               Milestone    P1     Context and scope presentation contract  (row 593)
+  12                     Layer               PRODUCTS  (row 616)
+  F-12-0                 Feature      P1     Developer Chat  (row 617)
+  F-07-10                Feature      P1     Developer Domain Foundation  (row 655)
+  M-07-10.1              Milestone    P1     Developer hierarchy  (row 656)
+  WI-07-10.1.1           WorkItem     P1     Feature, Task and Subtask aggregates  (row 657)
+  WI-07-10.1.2           WorkItem     P1     Milestone grouping object and MilestoneLink  (row 658)
+  WI-07-10.1.3           WorkItem     P1     Issue aggregate and IssueLink  (row 659)
+  M-07-10.3              Milestone    P1     Development Run placeholder  (row 662)
+  M-07-10.4              Milestone    P1     Object Chat Link  (row 665)
+  F-06-8                 Feature      P1     Scope Trunk - Subproject  (row 667)
+  M-06-8.1               Milestone    P1     Subproject aggregate  (row 668)
+  M-12-0.4               Milestone    P1     General Developer UI shell  (row 673)
+
+=== Candidate node full rows (selected fields) ===
+  --- F-12-0 (Developer Chat) row=617 type=Feature ---
+      Phase=P1 Layer=12 PRODUCTS Status=In Progress Priority=High Risk=Medium ParallelSafe=No Gate=PHASE1
+      Parent=12 SortKey=12.000 Breakdown=No Progress=5
+      Deps: M-06-7.5 | M-07-6.3 | M-11-1.2
+      NextAction: Assemble the Developer Chat MVP after Chat Core/Developer/Experience prerequisites.
+      Evidence: Developer Chat architecture/product definition exists; product implementation has not started.
+      SimpleGoal: Build Developer Chat as a standalone-capable Nexus product while integrating it into the Nexus development system as the primary development interf...
+      AC: Developer Chat can run inside Nexus and can be packaged independently without moving its reusable capabilities into the product.
+      Notes: CHG-20260827-006: First concrete Developer Chat implementation progress — composition slice proven, not just architecture/product definition. | CHG-20260827-007: Backend composition substantially complete across all five target types. | CHG-20260827-008: Backend composition merged and complete across all five target types. | CHG-20260827-010: M-12-0.4 first UI slice (Feature) landed and verified. | CHG-20260827-011: M-12-0.4 second UI slice (Task/Subtask/Milestone/Issue) landed and verified -- Phase 1 exit test now clickable for all five target types. | CHG-20260827-012: Nexus.Experience main and feat/azure-sql are now the same commit (edce36e) -- the architectural branch-divergence blocker noted earlier this session is resolved. | CHG-20260829-003 (2026-08-29): M-12-0.1 (Developer Chat MVP) reaches 100%/Completed -- P1-3's exact live acceptance test now passes end-to-end with real evidence. F-12-0 moves 35% -> 45% (M-12-0.1 100%, M-12-0.4 80%, M-12-0.2/M-12-0.3 still 0%). | CHG-20260829-004 (2026-08-29): CORRECTION -- M-12-0.1 was overstated at 100%, corrected to 85%. F-12-0 recalculated 45% -> 41% (M-12-0.1 85%, M-12-0.4 80%, M-12-0.2/M-12-0.3 still 0%; simple average across the four milestones). | CHG-20260829-005 (2026-08-29): M-12-0.1 moves 85% -> 95% (P1-7 verified live, fix pending merge). F-12-0 recalculated 41% -> 44%. | CHG-20260829-007 (2026-08-29): M-12-0.1 reaches 100%/Completed. F-12-0 recalculated 44% -> 45% (M-12-0.1 100%, M-12-0.4 80%, M-12-0.2/M-12-0.3 still 0%).
+  --- M-12-0.1 (Developer Chat MVP) row=618 type=Milestone ---
+      Phase=P1 Layer=12 PRODUCTS Status=Completed Priority=High Risk=Medium ParallelSafe=No Gate=PHASE1
+      Parent=F-12-0 SortKey=12.000.001 Breakdown=No Progress=5
+      Deps: M-06-7.5 | M-07-6.1 | M-11-1.1
+      NextAction: Build Developer Chat from Chat Core + Developer context + Experience components.
+      Evidence: The existing Chat product proves the basic chat pattern, but Developer Chat has not been assembled.
+      SimpleGoal: Build the first usable Developer Chat.
+      AC: Open Nexus Developer, choose/open a Workspace and Project. | Open Developer Chat; start or reopen a conversation. | Discuss development in the chat. | Convert the discussion into a Feature, Issue, Milestone, Task or Subtask. | Save it. | The object appears in the Developer UI. | Reopening the object shows the associated chat and context. | No autonomous execution is required for this to count as complete.
+      Notes: Tightened 2026-08-26 to the literal approved Phase 1 exit test (ADR-005, CHG-20260826-003). This is now the Phase 1 gate, replacing the old M-07-5.3 three-worker Foundation Gate. | CHG-20260827-006: The core new mechanism (chat -> real object -> persisted link) now exists and works end-to-end at the API level for Feature. No UI yet. Remaining for full M-12-0.1: the same composition for Task/Subtask/Milestone/Issue, and the Developer UI surface (M-12-0.4) to actually see/use this. | CHG-20260827-007: Chat->object->link mechanism now proven for all five Developer object types at the API level. No UI yet. Remaining for full M-12-0.1: merge both branches in the required order, then M-12-0.4 UI. | CHG-20260827-008: Backend half of M-12-0.1 fully merged and complete. Remaining for full M-12-0.1: the Developer UI surface (M-12-0.4) to actually see/use this end to end. | Data-hygiene fix (2026-08-28, found during roadmap review, not a governed CHG): Status field was stale at 'Planned' despite 60% manual progress and its only child (WI-12-0.1.1) being Completed since CHG-20260827-008. Corrected to 'In Progress' to reflect reality. | CHG-20260829-002 (2026-08-29): P1-3 live-verification attempt run end to end. Real partial evidence: Intelligence/OpenAI pipeline independently proven working (live openai:gpt-4.1-mini reply, real credential). Blocked before conversation/chat is reached: Chat.Api cannot reach SQL Server (listening port drifted 1433->1434; instance is also Windows-auth-only, refusing the connection string's SQL-auth login). No code/config change made (confirmed: git diff --ignore-all-space is empty) -- correctly stopped and reported per the verification prompt's own instruction. Progress left at 60% since nothing new was implemented; this is a verification finding, not an implementation gain. See REL-011 (Dependencies & Blockers) -- awaiting Durai's decision on the SQL fix before re-running. | CHG-20260829-003 (2026-08-29): P1-3 live acceptance test PASSES end-to-end -- both environment blockers (stale port bind, Windows-auth-only SQL Server) fixed per Durai's decision (mixed-mode auth + restart). 2 real model turns, persistence confirmed across hard refresh and navigate-away-and-back, all 9 acceptance checkpoints reported PASS. M-12-0.1 moves 60% -> 100%/Completed. Two real follow-up defects logged, not fixed here: WorkspaceSelector double-render on /workspaces (confirmed directly in WorkspacesPage.tsx), Dashboard health-check calls /api/v1/health but backend only serves /health (confirmed directly: systemApi.ts + HealthEndpoint.cs). SQL Server registry/service/login-probe evidence and browser screenshots taken from the DeepSeek report, not independently reachable by Claude (Cowork). REL-011 closed as Resolved. | CHG-20260829-004 (2026-08-29): CORRECTION -- the 100%/Completed set by CHG-20260829-003 was wrong. M-12-0.1's own acceptance criteria require convert-to-object, object-appears-in-Developer-UI, and reopen-shows-chat, none of which P1-3's test exercised (that test only covers WI-12-0.1.1's narrower launch/open/resume/answer criteria, correctly 100%). Corrected to 85%/Implemented-Verify: the backend conversion mechanism (Convert*Handler composing Create*Handler + CreateObjectChatLinkHandler) and the frontend UI for it (Convert*Form components on ConversationList.tsx, useObjectChatLinksByTarget on each *DetailPage.tsx) were both found already merged from before this session (CHG-20260827-006/007/008) but never live-verified end-to-end. Remaining action: run the Phase Plan P1-7 exit test. | CHG-20260829-005 (2026-08-29): P1-7 (the real Phase 1 exit test) run live and PASSES end-to-end for two target types (Feature, Task) -- convert, save, appears in Developer UI, reopen shows the originating chat, all independently confirmed via screenshot (not just trusted from the report). One real defect found+fixed live: Nexus.Developer.Api had zero CORS config, blocking the browser's convert POST at preflight -- fixed by mirroring Chat.Api's own CORS pattern exactly (confirmed via diff). Fix is NOT yet committed/merged -- M-12-0.1 held at 95%, not 100%, until COMMIT_CORS_HEALTH_FIX_PROMPT.md's branch/PR/CI-green workflow lands it in main. Two new friction items logged for the M-12 backlog: manual raw-GUID paste for Subproject/Feature ID in convert forms; linked-conversation display has no click-through deep link (ObjectChatLink doesn't carry a project ID). | CHG-20260829-007 (2026-08-29): PR #5 merge to origin/main independently confirmed (git fetch + GitHub API: PR #5 merged=true, commit 6cead6e). M-12-0.1 moves 95% -> 100%/Completed -- P1-7's exact acceptance test passed live for two target types and its one supporting code fix (CORS + /health) is now genuinely merged, not just locally verified.
+  --- M-12-0.2 (Integrated development toolchain) row=621 type=Milestone ---
+      Phase=P2 Layer=12 PRODUCTS Status=Planned Priority=High Risk=Medium ParallelSafe=No Gate=PHASE1
+      Parent=F-12-0 SortKey=12.000.002 Breakdown=No Progress=0
+      Deps: M-12-0.1 | M-07-6.2 | M-06-7.3
+      NextAction: Connect approved development tools through Layer 07 adapters.
+      Evidence: No Developer Chat toolchain is connected yet.
+      SimpleGoal: Let Developer Chat safely use the development tools.
+      AC: From one Developer Chat, a bounded work item can inspect code, run an approved command/build/test and record evidence without switching control systems.
+      Notes: Reclassified P1->P2 2026-08-26 per the approved Phase 1/2 redefinition (ADR-005, CHG-20260826-003). This capability is correctly designed and unchanged in content -- only its phase moved. Phase 1's new exit condition (chat -> structured object -> visible/reopenable in the UI) does not require it; it becomes part of the Local Orchestrator / autonomous pipeline / Foundation Gate work in Phase 2.
+  --- M-12-0.3 (Nexus develops Nexus gate) row=623 type=Milestone ---
+      Phase=P2 Layer=12 PRODUCTS Status=Planned Priority=High Risk=Medium ParallelSafe=No Gate=PHASE1_EXIT
+      Parent=F-12-0 SortKey=12.000.003 Breakdown=No Progress=0
+      Deps: M-12-0.2 | M-07-5.3
+      NextAction: Run the first real Nexus self-development work item through Developer Chat.
+      Evidence: No Nexus work item has yet been completed end-to-end through Developer Chat.
+      SimpleGoal: Use Developer Chat to complete a real Nexus development task from start to finish.
+      AC: Complete at least one real Nexus work item end-to-end through Developer Chat: preflight, scope reservation, implementation/tool execution, build/test evidence, review, roadmap update, version history and activity log.
+      Notes: Reclassified P1->P2 2026-08-26 per the approved Phase 1/2 redefinition (ADR-005, CHG-20260826-003). This capability is correctly designed and unchanged in content -- only its phase moved. Phase 1's new exit condition (chat -> structured object -> visible/reopenable in the UI) does not require it; it becomes part of the Local Orchestrator / autonomous pipeline / Foundation Gate work in Phase 2.
+  --- M-12-0.4 (General Developer UI shell) row=673 type=Milestone ---
+      Phase=P1 Layer=12 PRODUCTS Status=In Progress Priority=Critical Risk=Not Assessed ParallelSafe= Gate=
+      Parent=F-12-0 SortKey=12.000.004 Breakdown=No Progress=
+      Deps: 
+      NextAction: Begin implementation.
+      Evidence: New node -- not started.
+      SimpleGoal: Navigation and pages for the core Developer objects; not every page is feature-complete, but naming and relationships follow the permanent architecture.
+      AC: Dashboard, Workspaces, Projects, Subprojects, Features, Milestones, Tasks, Issues, Developer Chat, Development Runs (placeholder), Reports (placeholder), Repositories/Environments/Tools/Models (placeholder), Settings are all navigable. | A work item detail page shows status, progress, parent/context, description, related chats, and reserves a DEVELOP action location.
+      Notes: CHG-20260827-010: First UI slice complete and verified -- Feature convert-and-view flow works end to end in Nexus.Experience.Client (feat/azure-sql). Task/Subtask/Milestone/Issue UI and a real Subproject picker remain. | CHG-20260827-011: Second UI slice complete and verified -- all five target types (Feature/Task/Subtask/Milestone/Issue) now convert-and-view end to end in the real UI. Remaining: Subproject/Feature/Task picker UI, WorkItemPage retirement. | CHG-20260827-012: main branch consolidated with feat/azure-sql (fast-forward, 36 commits, zero conflicts) -- main is no longer stale; no separate frontend/backend lineage split remains. | CHG-20260829-005 (2026-08-29): P1-7 pass confirms Feature/Task detail pages (part of this milestone's UI shell) genuinely render and show linked-conversation data correctly in the browser -- independently confirmed via screenshot. Two friction items logged: no click-through deep link from a linked conversation back to the chat (ObjectChatLink lacks project ID), manual raw-GUID paste required for Subproject/Feature ID fields in convert forms.
+  --- F-07-6 (Developer Tool Integration) row=424 type=Feature ---
+      Phase=P2 Layer=07 DEVELOPER Status=Planned Priority=Critical Risk=Not Assessed ParallelSafe= Gate=
+      Parent=07 SortKey=07.006 Breakdown=No Progress=
+      Deps: M-07-1.2 | M-06-7.3
+      NextAction: Start after: M-07-1.2 | M-06-7.3.
+      Evidence: No implementation evidence reviewed yet.
+      SimpleGoal: Expose development-specific capabilities and adapters that a Developer Chat product can invoke safely: repositories, terminal, builds, tests, datab...
+      Notes: Developer chat, human approval, developer dashboard Reclassified P1->P2 2026-08-26 per the approved Phase 1/2 redefinition (ADR-005, CHG-20260826-003). This capability is correctly designed and unchanged in content -- only its phase moved. Phase 1's new exit condition (chat -> structured object -> visible/reopenable in the UI) does not require it; it becomes part of the Local Orchestrator / autonomous pipeline / Foundation Gate work in Phase 2. | CHG-20260830-004 (2026-08-30): Reprioritized to support an early closed autonomous development loop (Feature -> plan -> isolated branch -> build -> test -> retry/fix -> verify -> commit -> PR -> Development Control update). This node's content is unchanged; only its priority and near-term sequencing moved. See AUTONOMOUS_DEV_LOOP_COMPARISON_REPORT.md for the full comparison. No new milestone was created -- this capability already existed under this ID. Several of this Feature's own work items already carry Gate=PHASE1 (WI-07-6.1.1, WI-07-6.2.1, T-07-6.2.1.1, WI-07-6.3.1) -- the milestone/feature-level priority had not caught up to that existing intent. This IS the requested 'Nexus.LocalAgent' concept; no new service was created.
+  --- M-07-6.1 (Developer context bridge) row=425 type=Milestone ---
+      Phase=P2 Layer=07 DEVELOPER Status=Planned Priority=Critical Risk=Not Assessed ParallelSafe=Yes Gate=GATE_B
+      Parent=F-07-6 SortKey=07.006.001 Breakdown=No Progress=
+      Deps: F-07-10 | M-07-2.1
+      NextAction: Start after: M-07-1.2 | M-07-2.1.
+      Evidence: No implementation evidence reviewed yet.
+      SimpleGoal: Give Developer Chat the correct roadmap, dependency and repository context.
+      AC: A requested work item resolves to its roadmap node, dependencies, active-change state and allowed repository scope.
+      Notes: Reclassified P1->P2 2026-08-26 per the approved Phase 1/2 redefinition (ADR-005, CHG-20260826-003). This capability is correctly designed and unchanged in content -- only its phase moved. Phase 1's new exit condition (chat -> structured object -> visible/reopenable in the UI) does not require it; it becomes part of the Local Orchestrator / autonomous pipeline / Foundation Gate work in Phase 2. | CHG-20260830-004 (2026-08-30): Reprioritized to support an early closed autonomous development loop (Feature -> plan -> isolated branch -> build -> test -> retry/fix -> verify -> commit -> PR -> Development Control update). This node's content is unchanged; only its priority and near-term sequencing moved. See AUTONOMOUS_DEV_LOOP_COMPARISON_REPORT.md for the full comparison. No new milestone was created -- this capability already existed under this ID. | CHG-20260830-013 (2026-08-30): Dependencies corrected M-07-1.2 (Superseded) -> F-07-10, same fix already applied to its child WI-07-6.1.1.
+  --- M-07-6.2 (Development tool adapter gateway) row=427 type=Milestone ---
+      Phase=P2 Layer=07 DEVELOPER Status=Planned Priority=Critical Risk=Not Assessed ParallelSafe=Yes Gate=GATE_B
+      Parent=F-07-6 SortKey=07.006.002 Breakdown=No Progress=
+      Deps: M-07-6.1 | M-06-7.3
+      NextAction: Start after: M-07-6.1 | M-06-7.3.
+      Evidence: No implementation evidence reviewed yet.
+      SimpleGoal: Connect development tools through one safe gateway.
+      AC: Tool adapters declare capability, scope, approval requirement and evidence. | Product code does not directly shell out or bypass the gateway.
+      Notes: Reclassified P1->P2 2026-08-26 per the approved Phase 1/2 redefinition (ADR-005, CHG-20260826-003). This capability is correctly designed and unchanged in content -- only its phase moved. Phase 1's new exit condition (chat -> structured object -> visible/reopenable in the UI) does not require it; it becomes part of the Local Orchestrator / autonomous pipeline / Foundation Gate work in Phase 2. | CHG-20260830-004 (2026-08-30): Reprioritized to support an early closed autonomous development loop (Feature -> plan -> isolated branch -> build -> test -> retry/fix -> verify -> commit -> PR -> Development Control update). This node's content is unchanged; only its priority and near-term sequencing moved. See AUTONOMOUS_DEV_LOOP_COMPARISON_REPORT.md for the full comparison. No new milestone was created -- this capability already existed under this ID.
+  --- M-07-6.3 (Development execution evidence and handoff) row=431 type=Milestone ---
+      Phase=P2 Layer=07 DEVELOPER Status=Planned Priority=Critical Risk=Not Assessed ParallelSafe=Yes Gate=GATE_B
+      Parent=F-07-6 SortKey=07.006.003 Breakdown=No Progress=
+      Deps: M-07-6.2 | M-07-4.1
+      NextAction: Start after: M-07-6.2 | M-07-4.1.
+      Evidence: No implementation evidence reviewed yet.
+      SimpleGoal: Save proof of every command, build, test and review.
+      AC: Every development action returns traceable evidence linked to a work item/change record.
+      Notes: Reclassified P1->P2 2026-08-26 per the approved Phase 1/2 redefinition (ADR-005, CHG-20260826-003). This capability is correctly designed and unchanged in content -- only its phase moved. Phase 1's new exit condition (chat -> structured object -> visible/reopenable in the UI) does not require it; it becomes part of the Local Orchestrator / autonomous pipeline / Foundation Gate work in Phase 2. | CHG-20260830-004 (2026-08-30): Reprioritized to support an early closed autonomous development loop (Feature -> plan -> isolated branch -> build -> test -> retry/fix -> verify -> commit -> PR -> Development Control update). This node's content is unchanged; only its priority and near-term sequencing moved. See AUTONOMOUS_DEV_LOOP_COMPARISON_REPORT.md for the full comparison. No new milestone was created -- this capability already existed under this ID.
+  --- M-04-3.3 (AI Role, Provider and Model abstraction (minimal)) row=670 type=Milestone ---
+      Phase=P1 Layer=04 AI Status=Complete Priority=Critical Risk=Not Assessed ParallelSafe= Gate=
+      Parent=F-04-3 SortKey=04.003.003 Breakdown=No Progress=
+      Deps: 
+      NextAction: Begin implementation.
+      Evidence: Begin next critical-path item WI-07-6.1.1 (Developer context bridge).
+      SimpleGoal: A named AiRole resolves to a Provider+Model+Configuration through data, not code; no role implementation may branch on provider name. Proven end-to-end using only the existing working OpenAI path.
+      AC: AiRole and AiRoleAssignment persist and resolve to a ModelDescriptor through the existing RoutingModelGateway. | At least the Discussion role is configured and used by Developer Chat. | Swapping a role's provider/model requires only a configuration change, no code change or redeploy. | (CHG-20260830-008) Role resolution can be constrained by declared capability requirements (e.g. coding, code.edit, structured.output, tool.calling, verification), reusing/extending the existing Nexus.Platform.Contracts ModelCapabilities flags rather than a Developer-only capability taxonomy. | A provider outage for one role's assigned provider does not hardwire a failure -- it either falls back per M-01-6.2's existing 'provider failure falls back without failing the turn' precedent, or fails the run with a clear, typed reason (never a silent hang).
+      Notes:  | CHG-20260830-008 (2026-08-30): Architecture modularity review confirmed this milestone's own design is already provider-neutral (AiRole/AiRoleAssignment resolving to Provider+Model+Configuration through data). Acceptance criteria expanded only to make explicit that role resolution must also account for capability requirements and provider-fallback, so the V1 implementation does not hardwire itself to whichever provider (Claude/DeepSeek/OpenAI) happens to be configured today. | CHG-20260830-011 (2026-08-30): First implementation pass by DeepCode (AiRoleAssignment domain+in-memory store+resolver in Nexus.Intelligence.Core/Roles, wired into TurnPipeline via TurnConstraints.ModelHint, DI-registered and seeded). Independently verified by direct source inspection: wiring, fallback behavior, and test coverage (including an end-to-end ModelHint->ModelSelector test) all correct. Two deviations found from written acceptance criteria: (1) AiRole itself was never persisted -- only AiRoleAssignment was stored, AiRole was synthesized per-call via a hardcoded per-name switch, itself a small instance of the 'through data not code' problem this milestone targets; (2) seeded RequiredCapabilities was under-specified (Chat|Reasoning only, not the full OpenAI gpt-4.1 capability set). Narrow correction prompt issued for both. Not yet marked Complete. | CHG-20260830-012 (2026-08-30): Correction applied and independently re-verified -- AiRole now genuinely persists via IAiRoleStore.GetRoleAsync/UpsertRoleAsync (InMemoryAiRoleStore), the hardcoded per-name Describe switch removed entirely, AiRoleResolution.Role made nullable for the genuinely-unregistered case, seeded Discussion role capabilities widened to match openai:gpt-4.1's full registered set. New tests added (role-never-registered, role persists/replaces through data) with no existing assertion weakened. WORK ITEM COMPLETE.
+  --- WI-07-10.3.1 (DevelopmentRun minimal aggregate and Ref allocation) row=663 type=WorkItem ---
+      Phase=P1 Layer=07 DEVELOPER Status=Complete Priority=Critical Risk=Not Assessed ParallelSafe= Gate=
+      Parent=M-07-10.3 SortKey=07.010.003.001 Breakdown=No Progress=
+      Deps: 
+      NextAction: Begin implementation.
+      Evidence: Mark M-07-10.3 in progress toward completion; begin next critical-path item M-04-3.3 (AiRole/AiRoleAssignment).
+      SimpleGoal: Application/Api layers implemented and independently verified 2026-08-30 (CHG-20260830-010). 88/88 tests passing.
+      Notes: Domain layer implemented and test-verified 2026-08-26 under CHG-20260826-004 (Nexus.Developer.Core, branch feature/wi-07-10-1-developer-core-domain, 42/42 tests green). Infrastructure (EF/DbContext/migration), Application and Api layers not yet started. | CHG-20260826-005 (2026-08-27): Nexus.Developer.Infrastructure (EF Core DbContext, configurations, InitialSqlSchema migration) added and build/test/migration-verified -- persistence layer complete for this aggregate; Application/API layer still pending. | CHG-20260830-010 (2026-08-30): Application (CreateDevelopmentRun/GetDevelopmentRun) and Api (POST/GET /api/v1/development-runs) layers implemented by DeepCode per WI-07-10-3-1_DEVELOPMENTRUN_APPLICATION_API_PROMPT.md, independently verified against the prompt's acceptance criteria via direct source inspection (not the agent's own report). Target validation correctly dispatches to the three local repositories (Feature/Task/Issue), not IScopeClient. One deviation found and corrected: target-not-found initially returned 404, corrected to 400 per the written acceptance criterion (mirrors FeatureEndpoint's SubprojectNotFoundException handling). 88/88 tests passing (79 pre-existing + 9 new). Not committed/merged/pushed -- working tree left for review per governance. WORK ITEM COMPLETE.
+  --- M-07-5.3 (Foundation Gate acceptance) row=419 type=Milestone ---
+      Phase=P2 Layer=07 DEVELOPER Status=Planned Priority=High Risk=High ParallelSafe=No Gate=GATE_A
+      Parent=F-07-5 SortKey=07.005.003 Breakdown=No Progress=
+      Deps: M-07-5.2
+      NextAction: Start after: M-07-5.2.
+      Evidence: No implementation evidence reviewed yet.
+      SimpleGoal: Three independent work items are planned, isolated, built, tested, reviewed and integrated simultaneously with every step recorded.
+      AC: Three work items are analysed and classified Can run together. | Three assignments with distinct worktrees and overlapping timestamps. | Three build records and three test runs on three branches. | Worker B is deliberately failed; A and C complete unaffected; B's failure is recorded against B only. | Three development results with evidence. | Three reviews with human decisions. | Three integration runs, sequential, each green. | Parent milestone progress reflects exactly the completed subset. | No step required a human to read a log and retype a result.
+      Notes: Reclassified P1->P2 2026-08-26 per the approved Phase 1/2 redefinition (ADR-005, CHG-20260826-003). This capability is correctly designed and unchanged in content -- only its phase moved. Phase 1's new exit condition (chat -> structured object -> visible/reopenable in the UI) does not require it; it becomes part of the Local Orchestrator / autonomous pipeline / Foundation Gate work in Phase 2. | CHG-20260830-004 (2026-08-30): Confirmed correctly NOT on the near-term critical path -- the first autonomous loop is a single job, not three simultaneous workers. This milestone remains valid and unchanged, just later.
+  --- M-02-1.2 (Stage 2a - Project, Conversation, ConversationMessage) row=87 type=Milestone ---
+      Phase=P0 Layer=02 DATA Status=Implemented - Verify Priority=Critical Risk=High ParallelSafe=No Gate=GATE_A
+      Parent=F-02-1 SortKey=02.001.002 Breakdown=No Progress=100
+      Deps: M-02-1.1
+      Schema: schema:data
+      NextAction: Start after: M-02-1.1.
+      Evidence: No implementation evidence reviewed yet. | CHG-20260828-004: Project/Conversation/ConversationMessage ported to Azure SQL, verified directly (diff scope + recorded Domain exception). Build/test evidence from DeepSeek report, not independently re-run.
+      SimpleGoal: The three highest-traffic records are on Azure SQL with hot-path indexes.
+      AC: Each aggregate round-trips create, read, update through its endpoints. | Ref allocation proven sequential for Project. | Message listing by conversation uses an index, confirmed by execution plan.
+
+=== Active Changes ===
+  {0}: {1}
+  {0}: {1}
+  {0}: {1}
+  total rows: 49
+
+=== Dependencies & Blockers ===
+  REL-001 | from=F-06-7 | depsOn=M-02-1.2 | type=Dependency | blocking=Yes | status=Open
+  REL-002 | from=F-06-7 | depsOn=M-01-1.1 | type=Dependency | blocking=Yes | status=Open
+  REL-003 | from=F-07-6 | depsOn=M-07-1.2 | type=Dependency | blocking=Yes | status=Open
+  REL-004 | from=F-07-6 | depsOn=M-06-7.3 | type=Dependency | blocking=Yes | status=Open
+  REL-005 | from=F-11-1 | depsOn=M-06-7.5 | type=Dependency | blocking=Yes | status=Open
+  REL-006 | from=F-12-0 | depsOn=M-06-7.5 | type=Dependency | blocking=Yes | status=Open
+  REL-007 | from=F-12-0 | depsOn=M-07-6.3 | type=Dependency | blocking=Yes | status=Open
+  REL-008 | from=F-12-0 | depsOn=M-11-1.2 | type=Dependency | blocking=Yes | status=Open
+  REL-009 | from=T-07-0.1.3.2 | depsOn=DevTools source ZIP | type=External Blocker | blocking=No | status=Satisfied
+  REL-010 | from=M-12-0.3 | depsOn=M-07-5.3 | type=Exit Gate Dependency | blocking=Yes | status=Open
+  REL-011 | from=M-12-0.1 | depsOn=Local SQL Server config (port/auth drift) | type=External Blocker | blocking=Yes | status=Resolved
+
+=== Approved ADRs ===
+  ADR-001 | Approved | links=F-06-7 | F-11-1 | F-11-2
+  ADR-002 | Approved | links=F-12-0 | M-12-0.1..3
+  ADR-003 | Approved | links=Master Roadmap | Version History
+  ADR-004 | Approved | links=M-12-0.3
+  ADR-005 | Approved | links=F-07-10 | F-06-8 | M-04-3.3 | M-12-0.1 | M-12-0.4 | M-07-5.3 (reclassified)
+=== Open Decisions ===
+  DEC-001 | Confirm the exact physical schema/table placement for Conversation, Message, Session, Branch and attachment metadata after the ownership move to Product Core. | links=F-06-7 | M-02-1.2 | neededBefore=M-06-7.1
+  DEC-002 | Choose the first minimum tool adapters required for Developer Chat MVP and their approval levels. | links=F-07-6 | M-12-0.2 | neededBefore=M-07-6.2
+  DEC-003 | When to move off SQL Server LocalDB onto a Docker-hosted full SQL Server instance (or straight to real Azure SQL) for local development/testing. | links=ADR-014 | M-02-1.2 | neededBefore=Before Stage 4 (Azure hardening) at the latest; mandatory before Stage 5 (vector retrieval)
+=== Audit Findings ===
+  AF-001 | Critical | Authentication | link=M-01-1.1 / M-01-1.2 / M-01-3.1 | status=Open | due=GATE_A
+  AF-002 | Critical | Tenant isolation | link=M-01-1.1 / M-01-2.1 | status=Open | due=GATE_A
+  AF-003 | Critical | Service trust | link=M-01-3.2 | status=Open | due=GATE_A
+  AF-004 | High | Persistence | link=M-02-1.2 to M-02-1.4 | status=Open | due=P0
+  AF-005 | High | AI durability | link=M-04-1.1 | status=Open | due=P0
+  AF-006 | High | Governance durability | link=M-01-4.1 / M-01-4.2 | status=Open | due=GATE_A/B
+  AF-007 | High | Frontend health | link=M-08-1.2 | status=Open | due=P0
+  AF-008 | High | Package reproducibility | link=M-08-1.1 / M-08-1.3 | status=In Progress | due=P0
+  AF-009 | High | Test depth | link=M-08-1.2 / M-09-1.1 | status=Open | due=GATE_A
+  AF-010 | High | Documentation truth | link=M-07-0.1 | status=Open | due=P0
+  AF-011 | High | Layer transition | link=M-06-1.1 / M-07-1.1 / later moves | status=Open | due=GATE_A+
+  AF-012 | High | Developer layer | link=M-07-1.1 to M-07-5.3 | status=In Progress | due=GATE_A
+  AF-013 | Medium | Architecture guards | link=M-09-1.1 | status=Open | due=GATE_A
+  AF-014 | Medium | Cost accuracy | link=M-01-4.2 / M-04-4.1 | status=Open | due=GATE_B
+  AF-015 | Medium | Reliability | link=M-04-1.1 / M-11-2.1 | status=Open | due=P2
+  AF-016 | Medium | Production hardening | link=M-01-3.1 / M-10-1.1 | status=Open | due=P2
+  AF-017 | Medium | Repository hygiene | link=M-08-2.1 | status=Open | due=P0
+  AF-018 | Medium | Autonomy | link=M-07-2.2 / M-07-3.2 / M-07-5.1 | status=Open | due=GATE_B
+=== Phase Plan ===
+  P1-00 | Stabilize only the minimum security, persistence and reproducibility needed to safely build and run the Phase 1 stack. | link=P0 / GATE A | status=Superseded | depsOn=Existing P0 + Gate A items
+  P1-01 | Build reusable Chat Core: conversation/session/message lifecycle, attachments, tool calls, approvals, streaming, model and memory hooks. | link=F-06-7 / M-06-7.1..5 | status=Superseded | depsOn=P1-00
+  P1-02 | Build the minimum work graph, dependency control, build/test evidence and review/progress capabilities Developer Chat needs. | link=F-07-1..5 | status=Superseded | depsOn=P1-00
+  P1-03 | Connect bounded development tools through safe adapters and return structured evidence. | link=F-07-6 | status=Superseded | depsOn=P1-01 + P1-02
+  P1-04 | Build reusable chat UI/UX, scope presentation, approval/tool states and developer-grade interaction patterns. | link=F-11-1 / F-11-2 | status=Superseded | depsOn=P1-01
+  P1-05 | Assemble the first Developer Chat product using Chat Core + Developer capabilities + Experience. | link=F-12-0 / M-12-0.1 | status=Superseded | depsOn=P1-01 + P1-02 + P1-04
+  P1-06 | Connect GitHub/Git, terminal, build/test, Docker, SQL and model-assisted development tools. | link=M-12-0.2 | status=Superseded | depsOn=P1-03 + P1-05
+  P1-07 | Use Developer Chat as the primary interface to complete a real Nexus development work item end-to-end. | link=M-12-0.3 | status=Superseded | depsOn=P1-06 + M-07-5.3
+  P1-1 | Reuse and generalize the existing proven Chat implementation (Conversation, ConversationMessage, RoutingModelGateway, OpenAI gateway, API/Swagger, SQL pattern) into a scope-aware Chat Core that Developer Chat can consume without rebuilding it. | link=F-06-7 / M-06-7.1..5 | status=In Progress | depsOn=Existing foundation (already proven)
+  P1-2 | Stand up the minimum Developer hierarchy -- Workspace, Project (reused), Subproject (new), Feature, Task, Subtask, Milestone (link object) and Issue (universal attachment) -- needed for Developer Chat to have something real to create and show. | link=F-06-8 / M-06-8.1 (Subproject); F-07-10 / M-07-10.1 (Feature, Task, Subtask, Milestone, Issue) | status=Planned | depsOn=P1-1 (in parallel where schema-safe)
+  P1-3 | Produce the first visible, working Developer Chat vertical slice: Developer UI -> select Workspace/Project -> open Developer Chat -> send message -> receive model response -> persistence works -> reopen conversation. | link=M-12-0.1 / WI-12-0.1.1 / T-12-0.1.1.1 | status=Completed | depsOn=P1-1 + minimum P1-2 context
+  P1-4 | Convert a Developer Chat discussion into a Feature, Issue, Milestone, Task or Subtask, save it, and preserve the ObjectChatLink relationship (many-to-many, with message-range provenance where useful) back to the originating chat. | link=F-07-10 / M-07-10.4 (Object Chat Link) | status=Planned | depsOn=P1-2 + P1-3
+  P1-5 | Complete the basic general Developer UI shell (navigation, Workspace/Project/Subproject selection, work item detail page) around the working Chat Core + Developer Chat + chat-to-object capabilities. | link=M-12-0.4 / WI-12-0.4.1 / WI-12-0.4.2; F-11-1 / F-11-2 (reused) | status=Planned | depsOn=P1-2 + P1-3 + P1-4
+  P1-6 | Add the DEVELOP action location in the UI and a minimal DevelopmentRun aggregate (Run ID/Ref, target type, target ID, status, created by, created time, placeholder relationships for future Plan/Prompt/Result/Report/Check/Verification). | link=F-07-10 / M-07-10.3 / WI-07-10.3.1 / WI-07-10.3.2 | status=Planned | depsOn=P1-4
+  P1-7 | Execute the exact approved Phase 1 exit test end-to-end and record the evidence. | link=M-12-0.1 (acceptance criteria) | status=Completed | depsOn=P1-1 through P1-6
+  P2-1 | Complete and harden all Phase 1 systems as the entry condition for Phase 2. | link=All Phase 1 (P1-1..P1-7) roadmap links | status=Planned | depsOn=P1-7
+  P2-2 | Establish the complete production Azure backend. | link=ADR-014 Azure SQL Migration | status=Planned | depsOn=P2-1
+  P2-3 | Implement the Local Developer Orchestrator. | link=F-07-2..F-07-6 (reclassified Phase 2) | status=Planned | depsOn=P2-1
+  P2-4 | Connect terminal/files/Git/GitHub/build/test/Docker/database/API tools through controlled adapters. | link=F-07-6 Developer Tool Integration | status=Planned | depsOn=P2-3
+  P2-5 | Implement Planner / PromptGenerator / PromptReviewer / Executor / CodeReviewer / Verifier roles, including Claude/Anthropic and DeepSeek providers. | link=M-04-3.3 (extended); AI Role -> Provider -> Model abstraction | status=Planned | depsOn=P2-1
+  P2-6 | Implement Development Runs end-to-end (Plan, Prompt, Prompt Review, execution, changed files, build/test). | link=F-07-10 / M-07-10.3 (extended); M-12-0.2 / M-12-0.3 | status=Planned | depsOn=P2-3 + P2-4 + P2-5
+  P2-7 | Implement autonomous correction loops. | link=M-07-5.3 (reclassified Phase 2) | status=Planned | depsOn=P2-6
+  P2-8 | Implement Result/Report/Check/Verification end-to-end, reusing Layer 09 Assurance rather than a second competing system. | link=Layer 09 Assurance traceability model (reused) | status=Planned | depsOn=P2-6
+  P2-9 | Deploy to production. | link=M-07-5.3 Foundation Gate | status=Planned | depsOn=P2-2 + P2-8
+  P2-10 | Achieve and measure at least 80% autonomous execution of the normal development lifecycle. | link=M-12-0.3 Nexus develops Nexus gate | status=Planned | depsOn=P2-1..P2-9
+=== Dev Guide ===
+  M-01-1.1 | Identity domain and schema | status=Planned | next=Start after: M-02-1.4. | deps=M-02-1.4
+  M-01-1.2 | Authentication flow | status=Planned | next=Start after: M-01-1.1. | deps=M-01-1.1
+  M-01-2.1 | Organisation and tenant with enforced isolation | status=Planned | next=Start after: M-01-1.2. | deps=M-01-1.2
+  M-01-3.1 | Roles, permissions and evaluation | status=Planned | next=Start after: M-01-2.1. | deps=M-01-2.1
+  M-01-3.2 | Policy-based and attribute-based rules | status=Planned | next=Start after: M-01-3.1. | deps=M-01-3.1
+  M-01-4.1 | Durable audit log | status=Planned | next=Start after: M-01-1.1. | deps=M-01-1.1
+  M-01-4.2 | Durable usage metering | status=Planned | next=Start after: M-01-1.1. | deps=M-01-1.1
+  M-01-5.1 | Real secret resolver | status=Planned | next=Build when this milestone becomes active. | deps=
+  M-01-6.1 | OpenAI path verified end to end | status=In Progress | next=Run one live chat/model test and record usage + persistence evidence. | deps=
+  M-01-6.2 | Multi-provider routing | status=Planned | next=Start after: M-01-6.1. | deps=M-01-6.1
+  M-01-7.1 | Tool registry and invocation | status=Planned | next=Start after: M-01-3.1. | deps=M-01-3.1
+  M-01-8.1 | In-process event bus | status=Planned | next=Start after: M-01-1.1. | deps=M-01-1.1
+  M-01-8.2 | Notification transport | status=Planned | next=Start after: M-01-8.1. | deps=M-01-8.1
+  M-02-1.1 | Commit Stage 1b | status=Implemented - Verify | next=Verify git commit/push, then close this milestone. | deps=
+  M-02-1.2 | Stage 2a - Project, Conversation, ConversationMessage | status=Planned | next=Start after: M-02-1.1. | deps=M-02-1.1
+  M-02-1.3 | Stage 2b and 2c - remaining seven aggregates | status=Planned | next=Start after: M-02-1.2. | deps=M-02-1.2
+  M-02-1.4 | Delete Dataverse | status=Planned | next=Start after: M-02-1.3. | deps=M-02-1.3
+  M-02-1.5 | Layer schema convention | status=Planned | next=Start after: M-02-1.4. | deps=M-02-1.4
+  M-02-2.1 | Document with versioning | status=Planned | next=Start after: M-02-1.5. | deps=M-02-1.5
+  M-02-3.1 | Knowledge item with approval and provenance | status=Planned | next=Start after: M-02-2.1. | deps=M-02-2.1
+  M-02-4.1 | Full-text and structured search | status=Planned | next=Start after: M-02-3.1. | deps=M-02-3.1
+  M-02-4.2 | Embeddings and vector retrieval | status=Planned | next=Start after: M-02-4.1. | deps=M-02-4.1
+  M-02-4.3 | RAG orchestration | status=Planned | next=Start after: M-02-4.2. | deps=M-02-4.2
+  M-02-5.1 | Classification and retention | status=Planned | next=Start after: M-02-3.1. | deps=M-02-3.1
+  M-02-5.2 | Lineage | status=Planned | next=Start after: M-02-5.1. | deps=M-02-5.1
+  M-02-6.1 | Document import and export | status=Planned | next=Start after: M-02-2.1. | deps=M-02-2.1
+  M-02-6.2 | External source synchronisation | status=Planned | next=Start after: M-02-6.1. | deps=M-02-6.1
+  M-03-1.1 | Governance schema and Product record | status=Planned | next=Start after: M-01-2.1 | M-02-1.4. | deps=M-01-2.1 | M-02-1.4
+  M-03-1.2 | IProductRegistry relocated to Governance | status=Planned | next=Start after: M-03-1.1. | deps=M-03-1.1
+  M-03-1.3 | Product ownership and lifecycle transitions | status=Planned | next=Start after: M-03-1.1 | M-01-1.2 | M-01-3.1. | deps=M-03-1.1 | M-01-1.2 | M-01-3.1
+  M-03-2.1 | Technology catalogue | status=Planned | next=Start after: M-03-1.1. | deps=M-03-1.1
+  M-03-2.2 | Product technology usage | status=Planned | next=Start after: M-03-2.1 | M-03-1.3. | deps=M-03-2.1 | M-03-1.3
+  M-03-3.1 | Brand and trademark records | status=Planned | next=Start after: M-03-1.1. | deps=M-03-1.1
+  M-03-3.2 | Domain and DNS references | status=Planned | next=Start after: M-03-3.1. | deps=M-03-3.1
+  M-03-3.3 | Certificate lifecycle | status=Planned | next=Start after: M-03-3.2 | M-01-8.1. | deps=M-03-3.2 | M-01-8.1
+  M-03-4.1 | Compliance obligation catalogue | status=Planned | next=Start after: M-03-1.3. | deps=M-03-1.3
+  M-03-4.2 | Privacy requirements and data residency | status=Planned | next=Start after: M-03-4.1. | deps=M-03-4.1
+  M-03-4.3 | Attestation and evidence references | status=Planned | next=Start after: M-03-4.2. | deps=M-03-4.2
+  M-03-5.1 | Licence registry | status=Planned | next=Start after: M-03-1.3. | deps=M-03-1.3
+  M-03-5.2 | External service registry | status=Planned | next=Start after: M-03-5.1 | M-03-4.2. | deps=M-03-5.1 | M-03-4.2
+  M-03-6.1 | Configuration registry | status=Planned | next=Start after: M-03-1.3. | deps=M-03-1.3
+  M-03-6.2 | Standards governance and conformance | status=Planned | next=Start after: M-03-6.1 | M-08-2.1. | deps=M-03-6.1 | M-08-2.1
+  M-04-1.1 | Durable turn trace and result report | status=In Progress | next=Move turn trace/result state to SQL and prove restart durability. | deps=M-02-1.4
+  M-04-1.2 | Durable memory store | status=In Progress | next=Add durable memory persistence and restart tests. | deps=M-04-1.1
+  M-04-2.1 | Citations proven against a live model | status=In Progress | next=Run one live cited answer through browser → API → Intelligence and record proof. | deps=M-01-6.1 | M-04-1.1
+  M-04-2.2 | Prompt versioning | status=Planned | next=Start after: M-04-2.1. | deps=M-04-2.1
+  M-04-3.1 | Developer agent | status=In Progress | next=Implement real work-graph reasoning and dependency citations. | deps=M-07-2.1 | M-04-1.1
+  M-04-3.2 | Agent runtime with tool access | status=Planned | next=Start after: M-01-7.1. | deps=M-01-7.1
+  M-04-4.1 | Per-turn cost attribution | status=Planned | next=Start after: M-01-4.2. | deps=M-01-4.2
+  M-04-4.2 | Capability and cost-aware routing | status=Planned | next=Start after: M-01-6.2 | M-04-4.1. | deps=M-01-6.2 | M-04-4.1
+  M-04-5.1 | Evaluation harness | status=Planned | next=Start after: M-04-2.2. | deps=M-04-2.2
+  M-04-5.2 | Guardrails and output validation | status=Planned | next=Start after: M-04-5.1. | deps=M-04-5.1
+  M-04-5.3 | Result loop | status=Planned | next=Start after: M-04-5.1 | M-07-5.1. | deps=M-04-5.1 | M-07-5.1
+  M-05-1.1 | Automation schema and job store | status=Planned | next=Start after: M-01-2.1 | M-02-1.4 | M-03-1.1. | deps=M-01-2.1 | M-02-1.4 | M-03-1.1
+  M-05-1.2 | Dispatch loop with retry and backoff | status=Planned | next=Start after: M-05-1.1. | deps=M-05-1.1
+  M-05-1.3 | Escalation and dead-letter | status=Planned | next=Start after: M-05-1.2 | M-07-1.1 | M-01-8.1. | deps=M-05-1.2 | M-07-1.1 | M-01-8.1
+  M-05-2.1 | Workflow definition and versioning | status=Planned | next=Start after: M-05-1.3. | deps=M-05-1.3
+  M-05-2.2 | Instance execution and durable state | status=Planned | next=Start after: M-05-2.1. | deps=M-05-2.1
+  M-05-2.3 | Workflow results and history | status=Planned | next=Start after: M-05-2.2. | deps=M-05-2.2
+  M-05-3.1 | Schedule engine | status=Planned | next=Start after: M-05-2.2. | deps=M-05-2.2
+  M-05-3.2 | Event handlers and trigger bindings | status=Planned | next=Start after: M-05-3.1 | M-01-8.1. | deps=M-05-3.1 | M-01-8.1
+  M-05-4.1 | Rule and condition evaluation | status=Planned | next=Start after: M-05-2.2. | deps=M-05-2.2
+  M-05-4.2 | State machine definitions and transitions | status=Planned | next=Start after: M-05-4.1. | deps=M-05-4.1
+  M-05-5.1 | Approval gates | status=Planned | next=Start after: M-05-2.2 | M-01-3.1. | deps=M-05-2.2 | M-01-3.1
+  M-05-5.2 | Escalation policies and reminders | status=Planned | next=Start after: M-05-5.1. | deps=M-05-5.1
+  M-05-6.1 | Named queues with concurrency and priority | status=Planned | next=Start after: M-05-1.3. | deps=M-05-1.3
+  M-05-6.2 | Multi-workflow process orchestration | status=Planned | next=Start after: M-05-6.1 | M-05-2.3 | M-05-4.2. | deps=M-05-6.1 | M-05-2.3 | M-05-4.2
+  M-06-1.1 | Workspace, Project and Subproject aggregates | status=Planned | next=Start after: M-02-1.5 | M-01-2.1. | deps=M-02-1.5 | M-01-2.1
+  M-06-1.2 | Extensible scope registration | status=Planned | next=Start after: M-06-1.1. | deps=M-06-1.1
+  M-06-2.1 | Product profile and membership | status=Planned | next=Start after: M-03-1.1 | M-01-3.1. | deps=M-03-1.1 | M-01-3.1
+  M-06-2.2 | Product-scoped roles | status=Planned | next=Start after: M-06-2.1. | deps=M-06-2.1
+  M-06-3.1 | Plans and subscriptions | status=Planned | next=Start after: M-06-2.1. | deps=M-06-2.1
+  M-06-3.2 | Entitlements and feature access | status=Planned | next=Start after: M-06-3.1. | deps=M-06-3.1
+  M-06-4.1 | Product quotas | status=Planned | next=Start after: M-01-4.2 | M-06-3.2. | deps=M-01-4.2 | M-06-3.2
+  M-06-5.1 | Scoped settings | status=Planned | next=Start after: M-06-1.1 | M-06-2.1. | deps=M-06-1.1 | M-06-2.1
+  M-06-6.1 | Onboarding state machine | status=Planned | next=Start after: M-06-2.1. | deps=M-06-2.1
+  M-06-7.1 | Conversation, message and session model | status=In Progress | next=Extract the reusable records/contracts into 06 Product Core without duplicating data. | deps=M-02-1.2
+  M-06-7.2 | Attachments and artifacts | status=In Progress | next=Create the shared Product Core attachment/artifact contract. | deps=M-06-7.1
+  M-06-7.3 | Tool calls, approvals and user questions | status=Planned | next=Build the common tool-call + approval + user-question state machine. | deps=M-06-7.1 | M-01-3.1
+  M-06-7.4 | Streaming, model and memory hooks | status=In Progress | next=Expose stable Product Core hooks to AI without provider/product coupling. | deps=M-04-1.1 | M-06-7.1
+  M-06-7.5 | Chat Core API and product integration contract | status=Planned | next=Create the public Chat Core API and prove a second consumer can use it. | deps=M-06-7.1 | M-06-7.2 | M-06-7.3 | M-06-7.4
+  M-07-0.1 | Versioned roadmap and simultaneous-development control | status=In Progress | next=Import DevTools copy-first, verify behavior, then close the baseline milestone. | deps=
+  M-07-1.1 | Work graph aggregates | status=Planned | next=Start after: M-03-1.1 | M-06-1.1 | M-02-2.1. | deps=M-03-1.1 | M-06-1.1 | M-02-2.1
+  M-07-1.2 | Work graph API and views | status=Planned | next=Start after: M-07-1.1. | deps=M-07-1.1
+  M-07-2.1 | Dependency graph | status=Planned | next=Start after: M-07-1.1. | deps=M-07-1.1
+  M-07-2.2 | Parallel-safety rules | status=Planned | next=Start after: M-07-2.1. | deps=M-07-2.1
+  M-07-3.1 | Worker, assignment and run | status=Planned | next=Start after: M-07-2.2 | M-08-1.2. | deps=M-07-2.2 | M-08-1.2
+  M-07-3.2 | Autonomous dispatch | status=Planned | next=Start after: M-07-4.1 | M-07-5.1 | M-05-1.2. | deps=M-07-4.1 | M-07-5.1 | M-05-1.2
+  M-07-3.3 | Model assignment and run cost | status=Planned | next=Start after: M-04-4.1 | M-07-3.2. | deps=M-04-4.1 | M-07-3.2
+  M-07-4.1 | Build and test records | status=Planned | next=Start after: M-07-3.1 | M-08-1.3. | deps=M-07-3.1 | M-08-1.3
+  M-07-5.1 | Review and controlled integration | status=Planned | next=Start after: M-07-4.1. | deps=M-07-4.1
+  M-07-5.2 | Derived progress | status=Planned | next=Start after: M-07-5.1. | deps=M-07-5.1
+  M-07-5.3 | Foundation Gate acceptance | status=Planned | next=Start after: M-07-5.2. | deps=M-07-5.2
+  M-07-6.1 | Developer context bridge | status=Planned | next=Start after: M-07-1.2 | M-07-2.1. | deps=M-07-1.2 | M-07-2.1
+  M-07-6.2 | Development tool adapter gateway | status=Planned | next=Start after: M-07-6.1 | M-06-7.3. | deps=M-07-6.1 | M-06-7.3
+  M-07-6.3 | Development execution evidence and handoff | status=Planned | next=Start after: M-07-6.2 | M-07-4.1. | deps=M-07-6.2 | M-07-4.1
+  M-07-7.1 | Requirements | status=Planned | next=Start after: M-07-1.1. | deps=M-07-1.1
+  M-07-7.2 | Releases and maturity | status=Planned | next=Start after: M-07-7.1 | M-08-4.1. | deps=M-07-7.1 | M-08-4.1
+  M-07-8.1 | Product and module designer | status=Planned | next=Start after: M-07-7.2 | M-12-1.1. | deps=M-07-7.2 | M-12-1.1
+  M-07-8.2 | Schema and API definition | status=Planned | next=Start after: M-07-8.1. | deps=M-07-8.1
+  M-07-8.3 | Capability packs and technology profiles | status=Planned | next=Start after: M-07-8.1. | deps=M-07-8.1
+  M-07-9.1 | Outcome-driven work proposal | status=Planned | next=Start after: M-04-5.3 | M-10-3.1. | deps=M-04-5.3 | M-10-3.1
+  M-08-1.1 | Package feed reachable from CI | status=In Progress | next=Automate package publishing and prove a clean restore without LocalNuGet. | deps=
+  M-08-1.2 | Pipelines on every repository | status=Implemented - Verify | next=Run/confirm green CI in all three repos and record one intentional red-build proof. | deps=M-08-1.1
+  M-08-1.3 | Machine-readable results | status=In Progress | next=Publish one versioned JSON build/test result that Developer can ingest. | deps=M-08-1.2
+  M-08-1.4 | Branch protection and architecture gate | status=In Progress | next=Complete boundary tests and enforce them as required PR checks. | deps=M-08-1.2
+  M-08-2.1 | Close the 2026-08-20 recovery | status=Planned | next=Build when this milestone becomes active. | deps=
+  M-08-3.1 | Artifact publication and retention | status=Planned | next=Start after: M-08-1.3. | deps=M-08-1.3
+  M-08-4.1 | Environment model | status=Planned | next=Start after: M-08-3.1 | M-03-1.1. | deps=M-08-3.1 | M-03-1.1
+  M-08-4.2 | Provisioning | status=Planned | next=Start after: M-08-4.1. | deps=M-08-4.1
+  M-08-5.1 | Automated deployment | status=Planned | next=Start after: M-08-4.2. | deps=M-08-4.2
+  M-08-5.2 | Release promotion | status=Planned | next=Start after: M-08-5.1 | M-07-7.2. | deps=M-08-5.1 | M-07-7.2
+  M-08-6.1 | Environments defined in source | status=Planned | next=Start after: M-08-4.2. | deps=M-08-4.2
+  M-08-6.2 | Drift detection | status=Planned | next=Start after: M-08-6.1. | deps=M-08-6.1
+  M-08-7.1 | Automated backup | status=Planned | next=Start after: M-08-4.2. | deps=M-08-4.2
+  M-08-7.2 | Tested restore | status=Planned | next=Start after: M-08-7.1. | deps=M-08-7.1
+  M-09-1.1 | Acceptance criterion and verification method | status=Planned | next=Start after: M-07-1.1 | M-02-1.5. | deps=M-07-1.1 | M-02-1.5
+  M-09-1.2 | Evidence and verdict | status=Planned | next=Start after: M-09-1.1 | M-08-1.3. | deps=M-09-1.1 | M-08-1.3
+  M-09-1.3 | Quality gate V1 | status=Planned | next=Start after: M-09-1.2 | M-07-5.1. | deps=M-09-1.2 | M-07-5.1
+  M-09-2.1 | Defect lifecycle | status=Planned | next=Start after: M-09-1.2. | deps=M-09-1.2
+  M-09-2.2 | Non-conformance and corrective action | status=Planned | next=Start after: M-09-2.1. | deps=M-09-2.1
+  M-09-3.1 | Test plans and test cases | status=Planned | next=Start after: M-09-1.3. | deps=M-09-1.3
+  M-09-3.2 | Quality, verification and validation plans | status=Planned | next=Start after: M-09-3.1 | M-12-1.1. | deps=M-09-3.1 | M-12-1.1
+  M-09-4.1 | Inspection plans and characteristics | status=Planned | next=Start after: M-09-3.1. | deps=M-09-3.1
+  M-09-4.2 | Measurement evidence and instrument traceability | status=Planned | next=Start after: M-09-4.1. | deps=M-09-4.1
+  M-09-5.1 | Release qualification | status=Planned | next=Start after: M-09-1.3 | M-07-7.2. | deps=M-09-1.3 | M-07-7.2
+  M-09-5.2 | Regression qualification | status=Planned | next=Start after: M-09-5.1. | deps=M-09-5.1
+  M-09-5.3 | Certification evidence | status=Planned | next=Start after: M-09-5.2 | M-03-4.1. | deps=M-09-5.2 | M-03-4.1
+  M-09-6.1 | Evaluation as a verification method | status=Planned | next=Start after: M-09-1.2 | M-04-5.1. | deps=M-09-1.2 | M-04-5.1
+  M-09-7.1 | Profile definition and selection | status=Planned | next=Start after: M-09-3.2. | deps=M-09-3.2
+  M-09-7.2 | Safety-critical profile | status=Planned | next=Start after: M-09-7.1 | M-09-4.1. | deps=M-09-7.1 | M-09-4.1
+  M-10-1.1 | Correlation across hosts | status=Planned | next=Start after: M-01-1.1. | deps=M-01-1.1
+  M-10-2.1 | Health checks | status=Planned | next=Start after: M-08-5.1. | deps=M-08-5.1
+  M-10-2.2 | Metrics and distributed tracing | status=Planned | next=Start after: M-10-1.1 | M-10-2.1. | deps=M-10-1.1 | M-10-2.1
+  M-10-2.3 | Deployment health | status=Planned | next=Start after: M-10-2.2 | M-08-5.1. | deps=M-10-2.2 | M-08-5.1
+  M-10-3.1 | Alerting | status=Planned | next=Start after: M-10-2.2 | M-01-8.2. | deps=M-10-2.2 | M-01-8.2
+  M-10-3.2 | Incident lifecycle | status=Planned | next=Start after: M-10-3.1. | deps=M-10-3.1
+  M-10-4.1 | Cost monitoring | status=Planned | next=Start after: M-04-4.1 | M-10-2.2. | deps=M-04-4.1 | M-10-2.2
+  M-10-4.2 | Capacity and performance baselines | status=Planned | next=Start after: M-10-4.1. | deps=M-10-4.1
+  M-10-5.1 | Runtime feature flags | status=Planned | next=Start after: M-06-3.2 | M-08-5.1. | deps=M-06-3.2 | M-08-5.1
+  M-10-6.1 | Security signal detection | status=Planned | next=Start after: M-10-3.1 | M-01-4.1. | deps=M-10-3.1 | M-01-4.1
+  M-10-7.1 | Recovery drills | status=Planned | next=Start after: M-08-7.2 | M-10-3.2. | deps=M-08-7.2 | M-10-3.2
+  M-11-1.1 | Reusable chat shell and message rendering | status=In Progress | next=Extract them into reusable Experience components that consume Chat Core contracts. | deps=M-06-7.5
+  M-11-1.2 | Interaction states and user feedback | status=In Progress | next=Add reusable approval, question, tool-running and evidence states. | deps=M-06-7.3 | M-11-1.1
+  M-11-2.1 | Context and scope presentation contract | status=In Progress | next=Create a generic context/scope presentation contract. | deps=M-06-1.1 | M-11-1.1
+  M-11-3.1 | Reusable chat components | status=Planned | next=Start after: M-11-2.1. | deps=M-11-2.1
+  M-11-4.1 | Command palette | status=Planned | next=Start after: M-11-3.1. | deps=M-11-3.1
+  M-11-4.2 | Unified search | status=Planned | next=Start after: M-02-4.1 | M-11-4.1. | deps=M-02-4.1 | M-11-4.1
+  M-11-5.1 | Approval surface | status=Planned | next=Start after: M-05-5.1 | M-11-3.1. | deps=M-05-5.1 | M-11-3.1
+  M-11-5.2 | Notification centre | status=Planned | next=Start after: M-01-8.2. | deps=M-01-8.2
+  M-11-6.1 | Design tokens and primitives | status=Planned | next=Start after: M-11-3.1. | deps=M-11-3.1
+  M-11-6.2 | Contextual capability UI | status=Planned | next=Start after: M-11-6.1 | M-06-3.2. | deps=M-11-6.1 | M-06-3.2
+  M-11-7.1 | Streaming and realtime presence | status=Planned | next=Start after: M-11-3.1. | deps=M-11-3.1
+  M-11-7.2 | Voice input and output | status=Planned | next=Start after: M-11-7.1. | deps=M-11-7.1
+  M-12-0.1 | Developer Chat MVP | status=Planned | next=Build Developer Chat from Chat Core + Developer context + Experience components. | deps=M-06-7.5 | M-07-6.1 | M-11-1.1
+  M-12-0.2 | Integrated development toolchain | status=Planned | next=Connect approved development tools through Layer 07 adapters. | deps=M-12-0.1 | M-07-6.2 | M-06-7.3
+  M-12-0.3 | Nexus develops Nexus gate | status=Planned | next=Run the first real Nexus self-development work item through Developer Chat. | deps=M-12-0.2 | M-07-5.3
+  M-12-1.1 | Product template and integration checklist | status=Planned | next=Start after: M-06-2.1 | M-07-7.2 | M-11-3.1. | deps=M-06-2.1 | M-07-7.2 | M-11-3.1
+  M-12-1.2 | Capability pack composition | status=Planned | next=Start after: M-12-1.1 | M-07-8.3. | deps=M-12-1.1 | M-07-8.3
+  M-12-1.3 | Product state model | status=Planned | next=Start after: M-12-1.1. | deps=M-12-1.1

@@ -1,0 +1,164 @@
+{
+  "Milestone": "DB-M12.3",
+  "Title": "Full UI Lifecycle Automation",
+  "Lane": "C",
+  "DateUtc": "2026-08-31T13:45:00Z",
+  "Implementation": "PASS",
+  "Kind": "Operator console over the DB-M12.2 hardened backend (temporary DevBridge scaffolding; nothing migrates into Nexus)",
+  "Summary": "The DevBridge operator console is the complete operator surface over the DB-M12.2 backend: it launches; it shows an unmissable TRIAL vs REAL mode banner (no silent/automatic mode switch); it renders the 12-stage / 8-token lifecycle from backend state (never invented by the UI); the next-action panel and enabled button set are backend-driven (NextActionEngine); M03-M11 commands are callable and correctly gated (M05 zero-context handoff gate, M06-fail blocks M07, trial safe-stop, real human Git gates with no automatic merge, M10 trial NOT_APPLICABLE / real merge prerequisite, M11 advisory read-only); writer-busy, stale-state and backend-mismatch are surfaced; history never hides failed attempts; the parallel view never guesses a repository; there is no roadmap structural-edit capability, no auto baseline restore, no silent mode switch; DB-M26 stays a separate read-only analytics module that renders its own recorded result; and nothing touches the workbook, Nexus source, or current trial evidence. Recovered from an interrupted session (API connection lost): all prior valid writes preserved; only the missing deltas were finished.",
+  "Interruption": {
+    "Event": "API_CONNECTION_LOST",
+    "RecoveryMethod": "RESUME_FROM_REPOSITORY_REALITY",
+    "PriorValidWorkPreserved": true,
+    "FullMilestoneRestarted": false,
+    "RecoveryEvidence": "tasks/DB-M12.3_INTERRUPTION_RECOVERY.md"
+  },
+  "Acceptance": {
+    "Implementation": "PASS",
+    "TemporaryDevBridgeBoundary": "PASS",
+    "DBGH01Preserved": "PASS",
+    "DBM12_2BackendPreserved": "PASS",
+    "DBM26AnalyticsPreserved": "PASS",
+    "UILaunches": "PASS",
+    "TrialModeDisplay": "PASS",
+    "RealModeDisplay": "PASS",
+    "LifecycleVisualization": "PASS",
+    "NextActionBackendDriven": "PASS",
+    "M03Wired": "PASS",
+    "M04Wired": "PASS",
+    "M05Wired": "PASS",
+    "M05ZeroContextValidation": "PASS",
+    "ImplementationManualHandoff": "PASS",
+    "M06Wired": "PASS",
+    "M07Wired": "PASS",
+    "M08Wired": "PASS",
+    "M09Wired": "PASS",
+    "GitRefreshWired": "PASS",
+    "M10Wired": "PASS",
+    "M11Wired": "PASS",
+    "PeriodicClaudeWorkbookReview": "PASS",
+    "HumanActionPanel": "PASS",
+    "HumanPrGate": "PASS",
+    "HumanReviewGate": "PASS",
+    "HumanMergeGate": "PASS",
+    "AutomaticMergeCapability": "NO",
+    "TrialM10": "TRIAL_COMPLETION_NOT_APPLICABLE",
+    "RealCompletionMergePrerequisite": "PASS",
+    "WorkbookHealth": "PASS",
+    "ProtectedRoadmapDisplay": "PASS",
+    "RoadmapStructuralEditingCapability": "NO",
+    "WriterBusyHandling": "PASS",
+    "StaleStateHandling": "PASS",
+    "BackendStateMismatchHandling": "PASS",
+    "DoubleClickProtection": "PASS",
+    "TaskHistory": "PASS",
+    "ParallelView": "PASS",
+    "AIAnalyticsDbM26Integration": "SEPARATE_MODULE",
+    "PreDevBridgeBaselineDisplay": "PASS",
+    "AutomaticBaselineRestoreCapability": "NO",
+    "RetirementStatus": "PASS",
+    "AutoAiExecution": "NO",
+    "ProviderModelExecuted": "NO",
+    "WorkbookModified": "NO",
+    "NexusSourceModified": "NO",
+    "CurrentTrialEvidenceModified": "NO",
+    "FullHardenedLifecycleOperableThroughUi": "YES",
+    "ReadyForFinalHardenedLaneCProvingCycle": "YES"
+  },
+  "EngineSurface": {
+    "StageDisplayResolver": "12 stages x 8 tokens, backend-derived",
+    "StageKeys": ["PREFLIGHT", "RESERVATION", "CHATGPT_HANDOFF", "IMPLEMENTATION", "VERIFICATION", "CLAUDE_REVIEW_PACKAGE", "CLAUDE_REVIEW", "CORRECTION", "HUMAN_GIT_GATE", "GOVERNED_COMPLETION", "WORKBOOK_VALIDATION", "PERIODIC_WORKBOOK_REVIEW"],
+    "Tokens8": ["NOT_STARTED", "READY", "CURRENT", "PASS", "FAIL", "BLOCKED", "HUMAN_ACTION", "NOT_APPLICABLE"],
+    "HumanActionResolver": "backend-derived human action panel (CREATE_PR / REVIEW_PR / MERGE_PR / RESTORE_REAL_NEXUS_BASELINE guided)",
+    "M10CompletionEligibility": "TRIAL -> TRIAL_COMPLETION_NOT_APPLICABLE; REAL gated on M06 PASS + Claude PASS + confirmed human merge + preserved fingerprint",
+    "CommandConcurrencyGuard": "double-click / re-entry protection"
+  },
+  "UISurface": {
+    "ModeBanner": "TRIAL (amber, disposable proving activity) vs REAL_NEXUS_DEVELOPMENT (green, governed human Git gates); no mode-switch control",
+    "LifecyclePanel": "12-stage mission-order rows with 8-token display; VM.Stages == StageDisplayResolver rows",
+    "NextActionPanel": "Instruction + enabled buttons exactly equal to NextActionEngine output",
+    "HumanActionPanel": "guided-manual actions surface reason + instructions; DevBridge never performs them itself",
+    "WorkbookHealthPanel": "availability, sheet count, SHA, consistency, writer-busy, last governed write (read-only)",
+    "AIAnalyticsTab": "DB-M26 SEPARATE_MODULE read-only tab rendering state/db-m26-result.json + opens the DB-M26 design doc",
+    "ParallelView": "ActiveChangesSnapshot rows with open/terminal counts; repository displayed as UNKNOWN when not derivable",
+    "HistoryView": "TaskHistoryService rows; failed attempts never hidden"
+  },
+  "DefectsFoundAndFixed": [
+    "MainViewModel.Refresh: buttons + clipboard status were computed while the busy flag was still true (reset only at the end of Refresh), leaving every lifecycle button permanently disabled and the operator console inoperable. Fixed by arming buttons/clipboard after IsBusy is cleared and visually disabling all buttons while a governed command runs (RunOperatorCommand).",
+    "DevBridge.UITests/Program.cs incomplete from the interrupted session: missing using System.IO; two LifecycleStageKey-enum-vs-string Failure.StageKey comparisons (engine emits string tokens \"VERIFICATION\" / \"M10\"); a broken activeNext() stub that evaluated the wrong root for M05-02; no DB-M26 separate-module check. All finished during recovery."
+  ],
+  "Build": {
+    "Projects": ["DevBridge.Engine", "DevBridge.Tests", "DevBridge.UI", "DevBridge.UITests"],
+    "Solution": "src/DevBridge.slnx (DevBridge.UITests added during recovery)",
+    "Warnings": 0,
+    "Errors": 0
+  },
+  "Tests": {
+    "UiLifecycleSuite": {
+      "File": "src/DevBridge.UITests/Program.cs",
+      "Passed": 65,
+      "Failed": 0,
+      "Total": 65,
+      "Note": "headless WPF launch smoke + UI-01..06 / VIZ-01..08 / NEXT-01..03 / WIRE-01..11 / M05-01..04 / M06-01..02 / M10-01..05 / GIT-01..08 / M11-01..03 / FIX-01..02 / BASELINE-01..03 / RETIRE-01 / BUSY-01 / STALE-01 / MISMATCH-01 / DBLCK-01 / HIST-01 / PARALLEL-01 / M26-01..02 / UNTOUCHED-01"
+    },
+    "EngineSuite": {
+      "File": "src/DevBridge.Tests/Program.cs",
+      "Passed": 377,
+      "Failed": 0,
+      "Total": 377,
+      "Note": "DB-GH01 governance properties G1..G35 + DB-M12.2 reusable lifecycle backend commands + DB-M12 fixture runner; includes the interrupted session's M12.3 backend regressions (M05 handoff gate, START_NEXT_CYCLE unbinding)"
+    },
+    "FixtureHarness": {
+      "File": "scripts/Test-DBM12-2Commands.ps1",
+      "Passed": 59,
+      "Failed": 0,
+      "Total": 59,
+      "Note": "S1..S26 + invariants I1..I6: real workbook byte-identical (F520060C), Nexus git delta zero, live trial evidence untouched, DB-M23 files untouched, no hard-coded WI/CHG identity, solution builds"
+    },
+    "DbM26Dashboard": {
+      "File": "scripts/ai-routing/dashboard/Test-DbM26Dashboard.ps1",
+      "Passed": 382,
+      "Failed": 0,
+      "Scenarios": 45,
+      "DownstreamRegressions": "DBM25 337/337, DBM14 51/51, DBM16 167/167, DBM17 99/99, DBM19 136/136, DBM20 149/149, DBM21 77/77, DBM21Fingerprints 74/74, DBM22Health 68/68, DBM22Failover 64/64, DBM23 203/203, DBM24 128/128"
+    },
+    "DbGh01M10Gate": {
+      "File": "scripts/Test-DBM10CompletionEligibility.ps1",
+      "Outcome": "M10_BLOCKED (correct for trial)",
+      "Token": "TRIAL_COMPLETION_NOT_APPLICABLE",
+      "Mode": "TRIAL",
+      "Note": "read-only DB-GH01 gate diagnostic on live trial evidence; confirms trial M10 prohibited"
+    },
+    "PaidApiCalls": 0,
+    "NetworkCalls": 0,
+    "GovernedWorkbookWritesTriggered": 0
+  },
+  "CollisionCheck": {
+    "AuthoritativeWorkbookTouched": false,
+    "AuthoritativeWorkbookSha256": "F520060CB753EC8EC96B44BCBD193BDAB69CA68D4CC27198663665D5FE63F884",
+    "AuthoritativeWorkbookByteIdentical": true,
+    "NexusDeveloperTouched": false,
+    "LiveTrialEvidenceTouched": false,
+    "LiveTrialTaskId": "WI-07-0.2.4",
+    "LiveTrialStatus": "CLAUDE_REVIEW_PASSED_TRIAL",
+    "LiveTrialNextAllowedAction": "TRIAL_CYCLE_SAFE_STOP",
+    "LiveTrialChangeId": "CHG-20260830-017",
+    "DBM26FilesTouched": false,
+    "M10RunForTrial": "NO",
+    "NexusBaselineRestored": "NO",
+    "RoadmapStructureModified": "NO"
+  },
+  "Attribution": {
+    "APreExisting": "DB-GH01 governance scripts, DB-M12.2 engine surface, DB-M26 files, config, state evidence, pre-existing Engine/UI sources",
+    "BInterruptedSessionValidWrites": ["src/DevBridge.Engine/NextActionEngine.cs", "src/DevBridge.Engine/HumanActionResolver.cs", "src/DevBridge.Engine/StageDisplay.cs", "src/DevBridge.UI/ViewModels/MainViewModel.cs", "src/DevBridge.UI/ViewModels/StageRowViewModel.cs", "src/DevBridge.UI/MainWindow.xaml", "src/DevBridge.UI/ClaudeResultEntryDialog.xaml", "src/DevBridge.UI/ClaudeResultEntryDialog.xaml.cs", "src/DevBridge.Tests/Program.cs", "src/DevBridge.UITests/DevBridge.UITests.csproj", "src/DevBridge.UITests/Program.cs (incomplete)"],
+    "CRecoverySessionWrites": ["src/DevBridge.UITests/Program.cs (completed: using System.IO, StageKey string tokens, activeNext fix, DB-M26 checks M26-01/02, count 63->65, diagnostics)", "src/DevBridge.slnx (added DevBridge.UITests)", "src/DevBridge.UI/ViewModels/MainViewModel.cs (button-arming busy fix)", "design/DB-M12.3_FULL_UI_LIFECYCLE_AUTOMATION.md", "state/db-m12-3-result.json", "tasks/DB-M12.3_IMPLEMENTATION_REPORT.md", "tasks/DB-M12.3_INTERRUPTION_RECOVERY.md"]
+  },
+  "Outputs": {
+    "DesignDoc": "design/DB-M12.3_FULL_UI_LIFECYCLE_AUTOMATION.md",
+    "ResultJson": "state/db-m12-3-result.json",
+    "ImplementationReport": "tasks/DB-M12.3_IMPLEMENTATION_REPORT.md",
+    "RecoveryEvidence": "tasks/DB-M12.3_INTERRUPTION_RECOVERY.md"
+  },
+  "Verdict": "PASS",
+  "StopAfterMilestone": true
+}

@@ -1,0 +1,99 @@
+{
+  "Milestone": "DB-M03.1",
+  "Title": "Implementable Leaf-Task Selection & Preflight Resolution",
+  "Lane": "C",
+  "DateUtc": "2026-08-31T18:20:00Z",
+  "Implementation": "PASS",
+  "Kind": "Governance/preflight correction (M03 selection hardening; temporary DevBridge scaffolding for Nexus Phase 1/2; nothing migrates into Nexus)",
+  "Summary": "The FINAL HARDENED LANE C TRIAL PART 1 post-closure run exposed an M03 SELECTION DEFECT (not a governance-state gap): with the trial-closed WI-07-0.2.4 correctly excluded by proving history, M03 auto-selected the CURRENT WORK anchor M-07-0.2 - a Milestone CONTAINER - as 'the task', then preflight hit SCOPE_INCOMPLETE / RESOLVE_PREFLIGHT because a container carries no derivable implementation scope. M03 was returning a container as the selection target, which the governed contract forbids (only an IMPLEMENTABLE_LEAF may be reserved/handed off). DB-M03.1 hardens M03 end-to-end: (1) deterministic node implementability classification Get-ImplementabilityClass driven by the governed NodeType column + BreakdownComplete + child presence (NodeId prefixes NOT used); (2) container->leaf resolution Resolve-ImplementableDescendant (DFS pre-order over governed reading order, dependencies satisfied, trial-proving excluded, TRIAL only); (3) leaf-selection validation leafValidation[] emitted into preflight.json (identity/hierarchy/execution-state/dependencies/AC inheritance/no-conflict); (4) honest block tokens NO_IMPLEMENTABLE_DESCENDANT / HUMAN_GOVERNANCE_REQUIRED / IMPLEMENTATION_TARGET_UNKNOWN that short-circuit preflight BEFORE scope derivation (plus pre-existing SCOPE_INCOMPLETE for a selected leaf and TASK_SELECTION_AMBIGUOUS for no-target); (5) CURRENT WORK FIRST and NEXT WORK fallback ordering preserved; (6) M04 gate: RESERVE refuses any classified non-leaf with STOP_NOT_IMPLEMENTABLE_LEAF while remaining backward compatible with legacy state lacking the implementability field (E30); (7) M05 gate: handoff refuses a container with HANDOFF_CONTAINER_PROHIBITED while remaining backward compatible with legacy state (E32); (8) the M-07-0.2 Milestone-container defect is reproduced safely in fixtures and proven resolved (matrix A/B/C). Proof: 40-check matrix (A1-A10 classification, B11-B17 container resolution, C18-C23 selection flow, D24-D28 preflight integration, E29-E32 M04/M05 gates, I1-I4 invariants + build) all PASS with exit 0, plus regressions Test-DBM124 54/54 (S8/S9 rewritten for capability k), Test-DBM04Safety 26/26, Test-DBM12-2Commands 59/59, GH01 M10 eligibility M10_BLOCKED / TRIAL_COMPLETION_NOT_APPLICABLE / verification PASS, DevBridge.Tests 410/410, DevBridge.UITests 65/65, solution build 0 errors / 0 warnings. All testing used byte-identical fixture workbook copies under logs\\selftest\\db-m03-1; the authoritative NEXUS_DEVELOPMENT_CONTROL.xlsx (SHA unchanged 6D42C3BF...E4F5), the Nexus repo git state, and live state/current-task.json are asserted byte-identical. NO live M04 reserve, NO live M05 handoff, NO workbook mutation, NO Nexus source change, and NO manual selection were performed.",
+  "RootCause": {
+    "Observation": "M03 returned the Milestone container M-07-0.2 as the selected task (post-closure current-work anchor), producing a preflight SCOPE_INCOMPLETE / RESOLVE_PREFLIGHT instead of resolving to an implementable leaf.",
+    "Classification": "M03 SELECTION DEFECT (container surfaced as the task, contrary to the governed leaf-only contract)",
+    "WhyGap": "M03 selected an anchor node without first determining whether that node is implementable; a Milestone/Layer/Feature container, or a WorkItem/Task with children or incomplete breakdown, has no derivable implementation scope and can never be reserved or handed off.",
+    "Correction": "Deterministic Get-ImplementabilityClass + container->leaf Resolve-ImplementableDescendant + leafValidation[] + honest block tokens; M04 and M05 gates refuse classified non-leaf targets with explicit STOP codes while preserving backward compatibility for legacy state (E30/E32)."
+  },
+  "Acceptance": {
+    "Implementation": "PASS",
+    "A_DeterministicClassification": "PASS",
+    "B_ContainerToLeafResolution": "PASS",
+    "C_LeafSelectionValidation": "PASS",
+    "D_CurrentWorkFirstPreserved": "PASS",
+    "E_NoManualReselection": "PASS",
+    "F_HonestBlockStates": "PASS",
+    "G_DependencyOrderPreserved": "PASS",
+    "H_TrialHistoryExclusionTrialOnly": "PASS",
+    "I_M04GateLeafOnlyCLEAR": "PASS",
+    "J_M05NeverHandoffContainer": "PASS",
+    "K_M07FixtureReproducedSafely": "PASS",
+    "NoLiveMutation": "PASS",
+    "M124RegressionGreen": "PASS",
+    "M04RegressionGreen": "PASS",
+    "M12_2RegressionGreen": "PASS",
+    "M12_3UiRegressionGreen": "PASS",
+    "Gh01RegressionGreen": "PASS",
+    "EngineRegressionGreen": "PASS",
+    "BuildZeroErrors": "PASS",
+    "RoadmapImmutability": "NO_MODIFICATION",
+    "DbM181BoundaryRespected": "PASS"
+  },
+  "EngineSurface": {
+    "Classification": "Get-ImplementabilityClass: Layer/Feature/Milestone -> NON_IMPLEMENTABLE_CONTAINER; WorkItem/Task BreakdownComplete=No -> INCOMPLETE_WORK_ITEM; WorkItem/Task leaf (no children, breakdown blank) -> IMPLEMENTABLE_LEAF; WorkItem/Task with children -> NON_IMPLEMENTABLE_CONTAINER; Subtask -> IMPLEMENTABLE_LEAF; unknown NodeType -> UNKNOWN_NODE_TYPE. NodeId prefixes never used.",
+    "ContainerResolution": "Resolve-ImplementableDescendant: DFS pre-order over governed reading order (SortKey ascending then Row ascending); candidate leaf iff class==IMPLEMENTABLE_LEAF AND Test-DepsSatisfied AND not trial-proven-excluded (TRIAL only); returns {leaf, chain, reason}.",
+    "LeafValidation": "leafValidation[] in preflight.json: identity, hierarchy (anchor + resolution chain), execution state (not terminal, no open conflict), dependencies re-verified, acceptance criteria inherited from nearest AC-carrying Milestone (AC_INHERITED / AC_ABSENT_WARN), repo/project informational, no conflict, no incompatible reservation.",
+    "BlockTokens": "NO_IMPLEMENTABLE_DESCENDANT / HUMAN_GOVERNANCE_REQUIRED / IMPLEMENTATION_TARGET_UNKNOWN -> current-task.json status PREFLIGHTED, nodeId=anchor, nextAllowedAction RESOLVE_GOVERNANCE_BLOCK, preflight verdict=token; SCOPE_INCOMPLETE remains post-selection verdict for a selected leaf; TASK_SELECTION_AMBIGUOUS pre-existing minimal path.",
+    "M04Gate": "Reserve-DevelopmentChange.ps1: implementability field present and != IMPLEMENTABLE_LEAF -> STOP_NOT_IMPLEMENTABLE_LEAF (backward compatible: legacy state without the field reserves normally).",
+    "M05Gate": "New-ChatGptHandoff.ps1: implementability field present and != IMPLEMENTABLE_LEAF -> HANDOFF_CONTAINER_PROHIBITED (backward compatible: legacy state without the field hands off normally).",
+    "SelectionFlow": "Get-NextTask.ps1: anchor = CURRENT WORK first, else NEXT WORK fallback (unchanged); leaf anchor -> leaf validation -> SELECTED; container/incomplete/unknown anchor -> Resolve-ImplementableDescendant -> SELECTED leaf with SelectionBasis chain, or governed block with Candidates preserved for transparency."
+  },
+  "CollisionCheck": {
+    "AuthoritativeWorkbookTouched": false,
+    "AuthoritativeWorkbookPath": "C:\\Personal\\Nexus.Developer\\NEXUS_DEVELOPMENT_CONTROL.xlsx",
+    "AuthoritativeWorkbookSha256": "6D42C3BF6D3307B4B1A45870CE12F41E403DFED412E59F33D7B487E93A83E4F5",
+    "AuthoritativeWorkbookBaseline": "post-DB-M12.4 live-closure governed state (row 80 Closed-terminal; WI-07-0.2.3 Complete; WI-07-0.2.4 Planned)",
+    "NexusDeveloperTouched": false,
+    "NexusGitDeltaIntroducedBySuite": "0 lines (I2)",
+    "LiveStateCurrentTaskTouched": false,
+    "LiveStateRecorded": "M-07-0.2 / PREFLIGHTED / RESOLVE_PREFLIGHT (pre-existing post-closure preflight state; untouched, I3)",
+    "LiveM04ReservePerformed": "NO",
+    "LiveM05HandoffPerformed": "NO",
+    "LiveM10Run": "NO",
+    "ManualTaskSelection": "NO",
+    "RoadmapStructureModified": "NO",
+    "DbM181OwnedFilesTouched": "NO",
+    "PrCreated": "NO",
+    "MergePerformed": "NO"
+  },
+  "Attribution": {
+    "APreExisting": "DB-GH01 governance scripts, DB-M12.2/12.3/12.4 engine+UI surface, config, state evidence, pre-existing Engine/UI sources, NEXUS_DEVELOPMENT_CONTROL.xlsx",
+    "BOwnedWrites": [
+      "design/DB-M03.1_IMPLEMENTABLE_LEAF_TASK_SELECTION.md",
+      "scripts/Get-NextTask.ps1 (implementability classification + container->leaf resolution + leaf validation + block tokens)",
+      "scripts/Test-DevelopmentPreflight.ps1 (block preflight records, leafValidation emission, CLEAR path implementability field)",
+      "scripts/Reserve-DevelopmentChange.ps1 (M04 implementability gate + StrictMode property-access safety)",
+      "scripts/New-ChatGptHandoff.ps1 (M05 implementability gate)",
+      "scripts/Test-DBM124TrialCycleClosure.ps1 (S8/S9 rewrite for capability k fixture parity)",
+      "scripts/Test-DBM031ImplementableLeafSelection.ps1 (40-check matrix)",
+      "state/db-m03-1-result.json",
+      "tasks/DB-M03.1_IMPLEMENTATION_REPORT.md"
+    ],
+    "DiagnosticsDeleted": ["_probe-e30.ps1", "_probe-e3032-run.ps1", "_probe-e3032.ps1", "_probe-e3032b.ps1", "_probe-groupe-run.ps1", "_probe-e3032-run.ps1 (temp)", "_probe-e3032c.ps1", "_probe-groupe.ps1", "_probe-c21.ps1", "_probe-c21b.ps1", "_probe-m03-1-discovery.ps1", "_probe-m03-1-leafdist.ps1", "_probe-m03-1-nodes.ps1", "_probe-m03-1-parentchild.ps1", "_probe-m03-1-state.ps1"]
+  },
+  "TestEvidence": {
+    "DbM031Matrix": "40 checks / 40 passed / 0 failed (A1-A10 classification, B11-B17 resolution, C18-C23 selection flow, D24-D28 preflight integration, E29-E32 M04/M05 gates, I1-I4 invariants + build) exit 0",
+    "DbM124Regression": "54 checks / 54 passed / 0 failed (S8/S9 rewritten for capability k; includes S11 M10 TRIAL_COMPLETION_NOT_APPLICABLE)",
+    "DbM04SafetyRegression": "26 checks / 26 passed / 0 failed",
+    "DbM12_2CommandsRegression": "59 checks / 59 passed / 0 failed",
+    "Gh01M10Eligibility": "M10_BLOCKED / TRIAL_COMPLETION_NOT_APPLICABLE / verification PASS",
+    "EngineSuite": "410 checks / 410 passed / 0 failed (DB-M12 fixture runner)",
+    "UiSuite": "65 checks / 65 passed / 0 failed (DB-M12.3 UI lifecycle)",
+    "Build": "0 errors / 0 warnings"
+  },
+  "Outputs": {
+    "DesignDoc": "design/DB-M03.1_IMPLEMENTABLE_LEAF_TASK_SELECTION.md",
+    "ResultJson": "state/db-m03-1-result.json",
+    "ImplementationReport": "tasks/DB-M03.1_IMPLEMENTATION_REPORT.md",
+    "SuiteLog": "logs/selftest/db-m03-1-final.log"
+  },
+  "Verdict": "PASS",
+  "StopAfterMilestone": true
+}

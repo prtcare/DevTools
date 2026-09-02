@@ -1,0 +1,62 @@
+{
+  "Milestone": "DB-M12.1",
+  "Title": "UI Operational Integration and Command Orchestration",
+  "Lane": "A2",
+  "DateUtc": "2026-08-30T23:16:00Z",
+  "Implementation": "PASS",
+  "Summary": "The WPF operator console is now a safe command shell over the existing governed DevBridge lifecycle. Every action routes through a UI-owned operator command catalog (OperatorCommandCatalog) that points at the existing DB-M03-DB-M11 backend scripts; OperatorCommandService runs the scripts and validates the REFRESHED state transition, never the exit code alone (BACKEND_STATE_MISMATCH). Commands with no durable backend entry point (completion/verification/review-packet/claude-record/workbook-validation) stay GUIDED_MANUAL_ACTION with the exact reason recorded - never faked. Claude verdict evidence entry, clipboard status, workbook-write operator confirmation, busy/double-click protection, live command output and stale-cycle evidence gating are all wired.",
+  "CommandCatalog": {
+    "Total": 20,
+    "ScriptBacked": 3,
+    "GuidedManual": 5,
+    "Navigation": 7,
+    "Clipboard": 4,
+    "AutomatedCommands": ["START_PREFLIGHT (Get-NextTask.ps1 + Test-DevelopmentPreflight.ps1 -> PREFLIGHTED)", "RESERVE_TASK (Reserve-DevelopmentChange.ps1 -> RESERVED, workbook write)", "CREATE_CHATGPT_HANDOFF (New-ChatGptHandoff.ps1 -> AWAITING_CHATGPT_PROMPT)"],
+    "GuidedManualReasons": {
+      "RUN_GOVERNED_COMPLETION": "Complete-Workbook-DBM10.ps1 is one-time generated logic hard-coded to CHG-20260830-016 / WI-07-0.2.3 - unsafe to auto-invoke for a fresh cycle",
+      "RUN_VERIFICATION": "Verify-Task.ps1 is a stub",
+      "CREATE_CLAUDE_REVIEW_PACKAGE": "New-ReviewPacket.ps1 is a stub",
+      "RECORD_CLAUDE_RESULT": "DB-M08 has no reusable command entry point; UI provides safe evidence-entry dialog",
+      "VALIDATE_WORKBOOK": "No durable orchestrator script writes state/workbook-consistency.json"
+    }
+  },
+  "SafeInvocation": "PASS",
+  "ExitCodeNeverTrusted": "PASS",
+  "BackendStateMismatchDetection": "PASS",
+  "GuidedManualHonesty": "PASS",
+  "ClaudeEvidenceEntry": "PASS",
+  "ClipboardNoAutoSend": "PASS",
+  "WorkbookWriteConfirmation": "PASS",
+  "BusyDoubleClickProtection": "PASS",
+  "StaleCycleProtection": "PASS",
+  "StateRefreshDrivenUI": "PASS",
+  "Build": {
+    "Projects": ["DevBridge.Engine", "DevBridge.Tests", "DevBridge.UI"],
+    "Warnings": 0,
+    "Errors": 0
+  },
+  "Tests": {
+    "Passed": 208,
+    "Failed": 0,
+    "Total": 208,
+    "LiveReadOnlySmoke": "PASS",
+    "PaidApiCalls": 0,
+    "NetworkCalls": 0,
+    "GovernedWorkbookWritesTriggered": 0
+  },
+  "CollisionCheck": {
+    "WorkbookTouched": false,
+    "NexusDeveloperTouched": false,
+    "DBM15PricingTouched": false,
+    "DBM17AttemptHistoryTouched": false,
+    "AIRoutingSharedContractsTouched": false,
+    "DBM03toDBM11BusinessScriptsTouched": false,
+    "LiveTaskStateTouched": false,
+    "WorkbookSha256": "93D2620D919789D9C7199C417FF3A9FD5B09DA0464F0D3800DB0748E62772372"
+  },
+  "Outputs": {
+    "DesignDoc": "design/DB-M12_1_UI_OPERATIONAL_INTEGRATION.md",
+    "ResultJson": "state/db-m12-1-result.json"
+  },
+  "StopAfterMilestone": true
+}

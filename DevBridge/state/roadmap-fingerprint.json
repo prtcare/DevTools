@@ -1,0 +1,13 @@
+{
+    "fingerprint":  {
+                        "value":  "25BBECA448CC83B76F9A639BBF5A3E4A1599FDE536938A413FBE9DB5D67BE057",
+                        "sheetCoverage":  "Master Roadmap;Phase Plan;Architecture Decisions;Dependencies \u0026 Blockers;Open Decisions",
+                        "configSource":  "config\\roadmap-protection.json",
+                        "computedAtUtc":  "2026-09-02T08:43:37Z",
+                        "algorithm":  "SHA-256",
+                        "protectedRows":  715,
+                        "protectedCells":  9161,
+                        "error":  null
+                    },
+    "updatedAtUtc":  "2026-09-02T08:43:37Z"
+}

@@ -1,0 +1,23 @@
+{
+  "runtimeTarget": {
+    "name": ".NETCoreApp,Version=v10.0",
+    "signature": ""
+  },
+  "compilationOptions": {},
+  "targets": {
+    ".NETCoreApp,Version=v10.0": {
+      "DevBridge.Engine/1.0.0": {
+        "runtime": {
+          "DevBridge.Engine.dll": {}
+        }
+      }
+    }
+  },
+  "libraries": {
+    "DevBridge.Engine/1.0.0": {
+      "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    }
+  }
+}
