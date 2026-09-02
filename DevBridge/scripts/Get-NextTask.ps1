@@ -378,7 +378,10 @@ function Get-NextTask {
     } | Sort-Object @{Expression="FreshestRow";Descending=$true}, @{Expression="PrioRank";Descending=$true}, @{Expression="PhaseRank";Ascending=$true}, @{Expression="SpecRank";Descending=$true}, @{Expression="SortKey";Ascending=$true}, @{Expression="Row";Ascending=$true})
 
     $top = $ranked[0]
-    $runnerUp = $ranked[1]
+    # A single current-work candidate has no runner-up and is therefore never ambiguous.
+    # Guard the access (Set-StrictMode -Version Latest throws on out-of-range indexing).
+    $runnerUp = $null
+    if ($ranked.Count -gt 1) { $runnerUp = $ranked[1] }
 
     # Ambiguity only when the top candidate ties the runner-up on every ranking signal.
     $ambiguous = $false

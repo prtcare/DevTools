@@ -1,23 +1,23 @@
 {
     "taskId":  null,
-    "nodeId":  "M-07-0.2",
-    "name":  "Development Control Service (Excel-backed, Azure-SQL-ready)",
+    "nodeId":  "M-12-0.4",
+    "name":  "General Developer UI shell",
     "nodeType":  "Milestone",
-    "phase":  "P0",
-    "currentWorkNodeId":  "M-07-0.2",
+    "phase":  "P1",
+    "currentWorkNodeId":  "M-12-0.4",
     "featureNodeId":  null,
     "status":  "PREFLIGHTED",
-    "selectedAt":  "2026-08-31T18:36:43Z",
+    "selectedAt":  "2026-09-02T18:56:44Z",
     "preflightVerdict":  "NO_IMPLEMENTABLE_DESCENDANT",
     "implementability":  "NON_IMPLEMENTABLE_CONTAINER",
     "nextAllowedAction":  "RESOLVE_GOVERNANCE_BLOCK",
     "sourceReferences":  [
-                             "Development Control workbook (read-only) SHA256 6D42C3BF6D3307B4B1A45870CE12F41E403DFED412E59F33D7B487E93A83E4F5"
+                             "Development Control workbook (read-only) SHA256 9959569F6E2E67A6FE3A747672F8C39DA89C5989969E446C8CA3A1FD5DCDC97C"
                          ],
     "startedAt":  null,
     "reservationId":  null,
     "repositoryStates":  [
 
                          ],
-    "workbookSha256":  "6D42C3BF6D3307B4B1A45870CE12F41E403DFED412E59F33D7B487E93A83E4F5"
+    "workbookSha256":  "9959569F6E2E67A6FE3A747672F8C39DA89C5989969E446C8CA3A1FD5DCDC97C"
 }

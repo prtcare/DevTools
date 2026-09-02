@@ -70,6 +70,61 @@ function Get-SheetEntryName([string]$sheetName) {
     return $targetPath
 }
 
+# ---------------------------------------------------------------------------
+# Shared-string support (Excel re-save compatibility). Microsoft Excel stores text
+# cells as t="s" integer indexes into xl/sharedStrings.xml rather than inline
+# <is><t>. The part is loaded lazily and is keyed to the workbook path so an
+# override switch (DB_DEV_CONTROL_WORKBOOK_OVERRIDE / With-Workbook) re-reads the
+# correct table. Plain <si><t>, rich-text runs (<si><r><t>...), and xml:space
+# preserved text are all handled by XElement.Value (identical semantics to the
+# inlineStr reader). Invalid references raise an explicit parse/validation error;
+# a value is never fabricated.
+# ---------------------------------------------------------------------------
+$script:SharedStringsState = $null
+$script:SharedStringsWorkbook = ""
+function Get-SharedStringState {
+    if ($null -ne $script:SharedStringsState -and $script:SharedStringsWorkbook -eq $script:DevControlWorkbook) {
+        return $script:SharedStringsState
+    }
+    $fs = [System.IO.File]::Open($script:DevControlWorkbook, [System.IO.FileMode]::Open, [System.IO.FileAccess]::Read, [System.IO.FileShare]::ReadWrite -bor [System.IO.FileShare]::Delete)
+    $zip = New-Object System.IO.Compression.ZipArchive($fs, [System.IO.Compression.ZipArchiveMode]::Read)
+    $entry = $zip.GetEntry("xl/sharedStrings.xml")
+    if ($null -eq $entry) {
+        $zip.Dispose(); $fs.Dispose()
+        $script:SharedStringsState = @{ Exists = $false; Values = @() }
+        $script:SharedStringsWorkbook = $script:DevControlWorkbook
+        return $script:SharedStringsState
+    }
+    $rd = New-Object System.IO.StreamReader($entry.Open())
+    $doc = [System.Xml.Linq.XDocument]::Load($rd)
+    $rd.Close(); $zip.Dispose(); $fs.Dispose()
+    $vals = New-Object System.Collections.Generic.List[string]
+    foreach ($si in $doc.Root.Elements($xNs + "si")) {
+        $vals.Add([string]$si.Value)
+    }
+    $script:SharedStringsState = @{ Exists = $true; Values = $vals.ToArray() }
+    $script:SharedStringsWorkbook = $script:DevControlWorkbook
+    return $script:SharedStringsState
+}
+
+function Resolve-SharedString([string]$cellRef, $vEl) {
+    $st = Get-SharedStringState
+    if (-not $st.Exists) {
+        throw ("DevBridge workbook validation error: cell {0} is typed as a shared string ('s') but the workbook has no xl/sharedStrings.xml part." -f $cellRef)
+    }
+    if ($null -eq $vEl) { return "" }
+    $raw = [string]$vEl.Value
+    if ($raw -eq "") { return "" }
+    $idx = 0
+    try { $idx = [int]$raw } catch {
+        throw ("DevBridge workbook parse error: cell {0} has non-integer shared-string index '{1}'." -f $cellRef, $raw)
+    }
+    if ($idx -lt 0 -or $idx -ge $st.Values.Length) {
+        throw ("DevBridge workbook validation error: cell {0} references shared-string index {1}, out of range (shared string table holds {2} entr{3})." -f $cellRef, $idx, $st.Values.Length, $(if ($st.Values.Length -eq 1) { "y" } else { "ies" }))
+    }
+    return $st.Values[$idx]
+}
+
 function Get-CellVal($row, [string]$col) {
     foreach ($cell in $row.Elements($xNs + "c")) {
         $refAttr = $cell.Attribute("r")
@@ -79,6 +134,7 @@ function Get-CellVal($row, [string]$col) {
             $tAttr = $cell.Attribute("t"); $t = ""
             if ($tAttr) { $t = [string]$tAttr.Value }
             if ($t -eq "inlineStr") { $is = $cell.Element($xNs + "is"); if ($is) { return [string]$is.Value } }
+            if ($t -eq "s") { return (Resolve-SharedString $ref ($cell.Element($xNs + "v"))) }
             $fEl = $cell.Element($xNs + "f")
             if ($fEl) { return "" }   # formula cells: no cached value in this workbook
             $v = $cell.Element($xNs + "v"); if ($v) { return $v.Value }
@@ -113,6 +169,7 @@ function Get-ColumnLetters($doc, [int]$headerRow, [string]$cacheKey) {
             if ($tAttr) { $t = [string]$tAttr.Value }
             $val = ""
             if ($t -eq "inlineStr") { $is = $cell.Element($xNs + "is"); if ($is) { $val = [string]$is.Value } }
+            elseif ($t -eq "s") { $val = Resolve-SharedString ([string]$refAttr.Value) ($cell.Element($xNs + "v")) }
             else { $v = $cell.Element($xNs + "v"); if ($v) { $val = $v.Value } }
             if ($val -and $colLetter) { $map[(Normalize-Header $val)] = $colLetter }
         }
@@ -155,6 +212,7 @@ function Get-SheetRows([string]$sheetName, [int]$headerRow, [int]$dataStart, [in
             if ($tAttr) { $t = [string]$tAttr.Value }
             $val = ""
             if ($t -eq "inlineStr") { $is = $cell.Element($xNs + "is"); if ($is) { $val = [string]$is.Value } }
+            elseif ($t -eq "s") { $val = Resolve-SharedString ([string]$refAttr.Value) ($cell.Element($xNs + "v")) }
             else { $fEl = $cell.Element($xNs + "f"); if (-not $fEl) { $v = $cell.Element($xNs + "v"); if ($v) { $val = $v.Value } } }
             $vals[$colLetter] = $val
         }
