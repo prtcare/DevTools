@@ -391,13 +391,26 @@ $targets = @($allNodes | Where-Object { $_.NodeId -eq $targetNodeId })
 if ($targets.Count -ne 1) { $revalidate += ("node {0} found {1} times (expected exactly once)" -f $targetNodeId, $targets.Count) }
 else {
     $t = $targets[0]
-    if ($t.Status -ne "Planned") { $revalidate += ("node status [{0}] changed incompatibly (expected Planned)" -f $t.Status) }
+    # DB-M03.1 reservability rule (execution-state leaf validation): a governed leaf is
+    # reservable when its execution state is non-terminal (Status not Completed/Complete)
+    # with no open reservation conflict (PART 2). Both Planned and In-Progress/Active/Started
+    # leaves are reservable under the CURRENT WORK model - "must be Planned" is NOT a governed
+    # requirement, so M04 mirrors Get-NextTask's terminal set instead of asserting it. The
+    # serialized-writer hash guard above is the authoritative "no incompatible change since
+    # DB-M03" detector: any workbook delta (including a status flip to terminal) stops there.
+    if ($t.Status -in @("Completed", "Complete")) { $revalidate += ("node status [{0}] is terminal; a reservable leaf must be non-terminal (pending work). Rerun DB-M03." -f $t.Status) }
     # Dependencies come from the DB-M03 preflight, never hard-coded per cycle.
     # DB-M03.2: a TRIAL_DEPENDENCY_SATISFIED predecessor (trial-proven for proving-cycle
     # selection) is honored here exactly like a real SATISFIED predecessor, but the real
     # roadmap status remains authoritative — the overlay never writes completion.
+    # DB-M03.1 Test-DepsSatisfied: a leaf with no governed dependencies and no Open+Blocking
+    # REL on it is SATISFIED vacuously; DB-M03 encodes that as the single synthetic
+    # "REL-001..011 / Explicit D&B / NOT_APPLICABLE" sentinel. A CLEAR preflight carries
+    # EITHER >=1 satisfied real node dependency OR that dep-free sentinel; reject only when
+    # neither is present (truncated/contradictory preflight must still stop).
     $nodeDeps = @($preflight.dependencies | Where-Object { $_.dependencyId -match "^(F|WI|M|T|S)-" -and $_.state -in @("SATISFIED", "TRIAL_DEPENDENCY_SATISFIED") })
-    if ($nodeDeps.Count -eq 0) { $revalidate += "preflight declares no satisfied node dependency; rerun DB-M03" }
+    $depFreeSentinel = @($preflight.dependencies | Where-Object { $_.dependencyId -match "^REL-" -and $_.type -eq "Explicit D&B" -and $_.state -eq "NOT_APPLICABLE" })
+    if ($nodeDeps.Count -eq 0 -and $depFreeSentinel.Count -eq 0) { $revalidate += "preflight declares no satisfied node dependency; rerun DB-M03" }
     foreach ($d in $nodeDeps) {
         $dep = @($allNodes | Where-Object { $_.NodeId -eq $d.dependencyId })
         if ($dep.Count -eq 1 -and ($dep[0].Status -notin @("Complete", "Completed"))) {
@@ -810,8 +823,13 @@ if ($liveAC.Count -eq 1) {
     if ($r.NodeId -notmatch [regex]::Escape($targetNodeId)) { $verify += "reservation Node ID mismatch" }
     if ($r.PreflightVerdict -ne "CLEAR") { $verify += "reservation preflight verdict mismatch" }
     if ($r.Status -notmatch "^Open") { $verify += "reservation status not Open" }
-    if ($r.Repositories -notmatch "Nexus.Developer") { $verify += "reservation repositories mismatch" }
-    if ($r.FilesGlobs -notmatch "DevelopmentControl") { $verify += "reservation files/globs mismatch" }
+    # Write-integrity: the written row must carry EXACTLY the governed reservation scope
+    # (same " | " join used when the row was written), not WI-07-era literals. An empty
+    # Files/Globs is legitimate when the DB-M03 preflight declared no file globs (e.g. UI
+    # leaf WI-12-0.4.1); exact-equality against the reservation still catches a partial or
+    # mangled write. Repositories too: scope is defined by preflight, not by hard-coding.
+    if (([string]$r.Repositories).Trim() -ne ([string]($reservation.repositories -join " | ")).Trim()) { $verify += "reservation repositories mismatch" }
+    if (([string]$r.FilesGlobs).Trim() -ne ([string]($reservation.filesGlobs -join " | ")).Trim()) { $verify += "reservation files/globs mismatch" }
 }
 # structural validity: all 14 sheets still load
 $sheetNames = @("Control Center","Master Roadmap","Active Changes","Audit Findings","Session Protocol","Version History","Phase Plan","Architecture Decisions","Open Decisions","Dependencies & Blockers","Tool & Integration Registry","Activity Log","Development Guide","Existing Assets")

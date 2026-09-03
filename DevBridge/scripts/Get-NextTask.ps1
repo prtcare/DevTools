@@ -510,7 +510,9 @@ if ($MyInvocation.InvocationName -ne '.') {
         Write-Output ("Reason              : {0}" -f $sel.AmbiguityReason)
     } else {
         Write-Output ("Candidates (ranked) : {0}" -f ($sel.Candidates -join " > "))
-        if ($sel.BlockState) {
+        # StrictMode-safe: only SELECTED shapes omit BlockState/BlockReason; block shapes carry both.
+        $selHasBlock = $null -ne $sel.PSObject.Properties["BlockState"]
+        if ($selHasBlock -and $sel.BlockState) {
             Write-Output ("BlockState          : {0}" -f $sel.BlockState)
             Write-Output ("BlockReason         : {0}" -f $sel.BlockReason)
         }
