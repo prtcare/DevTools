@@ -5,366 +5,543 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         mc:Ignorable="d"
         Title="DevBridge Operator Console"
-        Width="1360" Height="900" MinWidth="1120" MinHeight="700"
+        Width="1600" Height="900" MinWidth="1120" MinHeight="700"
         WindowStartupLocation="CenterScreen"
         Background="{StaticResource BackgroundBrush}">
 
+    <Window.Resources>
+        <!-- ============ DASHBOARD-ONLY COMPACT STYLES / TEMPLATES ============ -->
+        <!-- One action button. States: recommended (solid accent) / enabled (light) /
+             disabled (grey). Enablement + recommendation come from the engine via the
+             ViewModel — this template is pure display. -->
+        <DataTemplate x:Key="ActionButtonTemplate">
+            <Button Content="{Binding Label}"
+                    Command="{Binding Command}"
+                    CommandParameter="{Binding Key}"
+                    IsEnabled="{Binding IsEnabled}"
+                    ToolTip="{Binding Key}"
+                    Margin="2,2">
+                <Button.Style>
+                    <Style TargetType="Button">
+                        <Setter Property="FontSize" Value="10"/>
+                        <Setter Property="FontWeight" Value="SemiBold"/>
+                        <Setter Property="Foreground" Value="#0D478E"/>
+                        <Setter Property="Background" Value="#E4EFFA"/>
+                        <Setter Property="BorderBrush" Value="#B7D4EF"/>
+                        <Setter Property="BorderThickness" Value="1"/>
+                        <Setter Property="Padding" Value="8,2"/>
+                        <Setter Property="Cursor" Value="Hand"/>
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="Button">
+                                    <Border x:Name="bd" Background="{TemplateBinding Background}"
+                                            BorderBrush="{TemplateBinding BorderBrush}"
+                                            BorderThickness="{TemplateBinding BorderThickness}"
+                                            CornerRadius="3" Padding="{TemplateBinding Padding}">
+                                        <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter TargetName="bd" Property="Background" Value="#C9E1F6"/>
+                                        </Trigger>
+                                        <Trigger Property="IsEnabled" Value="False">
+                                            <Setter TargetName="bd" Property="Background" Value="#EFF1F4"/>
+                                            <Setter TargetName="bd" Property="BorderBrush" Value="#E4E7EA"/>
+                                            <Setter Property="Foreground" Value="#A6AFB8"/>
+                                            <Setter Property="Cursor" Value="Arrow"/>
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                        <Style.Triggers>
+                            <MultiDataTrigger>
+                                <MultiDataTrigger.Conditions>
+                                    <Condition Binding="{Binding IsEnabled}" Value="True"/>
+                                    <Condition Binding="{Binding IsRecommended}" Value="True"/>
+                                </MultiDataTrigger.Conditions>
+                                <Setter Property="Background" Value="#1565C0"/>
+                                <Setter Property="BorderBrush" Value="#0D478E"/>
+                                <Setter Property="Foreground" Value="White"/>
+                                <Setter Property="FontWeight" Value="Bold"/>
+                            </MultiDataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </Button.Style>
+            </Button>
+        </DataTemplate>
+
+        <!-- Compact two-line lifecycle pill (label + token). -->
+        <DataTemplate x:Key="LifecyclePillTemplate">
+            <Border Background="{Binding Background}" CornerRadius="3" Padding="7,2" Margin="2,2">
+                <Border.ToolTip>
+                    <ToolTip>
+                        <StackPanel>
+                            <TextBlock FontWeight="SemiBold">
+                                <Run Text="{Binding Label, Mode=OneWay}"/><Run Text=" — "/><Run Text="{Binding DisplayToken, Mode=OneWay}"/>
+                            </TextBlock>
+                        </StackPanel>
+                    </ToolTip>
+                </Border.ToolTip>
+                <StackPanel>
+                    <TextBlock Text="{Binding Label}" FontSize="9.5" FontWeight="Bold"
+                               Foreground="{Binding Foreground}" TextTrimming="CharacterEllipsis"/>
+                    <TextBlock Text="{Binding DisplayToken}" FontSize="7.5"
+                               Foreground="{Binding Foreground}" Opacity="0.9" Margin="0,1,0,0"/>
+                </StackPanel>
+            </Border>
+        </DataTemplate>
+
+        <Style x:Key="GroupCaption" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="9"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Foreground" Value="{StaticResource TextMutedBrush}"/>
+            <Setter Property="VerticalAlignment" Value="Top"/>
+            <Setter Property="Margin" Value="0,4,0,0"/>
+            <Setter Property="TextOptions.TextFormattingMode" Value="Display"/>
+        </Style>
+
+        <Style x:Key="CompactLabel" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="9.5"/>
+            <Setter Property="Foreground" Value="{StaticResource TextMutedBrush}"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+        </Style>
+
+        <Style x:Key="CompactValue" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Foreground" Value="{StaticResource TextPrimaryBrush}"/>
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="TextTrimming" Value="CharacterEllipsis"/>
+        </Style>
+
+        <Style x:Key="GovernancePill" TargetType="Border">
+            <Setter Property="Background" Value="#ECF0F4"/>
+            <Setter Property="CornerRadius" Value="3"/>
+            <Setter Property="Padding" Value="7,2"/>
+            <Setter Property="Margin" Value="2,1"/>
+        </Style>
+    </Window.Resources>
+
     <Grid>
         <Grid.RowDefinitions>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="Auto"/>
-            <RowDefinition Height="*"/>
+            <RowDefinition Height="Auto"/> <!-- mode band -->
+            <RowDefinition Height="Auto"/> <!-- compact header -->
+            <RowDefinition Height="*"/>    <!-- tab content -->
         </Grid.RowDefinitions>
 
-        <!-- ===================== HEADER ===================== -->
-        <Border Grid.Row="0" Background="{StaticResource HeaderBrush}" Padding="18,12">
+        <!-- ===================== MODE BAND (DB-M12.3, always visible) ===================== -->
+        <Border Grid.Row="0" Height="5" Background="{Binding ModeBannerBrush}"
+                ToolTip="{Binding ModeBannerText}"/>
+
+        <!-- ===================== COMPACT HEADER ===================== -->
+        <Border Grid.Row="1" Background="{StaticResource HeaderBrush}" Padding="12,6">
             <Grid>
                 <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
                     <ColumnDefinition Width="*"/>
                     <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition Width="Auto"/>
                 </Grid.ColumnDefinitions>
-                <StackPanel>
-                    <TextBlock Text="DEVBridge OPERATOR CONSOLE" FontSize="18" FontWeight="Bold"
+
+                <TextBlock Text="DEVBridge Operator Console" FontSize="14" FontWeight="Bold"
+                           Foreground="White" VerticalAlignment="Center"
+                           ToolTip="{Binding BackendRoot}"/>
+
+                <!-- Mode chip — TRIAL vs REAL, colored, always visible -->
+                <Border Grid.Column="1" Background="{Binding ModeBadgeBrush}" CornerRadius="3"
+                        Padding="8,2" Margin="12,0,0,0" VerticalAlignment="Center"
+                        ToolTip="{Binding ModeBannerText}">
+                    <TextBlock Text="{Binding ModeBadgeText}" FontSize="10.5" FontWeight="Bold"
                                Foreground="White"/>
-                    <TextBlock Text="Governed change control · Nexus.Developer · NEXUS_DEVELOPMENT_CONTROL.xlsx is the source of truth"
-                               FontSize="11" Foreground="#9FB0C1" Margin="0,2,0,0"/>
-                </StackPanel>
-                <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
-                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,12,0">
-                        <TextBlock Text="{Binding LastRefreshTime}" Foreground="#9FB0C1" FontSize="11" VerticalAlignment="Center"/>
-                        <TextBlock Text="{Binding BusyText}" Foreground="#FFD54F" FontSize="11" Margin="10,0,0,0"
-                                   VerticalAlignment="Center">
-                            <TextBlock.Style>
-                                <Style TargetType="TextBlock">
-                                    <Setter Property="Visibility" Value="Collapsed"/>
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding IsBusy}" Value="True">
-                                            <Setter Property="Visibility" Value="Visible"/>
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </TextBlock.Style>
-                        </TextBlock>
-                    </StackPanel>
-                    <Button Content="REFRESH" Style="{StaticResource SecondaryButton}"
-                            Command="{Binding RefreshCommand}" Padding="16,7"/>
-                </StackPanel>
-            </Grid>
-        </Border>
+                </Border>
 
-        <!-- ===================== MODE BANNER (DB-M12.3, always visible) ===================== -->
-        <Border Grid.Row="1" Background="{Binding ModeBannerBrush}" Padding="18,8">
-            <StackPanel Orientation="Horizontal">
-                <TextBlock Text="MODE:" FontSize="12" FontWeight="Bold" Foreground="White" VerticalAlignment="Center"/>
-                <TextBlock Text="{Binding ModeBannerText}" FontSize="12.5" FontWeight="SemiBold" Foreground="White"
-                           VerticalAlignment="Center" Margin="10,0,0,0" TextWrapping="Wrap"/>
-            </StackPanel>
-        </Border>
+                <!-- DB-M12.3 explanatory mode text (truncates when narrow) -->
+                <TextBlock Grid.Column="2" Text="{Binding ModeBannerText}" FontSize="10.5"
+                           Foreground="#C9D6E2" Margin="12,0,14,0" VerticalAlignment="Center"
+                           TextTrimming="CharacterEllipsis" ToolTip="{Binding ModeBannerText}"/>
 
-        <!-- ===================== STATUS BAR ===================== -->
-        <Border Grid.Row="2" Background="#E9EDF2" BorderBrush="#D6DCE2" BorderThickness="0,0,0,1" Padding="18,6">
-            <Grid>
-                <Grid.ColumnDefinitions>
-                    <ColumnDefinition Width="Auto"/>
-                    <ColumnDefinition Width="*"/>
-                    <ColumnDefinition Width="Auto"/>
-                </Grid.ColumnDefinitions>
-                <StackPanel Orientation="Horizontal">
-                    <TextBlock Text="{Binding WorkbookState}" FontSize="11" FontWeight="Bold" Foreground="{Binding WorkbookStateBrush}"
-                               VerticalAlignment="Center"/>
-                    <TextBlock Text="{Binding SheetCountText}" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}"
-                               Margin="10,0,0,0" VerticalAlignment="Center"/>
-                    <TextBlock Text="sheets" FontSize="11" Foreground="{StaticResource TextMutedBrush}" Margin="4,0,0,0" VerticalAlignment="Center"/>
-                    <TextBlock Text="·" FontSize="11" Foreground="{StaticResource TextMutedBrush}" Margin="14,0" VerticalAlignment="Center"/>
-                    <TextBlock Text="Last consistency" FontSize="11" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center"/>
-                    <TextBlock Text="{Binding LastConsistency}" FontSize="11" FontWeight="Bold" Foreground="{Binding ConsistencyBrush}"
+                <!-- Workbook availability -->
+                <StackPanel Grid.Column="3" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,14,0">
+                    <TextBlock Text="WB" FontSize="9" FontWeight="Bold" Foreground="#9FB0C1" VerticalAlignment="Center"/>
+                    <TextBlock Text="{Binding WorkbookState}" FontSize="10.5" FontWeight="Bold"
+                               Foreground="{Binding WorkbookStateBrush}" Margin="5,0,0,0" VerticalAlignment="Center"/>
+                    <TextBlock Text="{Binding SheetCountText}" FontSize="10" Foreground="#9FB0C1"
                                Margin="6,0,0,0" VerticalAlignment="Center"/>
-                    <TextBlock Text="{Binding ConsistencyAt}" FontSize="11" Foreground="{StaticResource TextMutedBrush}" Margin="10,0,0,0" VerticalAlignment="Center"/>
+                    <TextBlock Text="sheets" FontSize="9" Foreground="#6F8294" Margin="3,0,0,0" VerticalAlignment="Center"/>
                 </StackPanel>
-                <TextBlock Grid.Column="1" Text="{Binding LastActionMessage}" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}"
-                           Margin="18,0" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
-                <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Center">
-                    <TextBlock Text="{Binding StatusText}" FontSize="11" FontWeight="Bold" Foreground="{StaticResource GreenBrush}"/>
-                    <TextBlock Text="{Binding BackendRoot}" FontSize="11" Foreground="{StaticResource TextMutedBrush}" Margin="12,0,0,0"/>
+
+                <!-- Last consistency + last refresh / busy -->
+                <StackPanel Grid.Column="4" Orientation="Horizontal" VerticalAlignment="Center" Margin="0,0,14,0">
+                    <TextBlock Text="CONSISTENCY" FontSize="9" FontWeight="Bold" Foreground="#9FB0C1" VerticalAlignment="Center"/>
+                    <TextBlock Text="{Binding LastConsistency}" FontSize="10.5" FontWeight="Bold"
+                               Foreground="{Binding ConsistencyBrush}" Margin="5,0,0,0" VerticalAlignment="Center"/>
+                    <TextBlock Text="{Binding ConsistencyAt}" FontSize="9.5" Foreground="#9FB0C1" Margin="8,0,0,0" VerticalAlignment="Center"/>
+                    <TextBlock Text="{Binding BusyText}" Foreground="#FFD54F" FontSize="10" Margin="10,0,0,0"
+                               VerticalAlignment="Center">
+                        <TextBlock.Style>
+                            <Style TargetType="TextBlock">
+                                <Setter Property="Visibility" Value="Collapsed"/>
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsBusy}" Value="True">
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </TextBlock.Style>
+                    </TextBlock>
+                </StackPanel>
+
+                <!-- Refresh + clock -->
+                <StackPanel Grid.Column="5" Orientation="Horizontal" VerticalAlignment="Center">
+                    <TextBlock Text="{Binding LastRefreshTime}" Foreground="#9FB0C1" FontSize="9.5"
+                               VerticalAlignment="Center" Margin="0,0,10,0"/>
+                    <Button Content="REFRESH" Style="{StaticResource SecondaryButton}"
+                            Command="{Binding RefreshCommand}" Padding="10,3" FontSize="10"/>
                 </StackPanel>
             </Grid>
         </Border>
 
         <!-- ===================== CONTENT ===================== -->
-        <TabControl Grid.Row="3" Margin="12,10,12,12" Background="Transparent" BorderThickness="0"
-                    Padding="0">
-            <!-- ========== DASHBOARD ========== -->
+        <TabControl Grid.Row="2" Margin="8,6,8,8" Background="Transparent" BorderThickness="0" Padding="0">
+
+            <!-- ========== DASHBOARD (compact, no page scroll) ========== -->
             <TabItem Header="DASHBOARD">
-                <ScrollViewer VerticalScrollBarVisibility="Auto" Padding="0,6,6,6">
-                    <StackPanel>
-                        <!-- WHAT YOU NEED TO DO NEXT -->
-                        <Border Background="{Binding InstructionBrush}" CornerRadius="8" Padding="22,18">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto"/> <!-- action bar -->
+                        <RowDefinition Height="Auto"/> <!-- instruction strip -->
+                        <RowDefinition Height="Auto"/> <!-- current task + lifecycle -->
+                        <RowDefinition Height="Auto"/> <!-- governance strip -->
+                        <RowDefinition Height="*"/>    <!-- live output / failures -->
+                    </Grid.RowDefinitions>
+
+                    <!-- ============ ACTION BAR — always visible ============ -->
+                    <Border Grid.Row="0" Background="White" BorderBrush="{StaticResource CardBorderBrush}"
+                            BorderThickness="1" CornerRadius="5" Padding="8,4">
+                        <StackPanel>
                             <Grid>
                                 <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="86"/>
                                     <ColumnDefinition Width="*"/>
-                                    <ColumnDefinition Width="Auto"/>
                                 </Grid.ColumnDefinitions>
-                                <StackPanel>
-                                    <TextBlock Text="WHAT YOU NEED TO DO NEXT" FontSize="12" FontWeight="Bold"
-                                               Foreground="#D9E6F5" TextOptions.TextFormattingMode="Display"/>
-                                    <TextBlock Text="{Binding Instruction}" FontSize="22" FontWeight="Bold" Foreground="White"
-                                               TextWrapping="Wrap" Margin="0,6,0,0"/>
-                                    <TextBlock Text="{Binding InstructionSub}" FontSize="12" Foreground="#D9E6F5" Margin="0,8,0,0"/>
-                                </StackPanel>
-                                <TextBlock Grid.Column="1" Text="DEVBridge" FontSize="13" FontWeight="Bold" Foreground="#A9C7E4"
-                                           VerticalAlignment="Top" Margin="20,0,0,0"/>
+                                <TextBlock Text="PRIMARY" Style="{StaticResource GroupCaption}"/>
+                                <ItemsControl Grid.Column="1" ItemsSource="{Binding PrimaryActions}"
+                                              ItemTemplate="{StaticResource ActionButtonTemplate}">
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate><WrapPanel/></ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                </ItemsControl>
                             </Grid>
-                        </Border>
 
-                        <!-- Current task + lifecycle stages -->
-                        <Grid Margin="0,12,0,0">
+                            <Grid Margin="0,2,0,0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="86"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="CYCLE" Style="{StaticResource GroupCaption}"/>
+                                <ItemsControl Grid.Column="1" ItemsSource="{Binding LifecycleActions}"
+                                              ItemTemplate="{StaticResource ActionButtonTemplate}">
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate><WrapPanel/></ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                </ItemsControl>
+                            </Grid>
+
+                            <Grid Margin="0,2,0,0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="86"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="REPORTS" Style="{StaticResource GroupCaption}"/>
+                                <ItemsControl Grid.Column="1" ItemsSource="{Binding ReportActions}"
+                                              ItemTemplate="{StaticResource ActionButtonTemplate}">
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate><WrapPanel/></ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                </ItemsControl>
+                            </Grid>
+
+                            <Grid Margin="0,2,0,0">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="86"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="HUMAN GATES" Style="{StaticResource GroupCaption}"/>
+                                <ItemsControl Grid.Column="1" ItemsSource="{Binding HumanGateActions}"
+                                              ItemTemplate="{StaticResource ActionButtonTemplate}">
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate><WrapPanel/></ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                </ItemsControl>
+                            </Grid>
+
+                            <!-- clipboard status (compact, hidden when empty / not applicable) -->
+                            <TextBlock Margin="88,1,0,0" FontSize="9" Foreground="{StaticResource TextSecondaryBrush}">
+                                <TextBlock.Style>
+                                    <Style TargetType="TextBlock">
+                                        <Setter Property="Visibility" Value="Visible"/>
+                                        <Style.Triggers>
+                                            <DataTrigger Binding="{Binding ClipboardStatusText}" Value="">
+                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                            </DataTrigger>
+                                            <DataTrigger Binding="{Binding ClipboardStatusText}" Value="NOT APPLICABLE">
+                                                <Setter Property="Visibility" Value="Collapsed"/>
+                                            </DataTrigger>
+                                        </Style.Triggers>
+                                    </Style>
+                                </TextBlock.Style>
+                                <Run Text="CLIPBOARD: "/>
+                                <Run FontWeight="SemiBold" Text="{Binding ClipboardStatusText}"/>
+                            </TextBlock>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- ============ INSTRUCTION STRIP (compact, color-coded) ============ -->
+                    <Border Grid.Row="1" Margin="0,6,0,0" Padding="10,4" CornerRadius="4"
+                            Background="{Binding InstructionBrush}">
+                        <Grid>
                             <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto"/>
                                 <ColumnDefinition Width="*"/>
-                                <ColumnDefinition Width="16"/>
-                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
                             </Grid.ColumnDefinitions>
-
-                            <Border Style="{StaticResource CardBorder}">
-                                <StackPanel>
-                                    <TextBlock Text="CURRENT TASK" Style="{StaticResource SectionHeader}"/>
-                                    <Grid Margin="0,10,0,0">
-                                        <Grid.ColumnDefinitions>
-                                            <ColumnDefinition Width="110"/>
-                                            <ColumnDefinition Width="*"/>
-                                        </Grid.ColumnDefinitions>
-                                        <Grid.RowDefinitions>
-                                            <RowDefinition Height="Auto"/>
-                                            <RowDefinition Height="Auto"/>
-                                            <RowDefinition Height="Auto"/>
-                                            <RowDefinition Height="Auto"/>
-                                            <RowDefinition Height="Auto"/>
-                                            <RowDefinition Height="Auto"/>
-                                            <RowDefinition Height="Auto"/>
-                                            <RowDefinition Height="Auto"/>
-                                        </Grid.RowDefinitions>
-
-                                        <TextBlock Text="Node ID" Style="{StaticResource LabelText}" Grid.Row="0"/>
-                                        <TextBlock Text="{Binding NodeId}" Style="{StaticResource ValueText}" Grid.Column="1" Grid.Row="0" Margin="10,1"/>
-
-                                        <TextBlock Text="Task" Style="{StaticResource LabelText}" Grid.Row="1" Margin="0,7,0,0"/>
-                                        <TextBlock Text="{Binding TaskName}" Style="{StaticResource ValueText}" Grid.Column="1" Grid.Row="1" Margin="10,8,0,0"/>
-
-                                        <TextBlock Text="Change ID" Style="{StaticResource LabelText}" Grid.Row="2" Margin="0,7,0,0"/>
-                                        <TextBlock Text="{Binding ChangeId}" Style="{StaticResource ValueText}" Grid.Column="1" Grid.Row="2" Margin="10,8,0,0"/>
-
-                                        <TextBlock Text="Phase" Style="{StaticResource LabelText}" Grid.Row="3" Margin="0,7,0,0"/>
-                                        <TextBlock Text="{Binding Phase}" Style="{StaticResource ValueText}" Grid.Column="1" Grid.Row="3" Margin="10,8,0,0"/>
-
-                                        <TextBlock Text="Layer" Style="{StaticResource LabelText}" Grid.Row="4" Margin="0,7,0,0"/>
-                                        <TextBlock Text="{Binding Layer}" Style="{StaticResource ValueText}" Grid.Column="1" Grid.Row="4" Margin="10,8,0,0"/>
-
-                                        <TextBlock Text="Status" Style="{StaticResource LabelText}" Grid.Row="5" Margin="0,7,0,0"/>
-                                        <TextBlock Text="{Binding Status}" Style="{StaticResource ValueText}" Grid.Column="1" Grid.Row="5" Margin="10,8,0,0"/>
-
-                                        <TextBlock Text="Next allowed" Style="{StaticResource LabelText}" Grid.Row="6" Margin="0,7,0,0"/>
-                                        <TextBlock Text="{Binding NextAllowed}" Style="{StaticResource ValueText}" Grid.Column="1" Grid.Row="6" Margin="10,8,0,0"/>
-
-                                        <TextBlock Text="Preflight" Style="{StaticResource LabelText}" Grid.Row="7" Margin="0,7,0,0"/>
-                                        <TextBlock Text="{Binding PreflightVerdict}" Style="{StaticResource ValueText}" Grid.Column="1" Grid.Row="7" Margin="10,8,0,0"/>
-                                    </Grid>
-                                </StackPanel>
-                            </Border>
-
-                            <Border Grid.Column="2" Style="{StaticResource CardBorder}">
-                                <StackPanel>
-                                    <TextBlock Text="LIFECYCLE STAGES" Style="{StaticResource SectionHeader}"/>
-                                    <TextBlock Text="Derived from state + evidence artifacts — never guessed" Style="{StaticResource SectionCaption}" Margin="0,2,0,10"/>
-                                    <ItemsControl ItemsSource="{Binding Stages}">
-                                        <ItemsControl.ItemsPanel>
-                                            <ItemsPanelTemplate>
-                                                <WrapPanel/>
-                                            </ItemsPanelTemplate>
-                                        </ItemsControl.ItemsPanel>
-                                        <ItemsControl.ItemTemplate>
-                                            <DataTemplate>
-                                                <Border Background="{Binding Background}" CornerRadius="4" Padding="9,5" Margin="0,3,6,3">
-                                                    <StackPanel>
-                                                        <TextBlock Text="{Binding Label}" FontSize="11" FontWeight="Bold" Foreground="{Binding Foreground}"/>
-                                                        <TextBlock Text="{Binding StateText}" FontSize="9" Foreground="{Binding Foreground}" Opacity="0.85"/>
-                                                    </StackPanel>
-                                                </Border>
-                                            </DataTemplate>
-                                        </ItemsControl.ItemTemplate>
-                                    </ItemsControl>
+                            <TextBlock Text="NEXT ACTION" FontSize="9" FontWeight="Bold" Foreground="White"
+                                       Opacity="0.85" VerticalAlignment="Center" Margin="0,0,10,0"/>
+                            <TextBlock Grid.Column="1" Text="{Binding Instruction}" FontSize="12.5" FontWeight="Bold"
+                                       Foreground="White" VerticalAlignment="Center" TextTrimming="CharacterEllipsis">
+                                <TextBlock.ToolTip>
+                                    <ToolTip>
+                                        <StackPanel>
+                                            <TextBlock Text="{Binding Instruction}" TextWrapping="Wrap" MaxWidth="700"/>
+                                            <TextBlock Text="{Binding InstructionSub}" TextWrapping="Wrap" Margin="0,6,0,0"
+                                                       Foreground="#D9E6F5"/>
+                                        </StackPanel>
+                                    </ToolTip>
+                                </TextBlock.ToolTip>
+                            </TextBlock>
+                            <Border Grid.Column="2" Background="#33FFFFFF" CornerRadius="3" Padding="8,2"
+                                    VerticalAlignment="Center" Margin="10,0,0,0">
+                                <StackPanel Orientation="Horizontal">
+                                    <TextBlock Text="▶ " FontSize="11" FontWeight="Bold" Foreground="White"
+                                               VerticalAlignment="Center"/>
+                                    <TextBlock Text="{Binding RecommendedLabel}" FontSize="11" FontWeight="Bold"
+                                               Foreground="White" VerticalAlignment="Center"/>
                                 </StackPanel>
                             </Border>
                         </Grid>
+                    </Border>
 
-                        <!-- DB-GH01 governance card -->
-                        <Border Style="{StaticResource CardBorder}" Margin="0,12,0,0">
+                    <!-- ============ CURRENT TASK + LIFECYCLE ============ -->
+                    <Grid Grid.Row="2" Margin="0,6,0,0">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="14"/>
+                            <ColumnDefinition Width="*"/>
+                        </Grid.ColumnDefinitions>
+
+                        <!-- Left: current task — compact property grid -->
+                        <Border Style="{StaticResource CardBorder}" Padding="10,6">
                             <StackPanel>
-                                <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="GOVERNANCE (DB-GH01)" Style="{StaticResource SectionHeader}"/>
-                                    <Border Background="{Binding ModeBadgeBrush}" CornerRadius="3" Padding="9,3"
-                                            Margin="12,0,0,0" VerticalAlignment="Center">
-                                        <TextBlock Text="{Binding ModeBadgeText}" FontSize="10" FontWeight="Bold" Foreground="White"/>
-                                    </Border>
-                                    <TextBlock Text="{Binding RetirementText}" FontSize="10" Foreground="{StaticResource TextMutedBrush}"
-                                               Margin="10,0,0,0" VerticalAlignment="Center"/>
-                                </StackPanel>
-                                <TextBlock Text="{Binding ModeCaption}" Style="{StaticResource SectionCaption}" Margin="0,2,0,8" TextWrapping="Wrap"/>
                                 <Grid>
                                     <Grid.ColumnDefinitions>
                                         <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="CURRENT TASK" Style="{StaticResource SectionHeader}" FontSize="11.5"/>
+                                    <TextBlock Grid.Column="1" Text="{Binding SelectedAt}" FontSize="9"
+                                               Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center"/>
+                                </Grid>
+                                <Grid Margin="0,5,0,0">
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="58"/>
                                         <ColumnDefinition Width="*"/>
-                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="74"/>
                                         <ColumnDefinition Width="*"/>
                                     </Grid.ColumnDefinitions>
-                                    <StackPanel>
-                                        <TextBlock Text="Human Git state" Style="{StaticResource LabelText}"/>
-                                        <TextBlock Text="{Binding HumanGitStateText}" Style="{StaticResource ValueText}" Margin="0,2,0,0"/>
-                                        <TextBlock Text="{Binding GitObservedText}" FontSize="10" Foreground="{StaticResource TextSecondaryBrush}"
-                                                   Margin="0,4,0,0" TextWrapping="Wrap"/>
-                                    </StackPanel>
-                                    <StackPanel Grid.Column="1" Margin="14,0,0,0">
-                                        <TextBlock Text="DB-M06 verification" Style="{StaticResource LabelText}"/>
-                                        <TextBlock Text="{Binding VerificationResultText}" Style="{StaticResource ValueText}" Margin="0,2,0,0"/>
-                                        <TextBlock Text="Claude review" Style="{StaticResource LabelText}" Margin="0,10,0,0"/>
-                                        <TextBlock Text="{Binding ClaudeResultText}" Style="{StaticResource ValueText}" Margin="0,2,0,0"/>
-                                    </StackPanel>
-                                    <StackPanel Grid.Column="2" Margin="14,0,0,0">
-                                        <TextBlock Text="Roadmap guard" Style="{StaticResource LabelText}"/>
-                                        <TextBlock Text="{Binding RoadmapGuardText}" Style="{StaticResource ValueText}" Margin="0,2,0,0"/>
-                                        <TextBlock Text="M10 eligibility" Style="{StaticResource LabelText}" Margin="0,10,0,0"/>
-                                        <TextBlock Text="{Binding M10EligibilityText}" Style="{StaticResource ValueText}" Margin="0,2,0,0" TextWrapping="Wrap"/>
-                                    </StackPanel>
-                                    <StackPanel Grid.Column="3" Margin="14,0,0,0">
-                                        <TextBlock Text="Handoff gate" Style="{StaticResource LabelText}"/>
-                                        <TextBlock Text="{Binding HandoffReadyText}" Style="{StaticResource ValueText}" Margin="0,2,0,0"/>
-                                        <TextBlock Text="Advisory review" Style="{StaticResource LabelText}" Margin="0,10,0,0"/>
-                                        <TextBlock Text="{Binding AdvisoryReviewText}" Style="{StaticResource ValueText}" Margin="0,2,0,0"/>
-                                    </StackPanel>
+                                    <Grid.RowDefinitions>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                        <RowDefinition Height="Auto"/>
+                                    </Grid.RowDefinitions>
+
+                                    <TextBlock Text="NODE" Style="{StaticResource CompactLabel}" Grid.Row="0"/>
+                                    <TextBlock Grid.Column="1" Grid.Row="0" Margin="8,0,10,0"
+                                               Text="{Binding NodeId}" Style="{StaticResource CompactValue}"
+                                               ToolTip="{Binding NodeId}"/>
+
+                                    <TextBlock Grid.Column="2" Grid.Row="0" Text="STATUS" Style="{StaticResource CompactLabel}"/>
+                                    <TextBlock Grid.Column="3" Grid.Row="0" Margin="8,0,0,0"
+                                               Text="{Binding Status}" Style="{StaticResource CompactValue}"
+                                               ToolTip="{Binding Status}"/>
+
+                                    <TextBlock Text="CHANGE" Style="{StaticResource CompactLabel}" Grid.Row="1" Margin="0,4,0,0"/>
+                                    <TextBlock Grid.Column="1" Grid.Row="1" Margin="8,4,10,0"
+                                               Text="{Binding ChangeId}" Style="{StaticResource CompactValue}"
+                                               ToolTip="{Binding ChangeId}"/>
+
+                                    <TextBlock Grid.Column="2" Grid.Row="1" Margin="0,4,0,0" Text="PREFLIGHT"
+                                               Style="{StaticResource CompactLabel}"/>
+                                    <TextBlock Grid.Column="3" Grid.Row="1" Margin="8,4,0,0"
+                                               Text="{Binding PreflightVerdict}" Style="{StaticResource CompactValue}"
+                                               ToolTip="{Binding PreflightVerdict}"/>
+
+                                    <TextBlock Text="NEXT" Style="{StaticResource CompactLabel}" Grid.Row="2" Margin="0,4,0,0"/>
+                                    <TextBlock Grid.Column="1" Grid.Row="2" Margin="8,4,10,0" Grid.ColumnSpan="3"
+                                               Text="{Binding NextAllowed}" Style="{StaticResource CompactValue}"
+                                               ToolTip="{Binding NextAllowed}"/>
+
+                                    <TextBlock Text="TASK" Style="{StaticResource CompactLabel}" Grid.Row="3" Margin="0,4,0,0"/>
+                                    <TextBlock Grid.Column="1" Grid.Row="3" Grid.ColumnSpan="3" Margin="8,4,0,0"
+                                               Style="{StaticResource CompactValue}" ToolTip="{Binding TaskName}"
+                                               TextTrimming="CharacterEllipsis">
+                                        <Run Text="{Binding TaskName}"/>
+                                        <Run Foreground="{StaticResource TextMutedBrush}" Text="  "/>
+                                        <Run Foreground="{StaticResource TextSecondaryBrush}" Text="{Binding Phase}"/>
+                                        <Run Foreground="{StaticResource TextSecondaryBrush}" Text=" · "/>
+                                        <Run Foreground="{StaticResource TextSecondaryBrush}" Text="{Binding Layer}"/>
+                                    </TextBlock>
                                 </Grid>
-                                <TextBlock Text="Pre-DevBridge baseline" Style="{StaticResource LabelText}" Margin="0,12,0,0"/>
-                                <TextBlock Text="{Binding PreBaselineText}" Style="{StaticResource ValueText}" Margin="0,2,0,0" TextWrapping="Wrap"/>
-                                <TextBlock Text="{Binding HumanGitGuidanceText}" FontSize="10.5" Foreground="{StaticResource AccentBrush}"
-                                           Margin="0,8,0,0" TextWrapping="Wrap"/>
-                                <TextBlock Text="This console has NO roadmap structural-edit controls. DevBridge never changes phases, milestones, hierarchy, sequencing, goals/outcomes, acceptance criteria, dependencies, or architecture — it may only update execution state."
-                                           FontSize="10.5" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,6,0,0" TextWrapping="Wrap"/>
                             </StackPanel>
                         </Border>
 
-                        <!-- DB-M12.3 HUMAN ACTION PANEL — backend-derived, display only -->
-                        <Border Margin="0,12,0,0">
-                            <Border.Style>
-                                <Style TargetType="Border" BasedOn="{StaticResource CardBorder}">
-                                    <Setter Property="Visibility" Value="Collapsed"/>
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding HasHumanAction}" Value="True">
-                                            <Setter Property="Visibility" Value="Visible"/>
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </Border.Style>
+                        <!-- Right: lifecycle stages — compact pills -->
+                        <Border Grid.Column="2" Style="{StaticResource CardBorder}" Padding="10,6">
                             <StackPanel>
-                                <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="HUMAN ACTION REQUIRED" Style="{StaticResource SectionHeader}"/>
-                                    <Border Background="{StaticResource PurpleBrush}" CornerRadius="3" Padding="9,3"
-                                            Margin="12,0,0,0" VerticalAlignment="Center">
-                                        <TextBlock Text="{Binding HumanActionType}" FontSize="10" FontWeight="Bold" Foreground="White"/>
-                                    </Border>
-                                </StackPanel>
-                                <TextBlock Text="This action is genuinely human — DevBridge only displays it and never performs it automatically."
-                                           Style="{StaticResource SectionCaption}" Margin="0,2,0,8"/>
-                                <TextBlock Text="Reason" Style="{StaticResource LabelText}"/>
-                                <TextBlock Text="{Binding HumanActionReason}" Style="{StaticResource ValueText}" Margin="0,2,0,0" TextWrapping="Wrap"/>
-                                <TextBlock Text="Instructions" Style="{StaticResource LabelText}" Margin="0,10,0,0"/>
-                                <TextBlock Text="{Binding HumanActionInstructions}" Style="{StaticResource ValueText}" Margin="0,2,0,0" TextWrapping="Wrap"/>
-                                <TextBlock Text="Evidence" Style="{StaticResource LabelText}" Margin="0,10,0,0"/>
-                                <TextBlock Text="{Binding HumanActionEvidence}" Style="{StaticResource ValueText}" FontFamily="Consolas" FontSize="11"
-                                           Margin="0,2,0,0" TextWrapping="Wrap"/>
-                            </StackPanel>
-                        </Border>
-
-                        <!-- Action buttons -->
-                        <Border Style="{StaticResource CardBorder}" Margin="0,12,0,0">
-                            <StackPanel>
-                                <TextBlock Text="ACTION BUTTONS" Style="{StaticResource SectionHeader}"/>
-                                <TextBlock Text="Only state-grounded actions are enabled. Governed writes call the existing backend scripts." Style="{StaticResource SectionCaption}" Margin="0,2,0,8"/>
-                                <ItemsControl ItemsSource="{Binding ActionButtons}">
+                                <TextBlock Text="LIFECYCLE STAGES" Style="{StaticResource SectionHeader}" FontSize="11.5"/>
+                                <ItemsControl ItemsSource="{Binding Stages}"
+                                              ItemTemplate="{StaticResource LifecyclePillTemplate}">
                                     <ItemsControl.ItemsPanel>
-                                        <ItemsPanelTemplate>
-                                            <WrapPanel/>
-                                        </ItemsPanelTemplate>
+                                        <ItemsPanelTemplate><WrapPanel/></ItemsPanelTemplate>
                                     </ItemsControl.ItemsPanel>
-                                    <ItemsControl.ItemTemplate>
-                                        <DataTemplate>
-                                            <Button Content="{Binding Label}" Style="{StaticResource ActionButton}"
-                                                    IsEnabled="{Binding IsEnabled}"
-                                                    Command="{Binding Command}"
-                                                    CommandParameter="{Binding Key}"/>
-                                        </DataTemplate>
-                                    </ItemsControl.ItemTemplate>
                                 </ItemsControl>
-                                <TextBlock Margin="0,8,0,0" FontSize="10.5" Foreground="{StaticResource TextSecondaryBrush}">
-                                    <TextBlock.Style>
-                                        <Style TargetType="TextBlock">
-                                            <Setter Property="Visibility" Value="Collapsed"/>
-                                            <Style.Triggers>
-                                                <DataTrigger Binding="{Binding ClipboardStatusText}" Value="NOT APPLICABLE">
-                                                    <Setter Property="Visibility" Value="Collapsed"/>
-                                                </DataTrigger>
-                                                <Trigger Property="Text" Value="">
-                                                    <Setter Property="Visibility" Value="Collapsed"/>
-                                                </Trigger>
-                                            </Style.Triggers>
-                                        </Style>
-                                    </TextBlock.Style>
-                                    <Run Text="CLIPBOARD: "/>
-                                    <Run FontWeight="SemiBold" Text="{Binding ClipboardStatusText}"/>
-                                </TextBlock>
                             </StackPanel>
                         </Border>
+                    </Grid>
 
-                        <!-- Live command output (DB-M12.1 Part 12) -->
-                        <Border Margin="0,12,0,0">
+                    <!-- ============ GOVERNANCE STRIP (compact horizontal) ============ -->
+                    <Border Grid.Row="3" Margin="0,6,0,0" Background="#F1F4F7"
+                            BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1"
+                            CornerRadius="5" Padding="8,2">
+                        <StackPanel>
+                            <WrapPanel>
+                                <Border Background="{Binding ModeBadgeBrush}" CornerRadius="3" Padding="7,2" Margin="2,1">
+                                    <TextBlock FontSize="10" FontWeight="Bold" Foreground="White">
+                                        <Run Text="MODE: "/><Run Text="{Binding ModeBadgeText}"/>
+                                    </TextBlock>
+                                </Border>
+
+                                <Border Style="{StaticResource GovernancePill}"
+                                        ToolTip="{Binding GitObservedText}" Tag="{Binding HumanGitGuidanceText}">
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="GIT" FontSize="8.5" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" Margin="0,1,5,0"/>
+                                        <TextBlock Text="{Binding HumanGitStateText}" FontSize="10.5" FontWeight="SemiBold"
+                                                   Foreground="{StaticResource TextPrimaryBrush}" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </Border>
+
+                                <Border Style="{StaticResource GovernancePill}" ToolTip="DB-M06 verification result from state/verification.json">
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="M06" FontSize="8.5" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" Margin="0,1,5,0"/>
+                                        <TextBlock Text="{Binding VerificationResultText}" FontSize="10.5" FontWeight="SemiBold"
+                                                   Foreground="{StaticResource TextPrimaryBrush}" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </Border>
+
+                                <Border Style="{StaticResource GovernancePill}" ToolTip="Claude review decision (DB-M08)">
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="CLAUDE" FontSize="8.5" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" Margin="0,1,5,0"/>
+                                        <TextBlock Text="{Binding ClaudeResultText}" FontSize="10.5" FontWeight="SemiBold"
+                                                   Foreground="{StaticResource TextPrimaryBrush}" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </Border>
+
+                                <Border Style="{StaticResource GovernancePill}"
+                                        ToolTip="Roadmap fingerprint guard — DevBridge never edits roadmap structure.">
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="ROADMAP" FontSize="8.5" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" Margin="0,1,5,0"/>
+                                        <TextBlock Text="{Binding RoadmapGuardText}" FontSize="10.5" FontWeight="SemiBold"
+                                                   Foreground="{StaticResource TextPrimaryBrush}" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </Border>
+
+                                <Border Style="{StaticResource GovernancePill}" ToolTip="ChatGPT handoff zero-context gate (DB-M05)">
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="HANDOFF" FontSize="8.5" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" Margin="0,1,5,0"/>
+                                        <TextBlock Text="{Binding HandoffReadyText}" FontSize="10.5" FontWeight="SemiBold"
+                                                   Foreground="{StaticResource TextPrimaryBrush}" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </Border>
+
+                                <Border Style="{StaticResource GovernancePill}" ToolTip="{Binding ModeCaption}">
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="M10" FontSize="8.5" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" Margin="0,1,5,0"/>
+                                        <TextBlock Text="{Binding M10EligibilityText}" FontSize="10.5" FontWeight="SemiBold"
+                                                   Foreground="{StaticResource TextPrimaryBrush}" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </Border>
+
+                                <Border Style="{StaticResource GovernancePill}" ToolTip="Advisory periodic workbook review (DB-M11)">
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="ADVISORY" FontSize="8.5" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" Margin="0,1,5,0"/>
+                                        <TextBlock Text="{Binding AdvisoryReviewText}" FontSize="10.5" FontWeight="SemiBold"
+                                                   Foreground="{StaticResource TextPrimaryBrush}" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </Border>
+
+                                <Border Style="{StaticResource GovernancePill}" ToolTip="Retirement status of the temporary bridge">
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="STATUS" FontSize="8.5" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" Margin="0,1,5,0"/>
+                                        <TextBlock Text="{Binding RetirementText}" FontSize="10.5" FontWeight="SemiBold"
+                                                   Foreground="{StaticResource TextPrimaryBrush}" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </Border>
+                            </WrapPanel>
+
+                            <WrapPanel Margin="0,1,0,0">
+                                <Border Style="{StaticResource GovernancePill}" ToolTip="Pre-DevBridge Nexus baseline captured at retirement/restart">
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="PRE-BASELINE" FontSize="8.5" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" Margin="0,1,5,0"/>
+                                        <TextBlock Text="{Binding PreBaselineText}" FontSize="10.5" FontWeight="SemiBold"
+                                                   Foreground="{StaticResource TextPrimaryBrush}" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </Border>
+                                <Border Style="{StaticResource GovernancePill}" ToolTip="Human Git observed state (branch / head / merge / dirty)">
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="GIT OBSERVED" FontSize="8.5" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" Margin="0,1,5,0"/>
+                                        <TextBlock Text="{Binding GitObservedText}" FontSize="10.5" FontWeight="SemiBold"
+                                                   Foreground="{StaticResource TextPrimaryBrush}" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </Border>
+                                <Border Style="{StaticResource GovernancePill}"
+                                        ToolTip="Human Git guidance — hover of the GIT chip above. This console has NO roadmap structural-edit controls and no auto git/merge.">
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="GUIDANCE" FontSize="8.5" FontWeight="Bold" Foreground="{StaticResource TextMutedBrush}" VerticalAlignment="Center" Margin="0,1,5,0"/>
+                                        <TextBlock Text="{Binding HumanGitGuidanceText}" FontSize="10" Foreground="{StaticResource TextSecondaryBrush}"
+                                                   VerticalAlignment="Center" TextTrimming="CharacterEllipsis"/>
+                                    </StackPanel>
+                                </Border>
+                            </WrapPanel>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- ============ BOTTOM REGION: failures / human action / residuals / live output ============ -->
+                    <Grid Grid.Row="4" Margin="0,6,0,0">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto"/> <!-- failure -->
+                            <RowDefinition Height="Auto"/> <!-- human action -->
+                            <RowDefinition Height="Auto"/> <!-- residuals -->
+                            <RowDefinition Height="*"/>    <!-- live command output -->
+                        </Grid.RowDefinitions>
+
+                        <!-- FAILURE banner -->
+                        <Border Grid.Row="0" Margin="0,0,0,4" Background="#FBE9E9" BorderBrush="{StaticResource RedBrush}"
+                                BorderThickness="1" CornerRadius="4" Padding="10,4">
                             <Border.Style>
                                 <Style TargetType="Border">
-                                    <Setter Property="Background" Value="#F7F9FB"/>
-                                    <Setter Property="BorderBrush" Value="{StaticResource CardBorderBrush}"/>
-                                    <Setter Property="BorderThickness" Value="1"/>
-                                    <Setter Property="CornerRadius" Value="6"/>
-                                    <Setter Property="Padding" Value="14,12"/>
-                                    <Setter Property="Visibility" Value="Collapsed"/>
-                                    <Style.Triggers>
-                                        <DataTrigger Binding="{Binding CommandPanelVisible}" Value="True">
-                                            <Setter Property="Visibility" Value="Visible"/>
-                                        </DataTrigger>
-                                    </Style.Triggers>
-                                </Style>
-                            </Border.Style>
-                            <StackPanel>
-                                <StackPanel Orientation="Horizontal">
-                                    <TextBlock Text="LIVE COMMAND OUTPUT" Style="{StaticResource SectionHeader}"/>
-                                    <Border Background="{Binding CommandStatusBrush}" CornerRadius="3" Padding="8,3"
-                                            Margin="12,0,0,0" VerticalAlignment="Center">
-                                        <TextBlock Text="{Binding CommandRunStatus}" FontSize="10" FontWeight="Bold" Foreground="White"/>
-                                    </Border>
-                                    <TextBlock Text="{Binding RunningCommandName}" FontSize="11" FontWeight="SemiBold"
-                                               Foreground="{StaticResource TextSecondaryBrush}" Margin="12,0,0,0" VerticalAlignment="Center"/>
-                                </StackPanel>
-                                <TextBlock Text="The result below is derived from the existing backend scripts + a refreshed-state transition check — never assumed."
-                                           Style="{StaticResource SectionCaption}" Margin="0,2,0,8"/>
-                                <TextBlock Text="{Binding CommandOutputSummary}" FontFamily="Consolas" FontSize="11"
-                                           Foreground="{StaticResource TextPrimaryBrush}" TextWrapping="Wrap"/>
-                            </StackPanel>
-                        </Border>
-
-                        <!-- Failure display (separate from residuals) -->
-                        <Border Margin="0,12,0,0">
-                            <Border.Style>
-                                <Style TargetType="Border">
-                                    <Setter Property="Background" Value="#FBE9E9"/>
-                                    <Setter Property="BorderBrush" Value="{StaticResource RedBrush}"/>
-                                    <Setter Property="BorderThickness" Value="1"/>
-                                    <Setter Property="CornerRadius" Value="6"/>
-                                    <Setter Property="Padding" Value="14,12"/>
                                     <Setter Property="Visibility" Value="Collapsed"/>
                                     <Style.Triggers>
                                         <DataTrigger Binding="{Binding HasFailure}" Value="True">
@@ -373,38 +550,76 @@
                                     </Style.Triggers>
                                 </Style>
                             </Border.Style>
-                            <StackPanel>
-                                <TextBlock Text="⚠ FAILED STAGE" FontSize="13" FontWeight="Bold" Foreground="{StaticResource RedBrush}"/>
-                                <Grid Margin="0,8,0,0">
-                                    <Grid.ColumnDefinitions>
-                                        <ColumnDefinition Width="150"/>
-                                        <ColumnDefinition Width="170"/>
-                                        <ColumnDefinition Width="*"/>
-                                    </Grid.ColumnDefinitions>
-                                    <StackPanel>
-                                        <TextBlock Text="Stage" Style="{StaticResource LabelText}"/>
-                                        <TextBlock Text="{Binding FailureStage}" Style="{StaticResource ValueText}" TextWrapping="Wrap" Margin="0,2,0,0"/>
-                                    </StackPanel>
-                                    <StackPanel Grid.Column="1" Margin="12,0,0,0">
-                                        <TextBlock Text="Timestamp" Style="{StaticResource LabelText}"/>
-                                        <TextBlock Text="{Binding FailureTimestamp}" Style="{StaticResource ValueText}" Margin="0,2,0,0"/>
-                                    </StackPanel>
-                                    <StackPanel Grid.Column="2" Margin="12,0,0,0">
-                                        <TextBlock Text="Error / result" Style="{StaticResource LabelText}"/>
-                                        <TextBlock Text="{Binding FailureResult}" Style="{StaticResource ValueText}" TextWrapping="Wrap" Margin="0,2,0,0"/>
-                                    </StackPanel>
-                                </Grid>
-                                <TextBlock Text="Recommended action" Style="{StaticResource LabelText}" Margin="0,12,0,0"/>
-                                <TextBlock Text="{Binding FailureRecommended}" Style="{StaticResource ValueText}" TextWrapping="Wrap" Margin="0,2,0,0"/>
-                                <TextBlock Text="No silent retry: resolve the failure, then continue through the governed stages."
-                                           FontSize="10.5" Foreground="{StaticResource TextSecondaryBrush}" Margin="0,8,0,0"/>
-                            </StackPanel>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="⚠ FAILED" FontSize="10.5" FontWeight="Bold"
+                                           Foreground="{StaticResource RedBrush}" VerticalAlignment="Center"/>
+                                <TextBlock Grid.Column="1" Text="{Binding FailureStage}" FontSize="10.5" FontWeight="Bold"
+                                           Foreground="{StaticResource TextPrimaryBrush}" Margin="10,0,0,0" VerticalAlignment="Center"/>
+                                <TextBlock Grid.Column="2" Margin="10,0,0,0" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"
+                                           FontSize="10" Foreground="{StaticResource TextSecondaryBrush}">
+                                    <TextBlock.ToolTip>
+                                        <ToolTip>
+                                            <StackPanel>
+                                                <TextBlock Text="{Binding FailureResult}" TextWrapping="Wrap" MaxWidth="700"/>
+                                                <TextBlock Text="{Binding FailureRecommended}" TextWrapping="Wrap" Margin="0,6,0,0"/>
+                                                <TextBlock Text="{Binding FailureTimestamp}" Margin="0,6,0,0" Foreground="{StaticResource TextMutedBrush}"/>
+                                            </StackPanel>
+                                        </ToolTip>
+                                    </TextBlock.ToolTip>
+                                    <Run Text="Reason: "/><Run FontWeight="SemiBold" Text="{Binding FailureRecommended}"/>
+                                </TextBlock>
+                            </Grid>
                         </Border>
 
-                        <!-- Residual observations (shown separately from failures) -->
-                        <Border Margin="0,12,0,0">
+                        <!-- HUMAN ACTION banner (DB-M12.3, display only) -->
+                        <Border Grid.Row="1" Margin="0,0,0,4" Background="#F1EAF8" BorderBrush="{StaticResource PurpleBrush}"
+                                BorderThickness="1" CornerRadius="4" Padding="10,4">
                             <Border.Style>
-                                <Style TargetType="Border" BasedOn="{StaticResource CardBorder}">
+                                <Style TargetType="Border">
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding HasHumanAction}" Value="True">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Border.Style>
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="Auto"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBlock Text="HUMAN ACTION" FontSize="10.5" FontWeight="Bold"
+                                           Foreground="{StaticResource PurpleBrush}" VerticalAlignment="Center"/>
+                                <TextBlock Grid.Column="1" Text="{Binding HumanActionType}" FontSize="10" FontWeight="Bold"
+                                           Foreground="{StaticResource TextPrimaryBrush}" Margin="10,0,0,0" VerticalAlignment="Center"/>
+                                <TextBlock Grid.Column="2" Margin="10,0,0,0" VerticalAlignment="Center" TextTrimming="CharacterEllipsis"
+                                           FontSize="10" Foreground="{StaticResource TextSecondaryBrush}">
+                                    <TextBlock.ToolTip>
+                                        <ToolTip>
+                                            <StackPanel>
+                                                <TextBlock Text="{Binding HumanActionReason}" TextWrapping="Wrap" MaxWidth="700"/>
+                                                <TextBlock Text="{Binding HumanActionInstructions}" TextWrapping="Wrap" Margin="0,6,0,0"/>
+                                                <TextBlock FontFamily="Consolas" FontSize="11" Text="{Binding HumanActionEvidence}"
+                                                           TextWrapping="Wrap" Margin="0,6,0,0"/>
+                                            </StackPanel>
+                                        </ToolTip>
+                                    </TextBlock.ToolTip>
+                                    <Run Text="Reason: "/><Run FontWeight="SemiBold" Text="{Binding HumanActionReason}"/>
+                                </TextBlock>
+                            </Grid>
+                        </Border>
+
+                        <!-- RESIDUAL OBSERVATIONS (collapsed) -->
+                        <Border Grid.Row="2" Margin="0,0,0,4">
+                            <Border.Style>
+                                <Style TargetType="Border">
                                     <Setter Property="Visibility" Value="Collapsed"/>
                                     <Style.Triggers>
                                         <DataTrigger Binding="{Binding HasResiduals}" Value="True">
@@ -413,42 +628,87 @@
                                     </Style.Triggers>
                                 </Style>
                             </Border.Style>
-                            <StackPanel>
-                                <TextBlock Text="RESIDUAL OBSERVATIONS" Style="{StaticResource SectionHeader}"/>
-                                <TextBlock Text="{Binding ResidualSummary}" Style="{StaticResource SectionCaption}" Margin="0,2,0,8"/>
-                                <ItemsControl ItemsSource="{Binding Residuals}">
-                                    <ItemsControl.ItemTemplate>
-                                        <DataTemplate>
-                                            <Border Background="#F0F4F7" CornerRadius="4" Padding="10,7" Margin="0,3">
-                                                <StackPanel>
-                                                    <StackPanel Orientation="Horizontal">
-                                                        <Border Background="{StaticResource PurpleBrush}" CornerRadius="3" Padding="6,2">
-                                                            <TextBlock Text="{Binding Severity}" FontSize="9" FontWeight="Bold" Foreground="White"/>
-                                                        </Border>
-                                                        <TextBlock Text="{Binding Subject}" FontSize="12" FontWeight="SemiBold"
-                                                                   Foreground="{StaticResource TextPrimaryBrush}" Margin="8,0,0,0" VerticalAlignment="Center"/>
-                                                        <TextBlock Text="{Binding Blocking}" FontSize="9" Foreground="{StaticResource TextMutedBrush}"
-                                                                   Margin="8,0,0,0" VerticalAlignment="Center"/>
+                            <Expander Header="{Binding ResidualSummary, StringFormat=RESIDUAL OBSERVATIONS — {0}}" IsExpanded="False">
+                                <ScrollViewer VerticalScrollBarVisibility="Auto" MaxHeight="120">
+                                    <ItemsControl ItemsSource="{Binding Residuals}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Border Background="#F0F4F7" CornerRadius="3" Padding="8,4" Margin="0,2">
+                                                    <StackPanel>
+                                                        <StackPanel Orientation="Horizontal">
+                                                            <Border Background="{StaticResource PurpleBrush}" CornerRadius="3" Padding="5,1">
+                                                                <TextBlock Text="{Binding Severity}" FontSize="8" FontWeight="Bold" Foreground="White"/>
+                                                            </Border>
+                                                            <TextBlock Text="{Binding Subject}" FontSize="11" FontWeight="SemiBold"
+                                                                       Foreground="{StaticResource TextPrimaryBrush}" Margin="7,0,0,0" VerticalAlignment="Center"/>
+                                                            <TextBlock Text="{Binding Blocking}" FontSize="8.5" Foreground="{StaticResource TextMutedBrush}"
+                                                                       Margin="7,0,0,0" VerticalAlignment="Center"/>
+                                                        </StackPanel>
+                                                        <TextBlock Text="{Binding Detail}" FontSize="10" Foreground="{StaticResource TextSecondaryBrush}"
+                                                                   TextWrapping="Wrap" Margin="0,3,0,0"/>
                                                     </StackPanel>
-                                                    <TextBlock Text="{Binding Detail}" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}"
-                                                               TextWrapping="Wrap" Margin="0,4,0,0"/>
-                                                </StackPanel>
-                                            </Border>
-                                        </DataTemplate>
-                                    </ItemsControl.ItemTemplate>
-                                </ItemsControl>
-                            </StackPanel>
+                                                </Border>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </ScrollViewer>
+                            </Expander>
                         </Border>
 
-                        <!-- Last script output -->
-                        <Expander Header="LAST SCRIPT OUTPUT (governed backend scripts)" IsExpanded="False" Margin="0,12,0,0">
-                            <Border Background="#F7F9FB" BorderBrush="{StaticResource CardBorderBrush}" BorderThickness="1" CornerRadius="4" Padding="10">
-                                <TextBlock Text="{Binding ScriptOutput}" FontFamily="Consolas" FontSize="11"
-                                           Foreground="{StaticResource TextPrimaryBrush}" TextWrapping="Wrap"/>
-                            </Border>
-                        </Expander>
-                    </StackPanel>
-                </ScrollViewer>
+                        <!-- LIVE COMMAND OUTPUT — internally scrollable, bottom-pinned, bounded height -->
+                        <Border Grid.Row="3" MaxHeight="340" VerticalAlignment="Bottom">
+                            <Border.Style>
+                                <Style TargetType="Border">
+                                    <Setter Property="Background" Value="#F7F9FB"/>
+                                    <Setter Property="BorderBrush" Value="{StaticResource CardBorderBrush}"/>
+                                    <Setter Property="BorderThickness" Value="1"/>
+                                    <Setter Property="CornerRadius" Value="5"/>
+                                    <Setter Property="Padding" Value="10,6"/>
+                                    <Setter Property="Visibility" Value="Collapsed"/>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding CommandPanelVisible}" Value="True">
+                                            <Setter Property="Visibility" Value="Visible"/>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </Border.Style>
+                            <Grid>
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="Auto"/>
+                                    <RowDefinition Height="*"/>
+                                </Grid.RowDefinitions>
+
+                                <Grid>
+                                    <Grid.ColumnDefinitions>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                        <ColumnDefinition Width="*"/>
+                                        <ColumnDefinition Width="Auto"/>
+                                    </Grid.ColumnDefinitions>
+                                    <TextBlock Text="LIVE COMMAND OUTPUT" Style="{StaticResource SectionHeader}" FontSize="11"
+                                               VerticalAlignment="Center"/>
+                                    <Border Grid.Column="1" Background="{Binding CommandStatusBrush}" CornerRadius="3"
+                                            Padding="7,1" Margin="10,0,0,0" VerticalAlignment="Center">
+                                        <TextBlock Text="{Binding CommandRunStatus}" FontSize="9" FontWeight="Bold" Foreground="White"/>
+                                    </Border>
+                                    <TextBlock Grid.Column="2" Text="{Binding RunningCommandName}" FontSize="10.5" FontWeight="SemiBold"
+                                               Foreground="{StaticResource TextSecondaryBrush}" Margin="10,0,0,0" VerticalAlignment="Center"
+                                               TextTrimming="CharacterEllipsis" ToolTip="{Binding RunningCommandName}"/>
+                                </Grid>
+
+                                <TextBlock Grid.Row="1" Text="{Binding CommandOutputSummary}" FontSize="10.5"
+                                           Foreground="{StaticResource TextPrimaryBrush}" TextWrapping="Wrap" Margin="0,4,0,0"/>
+
+                                <ScrollViewer Grid.Row="2" VerticalScrollBarVisibility="Auto" Margin="0,4,0,0"
+                                              HorizontalScrollBarVisibility="Disabled">
+                                    <TextBlock Text="{Binding ScriptOutput}" FontFamily="Consolas" FontSize="10.5"
+                                               Foreground="{StaticResource TextPrimaryBrush}" TextWrapping="Wrap"/>
+                                </ScrollViewer>
+                            </Grid>
+                        </Border>
+                    </Grid>
+                </Grid>
             </TabItem>
 
             <!-- ========== DEVELOPMENT FLOW ========== -->

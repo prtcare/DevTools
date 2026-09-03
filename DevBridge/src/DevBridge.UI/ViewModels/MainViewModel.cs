@@ -40,6 +40,13 @@ public sealed class MainViewModel : ObservableObject
             .Select(b => new ActionButtonViewModel(b.Key, b.Label, ActionCommand))
             .ToList();
 
+        // Pure presentation grouping of the SAME button instances (so enablement and the
+        // recommended highlight stay in sync with ActionButtons after every Refresh).
+        PrimaryActions = ActionButtons.Where(b => b.Group == "PRIMARY").ToList();
+        LifecycleActions = ActionButtons.Where(b => b.Group == "LIFECYCLE").ToList();
+        ReportActions = ActionButtons.Where(b => b.Group == "REPORTS").ToList();
+        HumanGateActions = ActionButtons.Where(b => b.Group == "HUMAN").ToList();
+
         BackendRoot = _cfg.Root;
         Refresh();
     }
@@ -107,12 +114,22 @@ public sealed class MainViewModel : ObservableObject
     private Brush _instructionAccent = new SolidColorBrush(Color.FromRgb(0x15, 0x65, 0xC0));
     public Brush InstructionAccent { get => _instructionAccent; set => SetProperty(ref _instructionAccent, value); }
 
+    // Display label of the single highlighted next action (button marked IsRecommended).
+    private string _recommendedLabel = "";
+    public string RecommendedLabel { get => _recommendedLabel; set => SetProperty(ref _recommendedLabel, value); }
+
     // ------------------------------------------------------------------ stages
     private List<StageRowViewModel> _stages = new();
     public List<StageRowViewModel> Stages { get => _stages; set => SetProperty(ref _stages, value); }
 
     // ------------------------------------------------------------------ buttons
+    // ActionButtons remains the full engine-ordered set (tests + enablement loop rely on it).
+    // The four grouped lists share the same ActionButtonViewModel instances — display only.
     public List<ActionButtonViewModel> ActionButtons { get; }
+    public List<ActionButtonViewModel> PrimaryActions { get; }
+    public List<ActionButtonViewModel> LifecycleActions { get; }
+    public List<ActionButtonViewModel> ReportActions { get; }
+    public List<ActionButtonViewModel> HumanGateActions { get; }
 
     // ----------------------------------------------------------- current task card
     private string _nodeId = "—";
@@ -598,8 +615,19 @@ public sealed class MainViewModel : ObservableObject
                 : anyCopy
                     ? ClipboardStatusMapper.StatusFor(true, "Ready to copy the current artifact.").Label
                     : ClipboardStatusMapper.NotApplicable().Label;
+
+            // The single recommended action = the engine's first enabled ADVANCE button
+            // (a real workflow step) when one exists; otherwise the first enabled button
+            // (e.g. read a report). Pure display emphasis — never changes what is enabled.
+            string recommended = next.EnabledButtons.FirstOrDefault(IsAdvance)
+                ?? next.EnabledButtons.FirstOrDefault() ?? "";
+            RecommendedLabel = ActionButtons.FirstOrDefault(b => b.Key == recommended)?.Label ?? "";
             foreach (var b in ActionButtons)
-                b.IsEnabled = !IsBusy && next.EnabledButtons.Contains(b.Key);
+            {
+                bool enabled = !IsBusy && next.EnabledButtons.Contains(b.Key);
+                b.IsEnabled = enabled;
+                b.IsRecommended = enabled && b.Key == recommended;
+            }
         }
         catch (Exception e)
         {
@@ -924,6 +952,12 @@ public sealed class MainViewModel : ObservableObject
 
     private static string ShortSha(string? s)
         => string.IsNullOrWhiteSpace(s) ? "—" : s.Length >= 7 ? s[..7] : s;
+
+    /// <summary>A real workflow advance (as opposed to a COPY_/OPEN_ helper). Used only to
+    /// decide which enabled button to highlight — enablement stays fully engine-driven.</summary>
+    private static bool IsAdvance(string key)
+        => !key.StartsWith("OPEN_", StringComparison.Ordinal)
+           && !key.StartsWith("COPY_", StringComparison.Ordinal);
 
     private void TryOpen(string? path)
     {
