@@ -65,6 +65,12 @@ $script:CurrentState = Get-Content (Join-Path $script:StateDir "current-task.jso
 $script:Preflight = Get-Content (Join-Path $script:StateDir "preflight.json") -Raw -Encoding UTF8 | ConvertFrom-Json
 $script:Reservation = Get-Content (Join-Path $script:StateDir "reservation.json") -Raw -Encoding UTF8 | ConvertFrom-Json
 
+# Affected chain of the CURRENT governed task (from the DB-M03 preflight scope;
+# validated token-for-token against the reservation in PART 1). Every later
+# chain/scope-relevance decision is keyed off this, never a hard-coded lineage.
+$script:AffSet = @($script:Preflight.affectedNodes | Where-Object { $_ } | Select-Object -Unique)
+$script:AffSetJoined = ($script:AffSet -join " / ")
+
 $script:NodeId = [string]$script:CurrentState.nodeId
 $script:ChangeId = [string]$script:CurrentState.changeId
 $script:NodeName = [string]$script:CurrentState.name
@@ -156,8 +162,10 @@ foreach ($o in $script:AllAc) {
     $named = @(($o.NodeId -split "\|") | ForEach-Object { $_.Trim() })
     $touchesChain = @($named | Where-Object { $script:Preflight.affectedNodes -contains $_ }).Count -gt 0
     if (@($named | Where-Object { $_ -eq $script:NodeId }).Count -gt 0) { $script:Conflict = ("Change {0} (row {1}) targets node [{2}] - conflicts with the reservation." -f $o.ChangeId, $o.Row, $o.NodeId); break }
-    if ([string]$o.FilesGlobs -match "DevelopmentControl") {
-        if (-not $touchesChain) { $script:Conflict = ("Change {0} (row {1}) file-glob overlaps DevelopmentControl - conflicts with the reservation." -f $o.ChangeId, $o.Row); break }
+    $otherGlobToks = @([string]$o.FilesGlobs -split "[|,;\r\n]+" | ForEach-Object { $_.Trim() } | Where-Object { $_ })
+    $resGlobToks = @($script:Preflight.filesGlobs)
+    if (@($otherGlobToks | Where-Object { $resGlobToks -contains $_ }).Count -gt 0 -and (-not $touchesChain)) {
+        $script:Conflict = ("Change {0} (row {1}) file-glob [{2}] overlaps a reserved glob - conflicts with the reservation." -f $o.ChangeId, $o.Row, $o.FilesGlobs); break
     }
     foreach ($p in $script:Preflight.projects) {
         if ($o.Projects -and (Test-ProjectTokenOverlap ([string]$o.Projects) $p) -and (-not $touchesChain)) { $script:Conflict = ("Change {0} (row {1}) project [{2}] overlaps reserved project [{3}]." -f $o.ChangeId, $o.Row, $o.Projects, $p); break }
@@ -219,18 +227,25 @@ if (-not $script:DepOk) {
     Stop-Outcome "HANDOFF_STATE_STALE" "Required dependency is no longer satisfied for the reserved change."
 }
 
-# 7) No new blocking decision/finding
+# 7) No new blocking decision/finding relevant to the reserved chain/scope (fresh)
+# Relevance is computed from the CURRENT task's affected chain + reserved projects -
+# never from a hard-coded milestone/area label.
+$script:BlkHay = New-Object System.Collections.Generic.List[string]
+foreach ($_bh in @($script:Preflight.affectedNodes) + @($script:Preflight.projects)) { if ($_bh) { $script:BlkHay.Add([string]$_bh) | Out-Null } }
+$script:BlkHayU = @($script:BlkHay | Sort-Object -Unique)
 foreach ($d in @($script:Preflight.openDecisions)) {
-    if ($d.blocking -and ([string]$d.detail -match "M-07-0\.2|Development Control")) {
-        Stop-Outcome "HANDOFF_STATE_STALE" ("Open decision {0} blocks this scope." -f $d.decisionId)
-    }
+    if (-not $d.blocking) { continue }
+    $dd = [string]$d.detail
+    $rel = @($script:BlkHayU | Where-Object { $dd -match ([regex]::Escape($_)) }).Count -gt 0
+    if ($rel) { Stop-Outcome "HANDOFF_STATE_STALE" ("Open decision {0} blocks this scope." -f $d.decisionId) }
 }
 foreach ($f in @($script:Preflight.auditFindings)) {
-    if ($f.classification -eq "blocks" -and ([string]$f.detail -match "M-07-0\.1|M-07-0\.2")) {
-        Stop-Outcome "HANDOFF_STATE_STALE" ("Audit finding {0} blocks this scope." -f $f.findingId)
-    }
+    if ($f.classification -ne "blocks") { continue }
+    $fd = [string]$f.detail
+    $rel = @($script:BlkHayU | Where-Object { $fd -match ([regex]::Escape($_)) }).Count -gt 0
+    if ($rel) { Stop-Outcome "HANDOFF_STATE_STALE" ("Audit finding {0} blocks this scope." -f $f.findingId) }
 }
-Write-Output ("  no new blocking decision/finding detected for " + $script:NodeId + " (open decisions DEC-001..003 are non-blocking for this work item)")
+Write-Output ("  no blocking open decision/finding for " + $script:NodeId + " (re-checked against the reserved chain/scope)")
 
 # 8) Workbook structure - 14 sheets load (checked above)
 
@@ -272,7 +287,9 @@ foreach ($r in $script:OpenRes) {
     if (@($named | Where-Object { $_ -eq $script:NodeId }).Count -gt 0) {
         $script:P2Conflicts.Add(("node {0} reserved by {1}" -f $script:NodeId, $r.ChangeId))
     }
-    if ([string]$r.FilesGlobs -match "DevelopmentControl" -and (-not $touchesChain)) {
+    $otherGlobToks2 = @([string]$r.FilesGlobs -split "[|,;\r\n]+" | ForEach-Object { $_.Trim() } | Where-Object { $_ })
+    $resGlobToks2 = @($script:Preflight.filesGlobs)
+    if (@($otherGlobToks2 | Where-Object { $resGlobToks2 -contains $_ }).Count -gt 0 -and (-not $touchesChain)) {
         $script:P2Conflicts.Add(("file-glob overlap: {0} ({1})" -f $r.ChangeId, $r.NodeId))
     }
     foreach ($p in $script:Preflight.projects) {
@@ -306,8 +323,16 @@ $script:Node = Get-RoadmapNodeById $script:NodeId
 if (-not $script:Node) { Stop-Outcome "HANDOFF_STATE_STALE" ("Roadmap node {0} not found." -f $script:NodeId) }
 $script:Parent = Get-RoadmapNodeById $script:Node.ParentId
 if (-not $script:Parent) { Stop-Outcome "HANDOFF_STATE_STALE" ("Parent node {0} not found." -f $script:Node.ParentId) }
-$script:Feature = Get-RoadmapNodeById $script:Preflight.featureNodeId
-if (-not $script:Feature) { $script:Feature = Get-RoadmapNodeById "F-07-0" }
+$script:Feature = $null
+if ($script:Preflight.featureNodeId) { $script:Feature = Get-RoadmapNodeById ([string]$script:Preflight.featureNodeId) }
+if (-not $script:Feature) {
+    # Derive the governing Feature by climbing the roadmap parent chain (no hard-coded id).
+    $script:FeatureCur = Get-RoadmapNodeById $script:Node.ParentId
+    while ($script:FeatureCur) {
+        if (([string]$script:FeatureCur.NodeId) -like "F-*") { $script:Feature = $script:FeatureCur; break }
+        $script:FeatureCur = Get-RoadmapNodeById $script:FeatureCur.ParentId
+    }
+}
 
 $script:ReservedScope = @{
     repositories = @($script:ResRow.Repositories -split "\|" | ForEach-Object { $_.Trim() } | Where-Object { $_ })
@@ -335,15 +360,83 @@ $script:PendingItems = @($script:CurrentState.pendingGovernanceItems)
 $script:AfClass = @{}
 foreach ($pf in @($script:Preflight.auditFindings)) { $script:AfClass[[string]$pf.findingId] = [string]$pf.classification }
 
-# Live Existing Assets sheet (authoritative for PART 12)
-$script:ExistingLive = @(Get-ExistingAssets)
-$script:DevControlAssetRow = @($script:ExistingLive | Where-Object { [string]$_.Area -match "Development control service" } | Select-Object -First 1)
+# ---- Derived task context (DB-M05 context-integrity) -------------------------
+# Every value below is rebuilt FRESH from the current governed task (state +
+# authoritative workbook) on each run. Previous-cycle acceptance criteria, exact
+# scope, instructions, current-state prose, file globs and work-item identifiers
+# are NEVER reused. If governance does not supply a mandatory input the handoff
+# stops as CHATGPT_HANDOFF_NOT_READY - the engine does not fabricate it.
+$script:NodeAcRaw = [string]$script:Node.AcceptanceCriteria
+if (-not $script:NodeAcRaw -or $script:NodeAcRaw.Trim().Length -eq 0) {
+    Write-Output "DB05_OUTCOME: HANDOFF_NOT_READY"
+    Write-Output "DB05_HANDOFF_TOKEN: CHATGPT_HANDOFF_NOT_READY"
+    Write-Output "DB05_GOVERNANCE_GAP: ACCEPTANCE_CRITERIA"
+    Write-Output ("DB-M05 STOP - Master Roadmap row " + $script:Node.Row + " (" + $script:NodeId + ") carries no governed Acceptance Criteria (column Q). Governed AC are required before a handoff; none was fabricated.")
+    exit 1
+}
+if (@($script:ReservedScope.repositories).Count -eq 0 -or @($script:ReservedScope.projects).Count -eq 0) {
+    Write-Output "DB05_OUTCOME: HANDOFF_NOT_READY"
+    Write-Output "DB05_HANDOFF_TOKEN: CHATGPT_HANDOFF_NOT_READY"
+    Write-Output "DB05_GOVERNANCE_GAP: RESERVED_SCOPE"
+    Write-Output ("DB-M05 STOP - reservation " + $script:ChangeId + " (Active Changes row " + $script:ResRow.Row + ") records no repositories or projects. The exact reserved scope is incomplete; a handoff would be misleading.")
+    exit 1
+}
+$script:NodeAcBullets = @($script:NodeAcRaw -split "\r?\n" | ForEach-Object { $_.Trim() } | Where-Object { $_ })
+if ($script:NodeAcBullets.Count -eq 0) { $script:NodeAcBullets = @($script:NodeAcRaw.Trim()) }
 
-# Governed handoff chain (PART 4, live): the WI-07-0.2.x implementation chain
-$script:ChainRows = @(Get-AllActiveChanges | Where-Object {
+# Governed handoff chain (PART 4, live): Active Changes whose NodeId intersects the
+# CURRENT task's affected chain. No other lineage is ever treated as this chain.
+$script:ChainRows = @($script:AllAc | Where-Object {
     $named = @(($_.NodeId -split "\|") | ForEach-Object { $_.Trim() })
-    @($named | Where-Object { $_ -match "^WI-07-0\.2\.\d+$" }).Count -gt 0
+    @($named | Where-Object { $script:AffSet -contains $_ }).Count -gt 0
 } | Sort-Object ChangeId)
+
+# Live Existing Assets sheet (authoritative for the Existing Assets section)
+$script:ExistingLive = @(Get-ExistingAssets)
+
+# Related Existing Assets: rows whose workbook text references a reserved project or
+# file/glob (whole repository names are used only when they are not a prefix of a
+# reserved project, to avoid matching other layers inside the same repo).
+$script:RelResToks = @(@($script:ReservedScope.projects) + @($script:ReservedScope.filesGlobs) | Where-Object { $_ } | Select-Object -Unique)
+foreach ($_rr in @($script:ReservedScope.repositories)) {
+    $isPrefix = @($script:ReservedScope.projects | Where-Object { $_ -like ($_rr + "*") }).Count -gt 0
+    if (-not $isPrefix -and -not ($script:RelResToks -contains $_rr)) { $script:RelResToks += $_rr }
+}
+$script:RelResRe = ($script:RelResToks | ForEach-Object { [regex]::Escape($_) }) -join "|"
+$script:RelAssets = @()
+if ($script:RelResRe) {
+    $script:RelAssets = @($script:ExistingLive | Where-Object {
+        $cellAll = @($_.PSObject.Properties | ForEach-Object { if ($null -ne $_.Value) { [string]$_.Value } }) -join " "
+        $cellAll -match $script:RelResRe
+    })
+}
+$script:RelTools = @()
+if ($script:RelResRe) {
+    $script:RelTools = @(Get-ToolRegistry | Where-Object {
+        $cellAll = @($_.PSObject.Properties | ForEach-Object { if ($null -ne $_.Value) { [string]$_.Value } }) -join " "
+        $cellAll -match $script:RelResRe
+    })
+}
+
+# Related architecture decisions: DB-M03 preflight classification + live ADR text.
+$script:RelAdr = @($script:Preflight.architectureDecisions | Sort-Object { [string]$_.adrId })
+$script:AdrLive = @{}
+foreach ($_aa in @(Get-AllAdrs)) { $script:AdrLive[[string]$_aa.AdrId] = $_aa }
+
+# Related audit findings: Audit Findings rows whose RoadmapLink references the chain.
+$script:RelevantAf = @(Get-AllAuditFindings | Where-Object {
+    $rl = [string]$_.RoadmapLink
+    @($script:AffSet | Where-Object { $rl -match ([regex]::Escape($_)) }).Count -gt 0
+})
+
+# Related phase-plan rows: Phase Plan rows whose RoadmapLink references the chain.
+$script:RelPhase = @()
+try {
+    $script:RelPhase = @(Get-PhasePlan | Where-Object {
+        $rl = [string]$_.RoadmapLink
+        @($script:AffSet | Where-Object { $rl -match ([regex]::Escape($_)) }).Count -gt 0
+    })
+} catch { $script:RelPhase = @() }
 
 # ---------------------------------------------------------------------------
 # Markdown assembly
@@ -391,7 +484,8 @@ Add-Line ("- **Change ID:** " + $script:ChangeId + " (Active Changes row " + $sc
 Add-Line ("- **Node Type:** " + $script:Node.NodeType)
 Add-Line ("- **Phase:** " + $script:Node.Phase)
 Add-Line ("- **Layer:** " + $script:Node.Layer)
-Add-Line ("- **Parent / hierarchy:** " + $script:Node.ParentId + " (" + $script:Parent.Name + ") - Feature " + $script:Feature.NodeId + " (" + $script:Feature.Name + ")")
+$script:FeatureLabel = if ($script:Feature) { ($script:Feature.NodeId + " (" + $script:Feature.Name + ")") } else { "(governing Feature node not resolved in roadmap)" }
+Add-Line ("- **Parent / hierarchy:** " + $script:Node.ParentId + " (" + $script:Parent.Name + ") - Feature " + $script:FeatureLabel)
 Add-Line ("- **Gate:** " + $script:Node.Gate)
 
 # ---- Development Control ----
@@ -410,7 +504,7 @@ Add-Line ("**" + $script:Node.OutcomePurpose + "**")
 Add-Line ""
 Add-Line ("Reservation summary (Active Changes row " + $script:ResRow.Row + "): " + $script:ResRow.Summary)
 Add-Line ""
-Add-Line ("Milestone context (M-07-0.2 Outcome / Purpose): " + $script:Parent.OutcomePurpose)
+Add-Line ("Milestone context (" + $script:Parent.NodeId + " '" + $script:Parent.Name + "' Outcome / Purpose): " + $script:Parent.OutcomePurpose)
 
 # ---- Current State ----
 Add-Section "Current State"
@@ -428,12 +522,15 @@ if ($script:DepSummaryLines.Count -gt 0) {
 } else {
     Add-Line "- **Dependency:** none recorded."
 }
-Add-Line "- **Milestone:** M-07-0.2 (Development Control Service, Excel-backed, Azure-SQL-ready) In Progress, 30% - WI-07-0.2.1, WI-07-0.2.2 and WI-07-0.2.3 Complete and independently/governed-verified (3 of 10 work items)."
-Add-Line "- **Existing implementation:** IDevelopmentControlStore (22 ops) + DTO/enum contracts in Nexus.Developer.Core/DevelopmentControl (WI-07-0.2.1); WorkbookSchemaValidator, WorkbookSchemaReport, ActivityLogMigration in Nexus.Developer.Infrastructure/DevelopmentControl (WI-07-0.2.2); ExcelDevelopmentControlStore ClosedXML-backed adapter in Nexus.Developer.Infrastructure/DevelopmentControl (WI-07-0.2.3, implements read + one safe mutation end-to-end, atomically, with append-only Version History and 34-column Activity Log)."
-Add-Line "- **Activity Log schema:** now 34 columns (widened by WI-07-0.2.2); new records must use the new schema."
-Add-Line ("- **This work item (" + $script:NodeId + "):** " + [string]$script:Node.OutcomePurpose + " - to be implemented inside the reserved Core scope.")
-Add-Line "- **Development Guide state:** M-07-0.1 (Versioned roadmap and simultaneous-development control) In Progress 85% is the closest guide row; the guide has no row for M-07-0.2 yet (mirror gap - Master Roadmap remains authoritative)."
-Add-Line "- **Phase Plan context:** M-07-0.2 is P0 baseline, outside the P1/P2 phase-plan sequence; P1-02/P1-03 (07 Developer) rows are Superseded under ADR-005."
+Add-Line ("- **Milestone:** " + $script:Parent.NodeId + " (" + $script:Parent.Name + ") Status '" + $script:Parent.Status + "' - the governed parent container resolved to this leaf (" + $script:Node.NodeType + ") by DB-M03.1.")
+$script:FeatureStat = if ($script:Feature) { ("Status '" + $script:Feature.Status + "'") } else { "Status not resolved" }
+Add-Line ("- **Feature / chain:** " + $script:FeatureLabel + " " + $script:FeatureStat + "; affected chain reserved for this change: " + $script:AffSetJoined + ".")
+Add-Line ("- **This work item (" + $script:NodeId + "):** " + [string]$script:Node.OutcomePurpose + " - to be implemented inside the exact reserved scope declared below.")
+Add-Line ("- **Reserved repositories / projects:** " + (@($script:ReservedScope.repositories) -join ", ") + " / " + (@($script:ReservedScope.projects) -join ", ") + ".")
+Add-Line ("- **Reservation ledger state:** " + $script:ResRow.Status + " - no implementation delta exists at DB-M05 time; the change is awaiting the ChatGPT handoff and the DeepSeek prompt.")
+if ($script:RelPhase.Count -gt 0) {
+    Add-Line ("- **Phase Plan context:** " + (@($script:RelPhase | ForEach-Object { $_.PhaseStep + " (" + $_.Objective + ") [" + $_.Status + "]" }) -join "; ") + ".")
+}
 
 # ---- Why This Work Is Current ----
 Add-Section "Why This Work Is Current"
@@ -445,37 +542,37 @@ foreach ($ctok in @($script:Preflight.dependencies | Where-Object { $_.state -in
     if (-not $script:NextWorkDepDetail) { $script:NextWorkDepDetail = $cdetail } else { $script:NextWorkDepDetail = $script:NextWorkDepDetail + ", " + $cdetail }
 }
 if (-not $script:NextWorkDepDetail) { $script:NextWorkDepDetail = "none" }
-Add-Line ("1. **NEXT WORK drill-down** (DB-M03 selection): within M-07-0.2 (Development Control Service), the only planned child whose declared dependencies are satisfied is " + $script:NodeId + " (deps satisfied: " + $script:NextWorkDepDetail + ").")
-Add-Line "2. **CURRENT WORK FIRST**: M-07-0.2 has Status In Progress (30%) and is named by open reservations in the Active Changes ledger; it is not skipped for higher-priority Planned work."
-Add-Line "3. **Governed handoff chain** in Active Changes (fresh read):"
+Add-Line ("1. **NEXT WORK drill-down** (DB-M03 selection): the governed container " + $script:Parent.NodeId + " (" + $script:Parent.Name + ") is Status '" + $script:Parent.Status + "'. DB-M03.1 resolved it to this eligible WorkItem (" + $script:NodeId + ", " + $script:Node.NodeType + "); satisfied dependencies at selection time: " + $script:NextWorkDepDetail + ".")
+Add-Line ("2. **CURRENT WORK FIRST**: " + $script:Parent.NodeId + " (" + $script:Parent.Name + ") is Status '" + $script:Parent.Status + "' and is named by open reservation(s) in the Active Changes ledger - including " + $script:ChangeId + ", the reservation this handoff serves. It is not skipped for higher-priority Planned work.")
+Add-Line ("3. **Governed handoff chain** in Active Changes (fresh read, filtered to this change's affected chain " + $script:AffSetJoined + "):")
 $script:ChainText = New-Object System.Collections.Generic.List[string]
 $script:ChainIndex = 0
+if ($script:ChainRows.Count -eq 0) {
+    $script:ChainText.Add($script:ChangeId + " (this reservation, awaiting ChatGPT handoff)") | Out-Null
+}
 foreach ($cr in $script:ChainRows) {
     $script:ChainIndex++
     if ($cr.ChangeId -eq $script:ChangeId) {
         $script:ChainText.Add($cr.ChangeId + " (this reservation, awaiting ChatGPT handoff)") | Out-Null
     } else {
-        $road = Get-RoadmapNodeById $cr.NodeId
-        $st = "complete"
+        $script:LeafTok = @(($cr.NodeId -split "\|") | ForEach-Object { $_.Trim() } | Where-Object { $_ } | Select-Object -Last 1)
+        $road = $null
+        if ($script:LeafTok) { $road = Get-RoadmapNodeById $script:LeafTok }
+        $st = "recorded"
         if ($road) { $st = $road.Status.ToLower() }
-        $script:ChainText.Add($cr.ChangeId + " (" + $cr.NodeId + " " + $st + ")") | Out-Null
+        $script:ChainText.Add($cr.ChangeId + " (" + $script:LeafTok + " " + $st + ")") | Out-Null
     }
 }
 Add-Line ("   " + ($script:ChainText -join " -> "))
-Add-Line "   The predecessor CHG-20260830-016 (WI-07-0.2.3) is Terminal/Completed; the roadmap marks WI-07-0.2.3 Complete with next action 'Unblocks WI-07-0.2.4'. This reservation is the governed next prompt in that chain."
+Add-Line ("   The current row (" + $script:ChangeId + ") is the reservation awaiting the ChatGPT handoff. Any earlier rows shown are prior governed reservations on this change's affected chain - historical context, never this task's identity.")
 
 # ---- Acceptance Criteria ----
 Add-Section "Acceptance Criteria"
-Add-Line "> Governance note: Master Roadmap row $($script:Node.Row) does not carry an Acceptance Criteria (column Q) entry for $($script:NodeId) - nor for the other WI-07-0.2.x work items. The design source referenced in the roadmap Notes (DEVELOPMENT_CONTROL_SERVICE_ARCHITECTURE.md) is not present in the repository. The operative acceptance criteria below are therefore derived strictly from authoritative workbook fields (roadmap Outcome / Purpose, the Active Changes reservation, the WI-07-0.2.1 contract scope, the WI-07-0.2.2 schema scope, the WI-07-0.2.3 adapter scope) and the completion standard set by WI-07-0.2.1/WI-07-0.2.2/WI-07-0.2.3. Do not silently add mandatory requirements; if implementation evidence shows the workbook is missing a required acceptance criterion, report it rather than inventing one. Unspecified architectural decisions (for example how the named cross-process mutex is abstracted at the Core contract layer, where RowVersion is carried, and how temp-write/validate/replace composes with the adapter's existing single-operation atomic replace) must be surfaced by DeepSeek as decisions taken - or as SCOPE_CHANGE_REQUIRED if they demand Infrastructure changes - not invented as mandatory requirements."
+Add-Line ("Acceptance criteria below are the governed acceptance criteria carried by Master Roadmap row " + $script:Node.Row + " (column Q, authoritative) for " + $script:NodeId + " - read fresh on this run. They are authoritative and must not be altered, added to, dropped or reinterpreted. If implementation evidence shows a governing requirement is missing or a criterion is unsatisfiable, report it - do not invent, relax or silently change one.")
 Add-Line ""
-Add-Line "1. Deliver concurrency, locking and atomic multi-operation writes for the Development Control store, inside the reserved scope (repository `Nexus.Developer`, project `Nexus.Developer.Core`, `src/Nexus.Developer.Core/DevelopmentControl/**`). [roadmap Outcome / Purpose: 'Named cross-process mutex, RowVersion optimistic check, temp-write/validate/replace, one proven concurrency test.']"
-Add-Line "2. A **named cross-process mutex** protects workbook writes so the store is safe under concurrent writers. [roadmap Outcome; composes with the WI-07-0.2.3 atomic replace - do not duplicate or replace that mechanism, extend it]"
-Add-Line "3. A **RowVersion optimistic check** lets concurrent readers/writers detect stale state and receive a controlled outcome instead of corrupting the workbook. [roadmap Outcome]"
-Add-Line "4. **Temp-write / validate / replace**: mutations are written to a temporary copy, validated, then atomically promoted - consistent with the pattern the WI-07-0.2.3 adapter already uses, now governed at the concurrency layer. [roadmap Outcome + WI-07-0.2.3 current evidence]"
-Add-Line "5. **One proven concurrency test** demonstrates the mechanism (for example two writers racing with the optimistic check firing), matching the test standard of the preceding work items. [roadmap Outcome]"
-Add-Line "6. Reuse existing assets - IDevelopmentControlStore contracts, WorkbookSchemaValidator/Report, ActivityLogMigration, ExcelDevelopmentControlStore adapter, ClosedXML - and do not rebuild any working capability. Do NOT modify the Infrastructure adapter files (ExcelDevelopmentControlStore.cs, DevelopmentControlCellCodec.cs, ExcelWorkbookColumnMap.cs, WorkbookSchemaValidator.cs, WorkbookSchemaReport.cs, ActivityLogMigration.cs); if the mechanism genuinely requires Infrastructure changes, STOP and report SCOPE_CHANGE_REQUIRED."
-Add-Line "7. Stay strictly inside the reserved scope; if implementation genuinely requires additional scope, STOP and report SCOPE_CHANGE_REQUIRED rather than modifying anything outside it."
-Add-Line "8. Build and test the change and provide evidence, matching the completion standard set by WI-07-0.2.1 and WI-07-0.2.2 and WI-07-0.2.3 (thorough test coverage, deterministic verification, zero deviations)."
+foreach ($_ab in $script:NodeAcBullets) { Add-Line ("- " + $_ab) }
+Add-Line ""
+Add-Line ("**Acceptance-criteria ownership:** these criteria belong to the current governed work item (" + $script:NodeId + "). Only this change's affected chain (" + $script:AffSetJoined + ") and whatever the governed criteria text itself references are in scope; no other work item's acceptance criteria, scope or wording is adopted here.")
 
 # ---- Completion Gate ----
 Add-Section "Completion Gate"
@@ -532,7 +629,13 @@ Add-Section "Dependencies"
 Add-Line "| Node ID | Detail | Live status | Satisfied? | Blocking? |"
 Add-Line "|---|---|---|---|---|"
 foreach ($dl in $script:DepLines) { Add-Line $dl }
-Add-Line "| REL-001..011 | No Dependencies & Blockers row references the target or its chain | (n/a) | NOT_APPLICABLE | NO |"
+foreach ($_dn in @($script:Preflight.dependencies | Where-Object { $_.state -notin @("SATISFIED", "TRIAL_DEPENDENCY_SATISFIED") })) {
+    $_det = [string]$_dn.detail
+    if (-not $_det) { $_det = "(no detail recorded)" }
+    $_st = [string]$_dn.state
+    if (-not $_st) { $_st = "(n/a)" }
+    Add-Line ("| " + $_dn.dependencyId + " | " + $_det + " | (n/a) | " + $_st + " | NO |")
+}
 Add-Line ""
 $script:DepTextual = @($script:Preflight.dependencies | Where-Object { $_.dependencyId -match "^(F|WI|M|T|S)-" })
 if ($script:DepTextual.Count -gt 0) {
@@ -573,66 +676,87 @@ if ($script:PredIds.Count -gt 0) {
 } else {
     Add-Line "- No governed textual predecessor recorded for this reservation."
 }
-Add-Line ("- **" + $script:NodeId + " (this reservation)** is scoped to `src/Nexus.Developer.Core/DevelopmentControl/**` (project `Nexus.Developer.Core`) via " + $script:ChangeId + " (Active Changes row " + $script:ResRow.Row + ").")
-Add-Line "- This is a deliberate governed scope transition between sibling work items, not an open invitation to reinterpret the boundary. Do not widen the Core scope to Infrastructure, and do not narrow the Core deliverable."
-Add-Line "- DeepSeek MUST first inspect the existing Core contracts - `IDevelopmentControlStore.cs` and the 17 DTO/enum files under `src/Nexus.Developer.Core/DevelopmentControl/` (WI-07-0.2.1) - before writing any code."
-Add-Line "- If implementing the concurrency/locking/atomic-write mechanism genuinely requires modifying anything under `Nexus.Developer.Infrastructure` (the adapter), DeepSeek MUST STOP and report `SCOPE_CHANGE_REQUIRED` rather than touching it."
+$_glDesc = if (@($script:ReservedScope.filesGlobs).Count -gt 0) { (", file/glob scope **" + (@($script:ReservedScope.filesGlobs) -join ", ") + "**") } else { ", with no narrower file/glob recorded in the reservation" }
+Add-Line ("- **" + $script:NodeId + " (this reservation)** is scoped to repository(ies) **" + (@($script:ReservedScope.repositories) -join ", ") + "**, project(s) **" + (@($script:ReservedScope.projects) -join ", ") + "**" + $_glDesc + " - via " + $script:ChangeId + " (Active Changes row " + $script:ResRow.Row + ").")
+Add-Line "- This is the governed scope transition into this work item, not an invitation to reinterpret the boundary. Do not widen or narrow the reserved scope."
+Add-Line "- DeepSeek MUST first inspect the existing code in the reserved repositories/projects relevant to this work item before writing any code - to reuse (not rebuild) working capabilities and to stay inside the exact reserved scope."
+Add-Line ("- If implementing " + $script:NodeId + " genuinely requires modifying anything outside the exact reserved scope, DeepSeek MUST STOP and report `SCOPE_CHANGE_REQUIRED` rather than touching it.")
 
 # ---- Architecture Constraints ----
 Add-Section "Architecture Constraints"
-Add-Line "Applicable approved ADRs (from the Architecture Decisions sheet, freshly re-read):"
+Add-Line "Applicable approved ADRs (Architecture Decisions sheet freshly re-read; each ADR's relation to this chain is the DB-M03 preflight classification):"
 Add-Line ""
-Add-Line "- **ADR-003 (Approved) - GOVERNS_SUBSTRATE, this task:** Master Roadmap stores current state only; all version history is append-only in a separate Version History sheet. Implementation consequence: the concurrency/locking/atomic-write work operates on the workbook as the authoritative control substrate; every governed state change must follow the append-only versioning rules (new Record Version, Is Current = Yes/No) rather than rewriting history. Temp-write/validate/replace is a write mechanism, not a license to rewrite history."
-Add-Line "- **ADR-001, ADR-002, ADR-004, ADR-005 (Approved): NOT_APPLICABLE** - no link to the F-07-0 / M-07-0.2 / WI-07-0.2.x chain (ADR-005 reclassified NOT_APPLICABLE for this chain by the DB-M03 preflight)."
+foreach ($_ar in @($script:RelAdr)) {
+    $_arId = [string]$_ar.adrId
+    $_arRel = [string]$_ar.relation
+    $_arSt = "Approved"
+    $_arDec = ""
+    if ($script:AdrLive.ContainsKey($_arId)) {
+        $_arSt = [string]$script:AdrLive[$_arId].Status
+        $_arDec = [string]$script:AdrLive[$_arId].Decision
+    }
+    if ($_arRel -in @("GOVERNS_TARGET", "GOVERNS_SUBSTRATE")) {
+        if (-not $_arDec) { $_arDec = [string]$_ar.detail }
+        Add-Line ("- **" + $_arId + " (" + $_arSt + ") - " + $_arRel + ":** " + $_arDec)
+    } else {
+        Add-Line ("- **" + $_arId + " (" + $_arSt + ") - " + $_arRel + ":** " + [string]$_ar.detail)
+    }
+}
 Add-Line ""
-Add-Line "Preflight architecture check: Core contract (IDevelopmentControlStore) + Infrastructure adapter (ClosedXML-backed) conforms to the clean-architecture / layer model; no boundary violation. The preflight conflict matrix recorded 12/12 checks PASS (1 repository-level WARN for unrelated nodes, resolved at project/file level). This work item operates in Core only; any OS-level / filesystem-level primitive that cannot live in Core is a scope question to be reported, not silently placed in Infrastructure."
+Add-Line ("Preflight architecture/leaf validation verdict for " + $script:NodeId + ": **" + $script:Preflight.verdict + "** (" + @($script:Preflight.leafValidation).Count + " leaf checks recorded). The reserved implementation must conform to the governing ADRs above; a genuine architectural conflict is reported, never silently resolved. A construct the reserved scope cannot legally host (for example an OS/filesystem primitive that belongs to an out-of-scope layer) is a scope question to be reported, not silently placed elsewhere.")
 
 # ---- Open Decisions ----
 Add-Section "Open Decisions"
-Add-Line "| Decision ID | Blocking? | Needed Before | Status |"
-Add-Line "|---|---|---|---|"
-foreach ($d in @(Get-OpenDecisions)) {
-    $block = "NON-BLOCKING"
-    if ([string]$d.Status -match "Blocked|BLOCKING") { $block = "BLOCKING" }
-    $need = [string]$d.NeededBefore
-    if (-not $need) { $need = "(not set)" }
-    Add-Line ("| " + $d.DecisionId + " | " + $block + " | " + $need + " | " + $d.Status + " |")
+Add-Line "| Decision ID | Blocking? | Detail (DB-M03 preflight classification) |"
+Add-Line "|---|---|---|"
+foreach ($_od in @($script:Preflight.openDecisions)) {
+    $_odBlk = if ($_od.blocking) { "BLOCKING" } else { "NON-BLOCKING" }
+    Add-Line ("| " + $_od.decisionId + " | " + $_odBlk + " | " + [string]$_od.detail + " |")
 }
 Add-Line ""
-Add-Line ("None of the open decisions (DEC-001..003) touches the " + $script:NodeId + " scope; none blocks this work item. DEC-003 concerns the SQL Server LocalDB -> Docker/Azure SQL move and does not gate this Core-scope concurrency work. No decision is resolved by this handoff.")
+Add-Line "The open decisions shown are the current ledger items carried by this change's preflight. None is BLOCKING for this work item (a blocking open decision would have stopped the handoff in PART 1). This handoff resolves none of them."
 
 # ---- Audit Findings ----
 Add-Section "Audit Findings"
-Add-Line "Applicable findings (Audit Findings sheet, freshly re-read; classification from DB-M03 preflight evidence):"
+Add-Line "Applicable findings (Audit Findings sheet, freshly re-read; classification from DB-M03 preflight evidence; relevance = RoadmapLink references this change's affected chain):"
 Add-Line ""
-$script:RelevantAf = @(Get-AllAuditFindings | Where-Object { [string]$_.RoadmapLink -match "M-07" })
-foreach ($f in $script:RelevantAf) {
-    $cls = $script:AfClass[[string]$f.FindingId]
-    if (-not $cls) { $cls = "informational" }
-    $clsUpper = $cls.ToUpper()
-    if ($clsUpper -eq "CONSTRAINS") { $clsUpper = "CONSTRAINS implementation" }
-    Add-Line ("- **" + $f.FindingId + " (" + $f.Severity + ", " + $f.Status + ") - " + $clsUpper + ":** " + $f.Area + " | " + $f.RoadmapLink)
+if ($script:RelevantAf.Count -gt 0) {
+    foreach ($f in $script:RelevantAf) {
+        $cls = $script:AfClass[[string]$f.FindingId]
+        if (-not $cls) { $cls = "informational" }
+        $clsUpper = $cls.ToUpper()
+        if ($clsUpper -eq "CONSTRAINS") { $clsUpper = "CONSTRAINS implementation" }
+        Add-Line ("- **" + $f.FindingId + " (" + $f.Severity + ", " + $f.Status + ") - " + $clsUpper + ":** " + $f.Area + " | " + $f.RoadmapLink)
+    }
+    Add-Line ""
+    Add-Line "No finding above is BLOCKING for this work item (a blocking finding would have stopped the handoff in PART 1). Findings whose RoadmapLink references other chains are not adopted as constraints here."
+} else {
+    Add-Line ("No Audit Findings row references this change's affected chain (" + $script:AffSetJoined + "). Findings that link other milestones are NOT adopted as constraints for this work item.")
 }
 Add-Line ""
-Add-Line "Classification meaning: BLOCKING = cannot proceed; CONSTRAINS = shapes how the work is done; INFORMATIONAL = context only; EXPECTED_TO_RESOLVE = expected to close during this work item. AF-010 (Documentation truth, M-07-0.1) CONSTRAINS this scope: the workbook remains the authoritative source of truth, so the concurrency layer must not create a competing or duplicated control state. AF-011/AF-012/AF-018 link future M-07-1.x/2.x/3.x/5.x milestones and are INFORMATIONAL here. No finding in this scope is BLOCKING; none is EXPECTED_TO_RESOLVE in this work item. All other findings are informational and do not link to this scope."
+Add-Line "Classification meaning: BLOCKING = cannot proceed; CONSTRAINS = shapes how the work is done; INFORMATIONAL = context only; EXPECTED_TO_RESOLVE = expected to close during this work item."
 
 # ---- Existing Assets ----
 Add-Section "Existing Assets - REUSE / EXTEND / ALREADY_EXISTS / MISSING"
-Add-Line ("Classified for THIS work item (" + $script:NodeId + ") from live workbook evidence (Existing Assets sheet + Active Changes completion evidence for WI-07-0.2.1/WI-07-0.2.2/WI-07-0.2.3). The implementation prompt must instruct DeepSeek NOT to rebuild working capabilities:")
+Add-Line ("Classified for THIS work item (" + $script:NodeId + ") from live Existing Assets sheet rows that reference the reserved scope (project(s) " + (@($script:ReservedScope.projects) -join ", ") + "). The implementation prompt must instruct DeepSeek NOT to rebuild working capabilities:")
 Add-Line ""
-Add-Line "| Asset | Classification | Evidence |"
-Add-Line "|---|---|---|"
-Add-Line "| IDevelopmentControlStore contracts (22 ops) + DTO/enums | **REUSE** | WI-07-0.2.1, `src/Nexus.Developer.Core/DevelopmentControl/**` - consume, do not rebuild or modify unless the change itself requires it |"
-Add-Line "| ExcelDevelopmentControlStore adapter + codec + column map | **ALREADY_EXISTS (out of scope)** | WI-07-0.2.3, `src/Nexus.Developer.Infrastructure/DevelopmentControl/**` - do not modify or rebuild |"
-Add-Line "| WorkbookSchemaValidator + WorkbookSchemaReport + ActivityLogMigration | **ALREADY_EXISTS (out of scope)** | WI-07-0.2.2, `src/Nexus.Developer.Infrastructure/DevelopmentControl/**` - do not modify or rebuild |"
-Add-Line "| ClosedXML | **REUSE** | Already integrated in Nexus.Developer.Infrastructure (WI-07-0.2.2) and registered in the Tool & Integration Registry by DB-M10 (CHG-20260830-016) - no new tool |"
-if ($script:DevControlAssetRow) {
-    Add-Line ("| Development control service (Excel-backed) - existing-asset row | **THIS WORK ITEM'S SUBJECT** | Live Existing Assets sheet (row " + $script:DevControlAssetRow.Row + "), state=" + $script:DevControlAssetRow.State + "; the still-missing entry names concurrency/locking/atomic multi-op writes (" + $script:NodeId + ") |")
+if ($script:RelAssets.Count -gt 0) {
+    Add-Line "| Asset | Classification | Live workbook evidence |"
+    Add-Line "|---|---|---|"
+    foreach ($_ra in $script:RelAssets) {
+        $_raSt = [string]$_ra.State
+        $_raCls = "INFORMATIONAL"
+        if ($_raSt -match "Working prototype|Implemented|Existing|Substantial progress") { $_raCls = "REUSE / ALREADY_EXISTS" }
+        $_raEv = ("Existing Assets row " + $_ra.Row + " - " + $_ra.WhatAlreadyExists + " [" + $_ra.RepositoryFiles + "]; State: " + $_raSt)
+        Add-Line ("| " + $_ra.Area + " | **" + $_raCls + "** | " + $_raEv + " |")
+    }
+    Add-Line ""
+    Add-Line "REUSE / ALREADY_EXISTS = consume what exists and do not rebuild or duplicate it unless this work item's governed acceptance criteria require a change; INFORMATIONAL = context only."
 } else {
-    Add-Line "| Development control service (Excel-backed) | **THIS WORK ITEM'S SUBJECT** | Live Existing Assets sheet: working foundation (WI-07-0.2.1/0.2.2/0.2.3 present); still-missing = concurrency/locking/atomic multi-op writes (WI-07-0.2.4) |"
+    Add-Line ("No Existing Assets sheet row references the reserved scope (" + (@($script:ReservedScope.projects) -join ", ") + "). Any working capability discovered inside the reserved scope during implementation must be reused, not rebuilt - report it rather than duplicating it.")
 }
 Add-Line ""
-Add-Line "Not applicable to this scope (informational): Nexus.Platform / Nexus.Intelligence / Nexus.Experience assets; the model gateway, turn pipeline, chat API/UI, SQL Stage 1b and CI workflows belong to other layers. Do not rebuild, re-wire or duplicate any of these."
+Add-Line "Existing Assets rows that reference other repositories/layers are NOT adopted for this work item (informational only; do not rebuild, re-wire or duplicate them either)."
 
 # ---- Exact Reserved Scope ----
 Add-Section "Exact Reserved Scope"
@@ -654,17 +778,18 @@ Add-Line ""
 Add-Line "> The implementation prompt must not authorize DeepSeek to modify anything outside this reserved scope. If implementation genuinely requires additional scope, DeepSeek must STOP and report SCOPE_CHANGE_REQUIRED rather than modifying it."
 
 # ---- Tool Registry / Pending Governance ----
-$script:ClosedXmlReg = @(Get-ToolRegistry | Where-Object { ([string]$_.Tool) -match "ClosedXML" } | Select-Object -First 1)
-$script:ClosedXmlQuote = "(ClosedXML registry row not found on fresh read)"
-if ($script:ClosedXmlReg) {
-    $script:ClosedXmlQuote = ("ClosedXML | " + $script:ClosedXmlReg.Category + " | " + $script:ClosedXmlReg.CurrentState + " | layer " + $script:ClosedXmlReg.OwningLayer + " | " + $script:ClosedXmlReg.PrimaryPurpose)
-    if ($script:ClosedXmlReg.Notes) { $script:ClosedXmlQuote += " | notes: " + $script:ClosedXmlReg.Notes }
-}
 Add-Section "Tool & Integration Registry / Pending Governance"
-Add-Line ('The Tool & Integration Registry (freshly re-read) already records **ClosedXML** - added by the DB-M10 governed completion (CHG-20260830-016): ``' + $script:ClosedXmlQuote + '``')
+if ($script:RelTools.Count -gt 0) {
+    Add-Line "Tool & Integration Registry rows (freshly re-read) that reference the reserved scope:"
+    Add-Line ""
+    foreach ($_rt in $script:RelTools) {
+        Add-Line ("- **" + $_rt.Tool + "** (" + $_rt.Category + ") - " + $_rt.CurrentState + "; owner layer " + $_rt.OwningLayer + ". Purpose: " + $_rt.PrimaryPurpose)
+    }
+} else {
+    Add-Line ("No Tool & Integration Registry row (freshly re-read) references the reserved scope (" + (@($script:ReservedScope.projects) -join ", ") + "). If the reserved implementation genuinely needs a new external tool, that is a governed tool-approval change (DB-M10/DB-M11) - reported, never a silent registry edit.")
+}
 Add-Line ""
-Add-Line "- This work item requests **no new external tool approval**; the concurrency primitives reuse the existing store and ClosedXML stack."
-Add-Line "- There is **no pending TOOL_REGISTRY_REVIEW item** for this cycle - the DB-M03 observation that ClosedXML was not yet governed was closed by DB-M10 in the prior cycle. This handoff does not re-create one."
+Add-Line "- This work item requests no new external tool approval unless the reserved scope genuinely requires one."
 Add-Line "- DeepSeek must **not** silently edit the Development Control workbook or the Tool & Integration Registry to resolve governance observations; those are governed changes for DB-M10/DB-M11."
 Add-Line ""
 Add-Line "Pending governance items recorded in current DevBridge state:"
@@ -678,17 +803,15 @@ if ($script:PendingItems.Count -gt 0) {
 
 # ---- Repository Governance ----
 Add-Section "Repository Governance"
-Add-Line "- **Repository:** Nexus.Developer (C:\Personal\Nexus.Developer)"
-Add-Line "- **Governance source:** Development Control workbook Session Protocol sheet (authoritative); Nexus.Developer AGENTS.md boundary rules."
-Add-Line "- **Relevant rules:"
-Add-Line "  - DEVELOPER consumes CORE, DATA, GOVERNANCE, AI, AUTOMATION and PRODUCT CORE contracts; may consume DELIVERY build-result contracts."
-Add-Line "  - Must not reference a product domain assembly, product DbContext or product database; holds ProductId but does not import product types."
-Add-Line "  - Does not implement chat, CI, document storage, identity, model providers or deployment."
-Add-Line "  - The desktop shell is a client/launcher only; layer-owned code stays in the layer repository."
+Add-Line ("- **Reserved repositories:** " + (@($script:ReservedScope.repositories) -join ", ") + " (git baseline captured for " + $script:RepoPath + ").")
+Add-Line "- **Governance source:** Development Control workbook Session Protocol sheet (authoritative) + each reserved repository's own AGENTS.md boundary rules."
+Add-Line "- **Relevant rules (layer-agnostic, from the Session Protocol / workbook governance):"
+Add-Line "  - Layer-owned code stays in its owning layer repository; the desktop shell is a client/launcher only, not a place to implement layer-owned logic."
 Add-Line "  - One WorkItem = one worker, one branch, one sibling worktree and one review."
-Add-Line "  - No integration occurs without a recorded human review."
+Add-Line "  - No integration occurs without a recorded human review; git is human-gated."
 Add-Line "  - Append-only control: never delete roadmap or change history; a governed fact changes by adding a higher Record Version."
 Add-Line "  - Build, test and inspect the reserved scope; record evidence, human review and integration result."
+Add-Line "  - Stay strictly inside the exact reserved scope; report SCOPE_CHANGE_REQUIRED before touching anything outside it."
 
 # ---- Git Baseline ----
 Add-Section "Git Baseline"
@@ -703,14 +826,14 @@ Add-Line ("   - staged files: " + $(if ($script:PreExistingStaged.Count -gt 0) {
 Add-Line ("   - modified files: " + $(if ($script:PreExistingModified.Count -gt 0) { ($script:PreExistingModified -join "; ") } else { "(none)" }))
 Add-Line ("   - untracked files: " + $(if ($script:PreExistingUntracked.Count -gt 0) { ($script:PreExistingUntracked -join "; ") } else { "(none)" }))
 Add-Line ""
-Add-Line "   **Important:** the 3 untracked files are the WI-07-0.2.3 (prior cycle) adapter deliverables under `src/Nexus.Developer.Infrastructure/DevelopmentControl/`. They are PRE-EXISTING CHANGE, not current-task (WI-07-0.2.4) changes. DB-M06 must not classify them as this task's implementation delta, and DeepSeek must not touch them."
+Add-Line ("   **Important:** the " + @($script:PreExistingUntracked).Count + " untracked file(s) and any pre-existing staged/modified files were captured at DB-M04 as PRE-EXISTING CHANGE in the baseline repository. They are NOT this task's (" + $script:NodeId + " / " + $script:ChangeId + ") implementation delta. DB-M06 must not classify them as this task's implementation, and DeepSeek must not touch or commit them.")
 Add-Line ""
-Add-Line "2. **GOVERNANCE WORKBOOK CHANGE** (DB-M04 reservation, ACT-20260830-018): the authoritative NEXUS_DEVELOPMENT_CONTROL.xlsx appears modified in git because the reservation recorded CHG-20260830-017 + an Activity Log row. This is GOVERNANCE STATE, not implementation."
+Add-Line "2. **GOVERNANCE WORKBOOK CHANGE** (DB-M04 reservation write): the authoritative NEXUS_DEVELOPMENT_CONTROL.xlsx appears modified in git because DB-M04 recorded this reservation (" + $script:ChangeId + ") and its Activity Log entry. This is GOVERNANCE STATE, not implementation."
 Add-Line ("   - post-reservation modified files (observed): " + $(if ($script:PostReservationModified.Count -gt 0) { ($script:PostReservationModified -join "; ") } else { "(none)" }))
 Add-Line ""
-Add-Line "3. **CURRENT TASK IMPLEMENTATION DELTA** (to be produced by DeepSeek under the reserved scope): none exists yet at DB-M05 time. It must land strictly under `src/Nexus.Developer.Core/DevelopmentControl/**`."
+Add-Line ("3. **CURRENT TASK IMPLEMENTATION DELTA** (to be produced by DeepSeek under the exact reserved scope): none exists yet at DB-M05 time. It must land strictly inside the reserved repositories/projects (" + (@($script:ReservedScope.repositories) -join ", ") + " / " + (@($script:ReservedScope.projects) -join ", ") + ")" + $(if (@($script:ReservedScope.filesGlobs).Count -gt 0) { (", under " + (@($script:ReservedScope.filesGlobs) -join ", ")) } else { ", with no narrower file/glob recorded" }) + ".")
 Add-Line ""
-Add-Line ("Baseline scope-file hashes: " + (@($script:Reservation.gitBaseline.scopeFileHashes).Count) + " files under src/Nexus.Developer.Core/DevelopmentControl/ recorded at DB-M04 (18 files). DB-M06 will compare post-implementation state against these.")
+Add-Line ("Baseline scope-file hashes: " + @($script:Reservation.gitBaseline.scopeFileHashes).Count + " files recorded at DB-M04 against the baseline repository. DB-M06 will compare post-implementation state against these.")
 
 # ---- Parallel Development Context ----
 Add-Section "Parallel Development Context"
@@ -720,11 +843,13 @@ Add-Line "| Lane | Lane ID | Status | Root | Overlap with reserved scope |"
 Add-Line "|---|---|---|---|---|"
 if ($script:LaneA) { Add-Line ("| A | " + $script:LaneA.id + " | " + $script:LaneA.status + " | " + $script:LaneA.root + " | NO |") } else { Add-Line "| A | (facts unavailable) | RUNNING | DevBridge root | NO |" }
 if ($script:LaneB) { Add-Line ("| B | " + $script:LaneB.id + " | " + $script:LaneB.status + " | " + $script:LaneB.root + " | NO |") } else { Add-Line "| B | (facts unavailable) | RUNNING | DevBridge root | NO |" }
-if ($script:LaneC) { Add-Line ("| C | " + $script:LaneC.id + " | RESERVED (this lane) | " + $script:LaneC.root + " | n/a (this lane) |") }
+if ($script:LaneC) {
+    Add-Line ("| C | " + $script:NodeId + " (" + $script:ChangeId + ") - this reservation | RESERVED (this lane) | " + $script:LaneC.root + " | n/a (this lane) |")
+}
 Add-Line ""
-Add-Line "Basis: lanes A/B operate solely under the DevBridge root (C:\Personal\DevTools\DevBridge); lane C operates solely under C:\Personal\Nexus.Developer. No shared repository root, path, schema, contract, or workbook writer. Workbook serialization is independently guarded by PART 1 (live SHA256 vs DB-M04 post-write hash)."
+Add-Line ("Basis: lanes A/B operate under the DevBridge root; lane C operates under the reserved baseline repository (" + $script:RepoPath + "). No shared repository root, path, schema, contract or workbook writer with the reserved scope. Workbook serialization is independently guarded by PART 1 (live SHA256 vs the DB-M04 post-write hash).")
 Add-Line ""
-Add-Line "**Parallel safety rule for DeepSeek:** do not modify or depend on any unfinished parallel-lane file (LANE A = DB-M12 DevBridge Operator UI; LANE B = DB-M13 AI Routing/Cost Platform Discovery). If a genuine shared-contract requirement with a parallel lane emerges, STOP and report it rather than touching that lane's files."
+Add-Line ("**Parallel safety rule for DeepSeek:** do not modify or depend on any unfinished parallel-lane file (LANE A = " + $(if ($script:LaneA) { $script:LaneA.id } else { "DevBridge parallel lane" }) + "; LANE B = " + $(if ($script:LaneB) { $script:LaneB.id } else { "DevBridge parallel lane" }) + "). If a genuine shared-contract requirement with a parallel lane emerges, STOP and report it rather than touching that lane's files.")
 
 # ---- Instructions to ChatGPT ----
 Add-Section "Instructions to ChatGPT"
@@ -755,16 +880,16 @@ Add-Line "5. Broaden the reserved scope."
 Add-Line "6. Skip reuse of existing assets."
 Add-Line ""
 Add-Line "Require DeepSeek to:"
-Add-Line "1. Inspect the existing scoped code before editing - read `src/Nexus.Developer.Core/DevelopmentControl/**` (IDevelopmentControlStore + the 17 contract/DTO files, WI-07-0.2.1) and the WI-07-0.2.3 Infrastructure adapter it composes with, before writing any code."
-Add-Line "2. Reuse existing work - do not rebuild working components (contracts, adapter, schema validator/migration, ClosedXML)."
+Add-Line ("1. Inspect the existing scoped code before editing - read the code in the reserved repositories/projects (" + (@($script:ReservedScope.repositories) -join ", ") + " / " + (@($script:ReservedScope.projects) -join ", ") + ") relevant to this work item before writing any code.")
+Add-Line "2. Reuse existing work - do not rebuild working components."
 Add-Line "3. Make the minimum necessary changes required to satisfy the work item; preserve existing working behavior."
-Add-Line "4. Stay strictly inside the reserved scope (Nexus.Developer / Nexus.Developer.Core / src/Nexus.Developer.Core/DevelopmentControl/**)."
-Add-Line "5. Build and test where possible and provide evidence, matching the completion standard of WI-07-0.2.1/WI-07-0.2.2/WI-07-0.2.3."
+Add-Line "4. Stay strictly inside the exact reserved scope declared above (repositories / projects / files)."
+Add-Line "5. Build and test where possible and provide evidence against the governed acceptance criteria above."
 Add-Line "6. Not mark the task complete."
 Add-Line "7. Not close the Active Change."
 Add-Line "8. Not update Nexus Development Control workbook completion state."
 Add-Line "9. Not commit unless specifically authorized by a later DevBridge step."
-Add-Line "10. Stop and report SCOPE_CHANGE_REQUIRED if scope expansion is required - especially if the concurrency/locking implementation genuinely requires modifying the Infrastructure adapter or anything outside the reserved Core scope."
+Add-Line "10. Stop and report SCOPE_CHANGE_REQUIRED if scope expansion is required - i.e. if implementing this work item genuinely requires modifying anything outside the exact reserved scope."
 Add-Line "11. Provide concise implementation evidence when finished."
 Add-Line ""
 Add-Line "DeepSeek must inspect the existing scoped implementation first and make only the minimum required changes. If scope expansion is required, DeepSeek must STOP and report it. DeepSeek must NOT mark the Nexus work item complete. After implementation, DevBridge DB-M06 will independently verify the work."
@@ -852,6 +977,90 @@ if ($script:HandoffMissing.Count -gt 0) {
     exit 1
 }
 Write-Output "DB05_HANDOFF_GATE: READY"
+
+# ---------------------------------------------------------------------------
+# DB-M05 consistency gate (task-context integrity) - BEFORE any write.
+# Mechanically verifies the assembled handoff is internally consistent for the
+# CURRENT governed task: identity, governed AC ownership, no foreign work-item
+# identifiers in the current-task sections, single correct "(this reservation)"
+# tag, current reservation claimed, and no source-path leak outside Git Baseline.
+# Any violation => CHATGPT_HANDOFF_NOT_READY; NOTHING is written.
+# ---------------------------------------------------------------------------
+$script:CgFails = New-Object System.Collections.Generic.List[string]
+function Test-Cg([string]$label, [bool]$ok, [string]$why) { if (-not $ok) { $script:CgFails.Add($label + ": " + $why) | Out-Null } }
+function Get-MdRegion([string]$md, [string]$startHeader, [string]$endHeader) {
+    $s = $md.IndexOf($startHeader)
+    if ($s -lt 0) { return "" }
+    $e = $md.IndexOf($endHeader, $s + $startHeader.Length)
+    if ($e -lt 0) { $e = $md.Length }
+    return $md.Substring($s, $e - $s)
+}
+$script:CgMd = $script:HandoffText
+$script:CgAllok = New-Object System.Collections.Generic.List[string]
+foreach ($_ao in @($script:AffSet)) { $script:CgAllok.Add([string]$_ao) | Out-Null }
+foreach ($_actok in @(Get-NodeIdTokens $script:NodeAcRaw)) { if (-not ($script:CgAllok.Contains([string]$_actok))) { $script:CgAllok.Add([string]$_actok) | Out-Null } }
+
+# (1) Current identity positive
+Test-Cg "identity-node" ($script:CgMd.IndexOf($script:NodeId, [System.StringComparison]::Ordinal) -ge 0) "handoff text does not carry the current Node ID"
+Test-Cg "identity-change" ($script:CgMd.IndexOf($script:ChangeId, [System.StringComparison]::Ordinal) -ge 0) "handoff text does not carry the current Change ID"
+
+# (2) Governed acceptance-criteria text present (no fabricated / reused AC)
+foreach ($_abchk in $script:NodeAcBullets) {
+    $_needle = $_abchk.Trim()
+    if ($_needle.Length -gt 200) { $_needle = $_needle.Substring(0, 200) }
+    if ($_needle.Length -ge 20) { Test-Cg "ac-owned" ($script:CgMd.IndexOf($_needle, [System.StringComparison]::Ordinal) -ge 0) ("governed AC text absent: '" + $_needle.Substring(0, [Math]::Min(60, $_needle.Length)) + "'") }
+}
+
+# (3) Foreign work-item identifier guard on the sections this defect contaminated:
+#     Current State .. Completion Gate, and Scope Transition .. Architecture Constraints.
+#     Allowed = current affected chain + node tokens the governed AC itself cites.
+$script:CgR1 = Get-MdRegion $script:CgMd "## Current State" "## Completion Gate"
+$script:CgR2 = Get-MdRegion $script:CgMd "## Scope Transition" "## Architecture Constraints"
+$script:CgScan = $script:CgR1 + "`n" + $script:CgR2
+$script:CgForeign = New-Object System.Collections.Generic.List[string]
+foreach ($_mt in [regex]::Matches($script:CgScan, "\b(?:F|M|WI|T|S)-\d+(?:\.\d+)*-\d+(?:[.-]\d+)*\b")) {
+    if (-not $script:CgAllok.Contains($_mt.Value) -and (-not $script:CgForeign.Contains($_mt.Value))) { $script:CgForeign.Add($_mt.Value) | Out-Null }
+}
+if ($script:CgForeign.Count -gt 0) { Test-Cg "foreign-node-tokens" $false ("another task's identifiers in current-task sections: " + ($script:CgForeign -join ", ")) }
+
+# (4) "(this reservation)" is used for the current Change ID - and used at least once
+$script:CgSelfTags = @([regex]::Matches($script:CgMd, "CHG-\d{8}-\d{3} \(this reservation") | ForEach-Object { $_.Value -replace "\s*\(this reservation.*$", "" } | Sort-Object -Unique)
+$script:CgSelfWrong = @($script:CgSelfTags | Where-Object { $_ -ne $script:ChangeId })
+if ($script:CgSelfTags.Count -eq 0) { Test-Cg "self-tagged" $false "no '(this reservation)' tag for the current change" }
+if ($script:CgSelfWrong.Count -gt 0) { Test-Cg "self-tag-current" $false ("a non-current change is tagged '(this reservation)': " + ($script:CgSelfWrong -join ", ")) }
+
+# (5) Current-state section claims the current reservation
+Test-Cg "scope-current-change" ($script:CgR1.IndexOf($script:ChangeId, [System.StringComparison]::Ordinal) -ge 0) "Current State does not claim the current reservation"
+
+# (6) Source-path leak guard: no src\ path outside Git Baseline unless it is a reserved glob
+$script:CgGitIdx = $script:CgMd.IndexOf("## Git Baseline")
+$script:CgScanLeak = $script:CgR1
+if ($script:CgGitIdx -ge 0) {
+    $script:CgR3 = Get-MdRegion $script:CgMd "## Repository Governance" "## Git Baseline"
+    $script:CgScanLeak += "`n" + $script:CgR3
+}
+$script:CgLeaks = New-Object System.Collections.Generic.List[string]
+foreach ($_sl in [regex]::Matches($script:CgScanLeak, "(?i)\bsrc[\\/][A-Za-z0-9_.\-/\\*]+")) {
+    $tok = $_sl.Value
+    $allowed = $false
+    foreach ($_g in @($script:ReservedScope.filesGlobs)) { if ($tok.StartsWith($_g.TrimEnd('*').TrimEnd('/'), [System.StringComparison]::OrdinalIgnoreCase)) { $allowed = $true } }
+    if (-not $allowed -and (-not $script:CgLeaks.Contains($tok))) { $script:CgLeaks.Add($tok) | Out-Null }
+}
+if ($script:CgLeaks.Count -gt 0) { Test-Cg "src-leak" $false ("source-path token outside Git Baseline / not reserved: " + ($script:CgLeaks -join ", ")) }
+
+# (7) No stale one-off signature prose survived
+$script:CgStaleSigs = @("matching the completion standard set by WI-07-0.2.1", "Do NOT modify the Infrastructure adapter files", "the 3 untracked files are the WI-07", "is the governed next prompt in that chain", "concurrency/locking/atomic multi-op writes", "Named cross-process mutex")
+foreach ($_sg in $script:CgStaleSigs) { if ($script:CgMd.Contains($_sg)) { Test-Cg "stale-signature" $false ("stale previous-cycle prose present: " + $_sg) } }
+
+if ($script:CgFails.Count -gt 0) {
+    Write-Output "DB05_OUTCOME: HANDOFF_NOT_READY"
+    Write-Output "DB05_HANDOFF_TOKEN: CHATGPT_HANDOFF_NOT_READY"
+    Write-Output "DB05_CONSISTENCY_GATE: FAIL"
+    Write-Output ("DB05_CONSISTENCY_FAIL: " + ($script:CgFails -join "; "))
+    Write-Output "DB-M05 STOP - the handoff is internally inconsistent with the current governed task. No handoff was written."
+    exit 1
+}
+Write-Output "DB05_CONSISTENCY_GATE: PASS"
 
 # DB-M18.1 additive readiness gate (fires only when the resolver is present AND
 # resolved the dependency context to STALE/UNRESOLVED for required node deps).
@@ -946,13 +1155,13 @@ $md = [System.IO.File]::ReadAllText($script:HandoffPath)
 # 3-13) Handoff content
 Check-True "acceptance criteria present" ($md -match "Acceptance Criteria") "handoff section"
 Check-True "reserved scope present" ($md -match "Exact Reserved Scope") "handoff section"
-Check-True "architecture (ADR-003) present" ($md -match "ADR-003") "handoff section"
+Check-True "architecture (ADR) present" ($md -match "\bADR-\d+") "handoff section"
 Check-True "scope transition present" ($md -match "Scope Transition") "handoff section"
 Check-True "open decisions evaluated" ($md -match "Open Decisions") "handoff section"
 Check-True "audit findings present" ($md -match "Audit Findings") "handoff section"
-Check-True "existing assets classified (ALREADY_EXISTS)" ($md -match "ALREADY_EXISTS") "handoff section"
+Check-True "existing assets classified" ($md -match "REUSE|ALREADY_EXISTS|MISSING") "handoff section"
 Check-True "parallel dev context present" ($md -match "Parallel Development Context") "handoff section"
-Check-True "tool registry handled (ClosedXML recorded)" ($md -match "ClosedXML") "handoff section"
+Check-True "tool registry handled" ($md -match "Tool & Integration Registry") "handoff section"
 Check-True "git baseline preserved" ($md -match $script:BaselineHead) "handoff section"
 Check-True "completion report template present" ($md -match "IMPLEMENTATION RESULT") "handoff section"
 
@@ -964,8 +1173,9 @@ try {
     $ErrorActionPreference = $oldEap
 } catch { $script:GitLines = @() }
 $script:GitLines = @($script:GitLines | ForEach-Object { "$_" })
-# Baseline at DB-M04: the workbook modified + 3 PRE-EXISTING WI-07-0.2.3 untracked files.
-# Any OTHER line = Nexus source changed by this run (or by a parallel lane) => failure.
+# Baseline at DB-M04: the workbook modified + pre-existing (staged/modified/untracked)
+# baseline-repo changes. Any OTHER line = Nexus source changed by this run (or by a
+# parallel lane) => failure.
 $script:UnexpectedGit = New-Object System.Collections.Generic.List[string]
 foreach ($gline in $script:GitLines) {
     if ($gline -match "NEXUS_DEVELOPMENT_CONTROL\.xlsx") { continue }
@@ -984,13 +1194,15 @@ Check-True "no AI API was called" $true "DB-M05 performs no external AI calls"
 
 # 16) DEEPSEEK_PROMPT.md does not contain an implementation prompt yet
 $promptText = [System.IO.File]::ReadAllText($script:PromptPath)
-$checkPrompt = ($promptText -match "Awaiting ChatGPT Prompt") -and -not ($promptText -match "RowVersion|mutex|ExcelDevelopmentControlStore|SCOPE_CHANGE_REQUIRED")
+$checkPrompt = ($promptText -match "Awaiting ChatGPT Prompt") -and -not ($promptText -match "Result: PASS|Acceptance criteria addressed|IMPLEMENTATION RESULT")
 Check-True "DEEPSEEK_PROMPT.md has no implementation prompt" $checkPrompt "template only"
 
 # 17-18) Cycle identity safety (PART 21): current identity present, no stale cycle as self
 Check-True "handoff identifies current cycle" (($md -match ("Change ID: " + $script:ChangeId)) -and ($md -match ("Node ID: " + $script:NodeId))) "identity sections carry the current Change/Node"
-$staleSelf = ($md -match "CHG-20260830-016 \(this reservation\)") -or ($md -match "WI-07-0.2.3 \(this reservation\)")
-Check-True "no stale-cycle artifact hijack" (-not $staleSelf) "CHG-20260830-016 / WI-07-0.2.3 must not appear as this task's identity (dependency references are fine)"
+$selfTags = @([regex]::Matches($md, "CHG-\d{8}-\d{3} \(this reservation") | ForEach-Object { $_.Value -replace "\s*\(this reservation.*$", "" } | Sort-Object -Unique)
+$selfWrong = @($selfTags | Where-Object { $_ -ne $script:ChangeId })
+$staleSelf = ($selfTags.Count -eq 0) -or ($selfWrong.Count -gt 0)
+Check-True "no stale-cycle artifact hijack" (-not $staleSelf) "the (this reservation) tag must appear exactly for the current Change ID, never a previous cycle's (dependency references are fine)"
 
 # 19) History copy present
 $historyExists = Test-Path $script:HistoryHandoff
@@ -1048,12 +1260,12 @@ if ($script:SheetsOk) { Write-Output "Authoritative workbook revalidated: YES" }
 if ($script:ResRows.Count -eq 1) { Write-Output "Reservation valid: YES" } else { Write-Output "Reservation valid: NO" }
 if ($md -match "Acceptance Criteria") { Write-Output "Acceptance criteria: YES" } else { Write-Output "Acceptance criteria: NO" }
 if ($md -match "Exact Reserved Scope") { Write-Output "Reserved scope: YES" } else { Write-Output "Reserved scope: NO" }
-if ($md -match "ADR-003") { Write-Output "Architecture: YES" } else { Write-Output "Architecture: NO" }
-if ($md -match "WI-07-0.2.4 -> WI-07-0.2.3") { Write-Output "Dependencies: YES" } else { Write-Output "Dependencies: NO" }
+if ($md -match "\bADR-\d+") { Write-Output "Architecture: YES" } else { Write-Output "Architecture: NO" }
+if ($md -match "\| Node ID \| Detail \|") { Write-Output "Dependencies: YES" } else { Write-Output "Dependencies: NO" }
 if ($md -match "Open Decisions") { Write-Output "Open Decisions: YES" } else { Write-Output "Open Decisions: NO" }
 if ($md -match "Audit Findings") { Write-Output "Audit Findings: YES" } else { Write-Output "Audit Findings: NO" }
-if ($md -match "ALREADY_EXISTS") { Write-Output "Existing Assets: YES" } else { Write-Output "Existing Assets: NO" }
-if ($md -match "ClosedXML") { Write-Output "Tool Registry: YES" } else { Write-Output "Tool Registry: NO" }
+if ($md -match "REUSE|ALREADY_EXISTS|MISSING") { Write-Output "Existing Assets: YES" } else { Write-Output "Existing Assets: NO" }
+if ($md -match "Tool & Integration Registry") { Write-Output "Tool Registry: YES" } else { Write-Output "Tool Registry: NO" }
 Write-Output ("Parallel context: LANE A (" + $(if ($script:LaneA) { $script:LaneA.id } else { "?" }) + " " + $(if ($script:LaneA) { $script:LaneA.status } else { "?" }) + ", overlap NO), LANE B (" + $(if ($script:LaneB) { $script:LaneB.id } else { "?" }) + " " + $(if ($script:LaneB) { $script:LaneB.status } else { "?" }) + ", overlap NO), LANE C (this reservation) - recheck PASS")
 if ($md -match $script:BaselineHead) { Write-Output "Git baseline: YES" } else { Write-Output "Git baseline: NO" }
 Write-Output ""
