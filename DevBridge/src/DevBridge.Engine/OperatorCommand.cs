@@ -218,8 +218,10 @@ public static class OperatorCommandCatalog
                 RequiresTaskIdentity = true,
                 DangerLevel = OperatorDangerLevel.ReadOnly,
                 TimeoutMs = 600000,
-                Description = "DB-M07 governed package assembly: builds tasks/CLAUDE_REVIEW_PACKAGE.md (governance header) " +
-                              "and tasks/REVIEW_PACKET.md from the verification evidence of the CURRENT task for Claude's review.",
+                Description = "DB-M07 governed package assembly: writes tasks/CLAUDE_REVIEW_PACKAGE.md - the full CLAUDE REVIEW " +
+                              "MANIFEST Claude reviews (identity, DB-M06 PASS evidence, reserved scope with absolute repo roots, " +
+                              "current-task delta, acceptance criteria, ADRs, read-only instructions) - plus a legacy " +
+                              "tasks/REVIEW_PACKET.md cover pointer for older display/navigation paths only.",
             },
             new OperatorCommand
             {
@@ -403,7 +405,9 @@ public static class OperatorCommandCatalog
             {
                 CommandId = "OPEN_REVIEW_PACKET", DisplayName = "Open Review Packet",
                 Kind = OperatorCommandKind.Navigation,
-                Description = "Opens tasks/REVIEW_PACKET.md.",
+                Description = "Opens the CURRENT CLAUDE REVIEW MANIFEST (tasks/CLAUDE_REVIEW_PACKAGE.md) - the exact " +
+                              "detailed read-only review content COPY FOR CLAUDE sends to Claude. Never opens the " +
+                              "legacy pointer wrapper as review content.",
             },
             new OperatorCommand
             {

@@ -814,11 +814,23 @@ public sealed class MainViewModel : ObservableObject
             case "OPEN_DEEPSEEK_PROMPT": TryOpen(T("DEEPSEEK_PROMPT.md")); break;
             case "OPEN_REVIEW_PACKET":
             {
-                // New model: Claude reviews the CURRENT CLAUDE REVIEW MANIFEST. Open the
-                // manifest when present, else fall back to the legacy packet pointer.
-                string p = T("CLAUDE_REVIEW_PACKAGE.md");
-                if (!File.Exists(p)) p = T("REVIEW_PACKET.md");
-                TryOpen(p);
+                // New model: Claude reviews the CURRENT CLAUDE REVIEW MANIFEST
+                // (tasks/CLAUDE_REVIEW_PACKAGE.md) - the exact detailed content COPY FOR
+                // CLAUDE sends. Open that manifest. The legacy REVIEW_PACKET.md is only a
+                // cover pointer and is never opened as review content; if it must serve an
+                // older pre-manifest cycle, say so rather than silently showing a pointer.
+                string manifest = T("CLAUDE_REVIEW_PACKAGE.md");
+                if (File.Exists(manifest)) { TryOpen(manifest); break; }
+                string legacy = T("REVIEW_PACKET.md");
+                if (File.Exists(legacy))
+                {
+                    TryOpen(legacy);
+                    LastActionMessage = "No CLAUDE REVIEW MANIFEST present - opened legacy tasks/REVIEW_PACKET.md (pointer only).";
+                }
+                else
+                {
+                    LastActionMessage = "No CLAUDE REVIEW MANIFEST present. Run CREATE CLAUDE REVIEW PACKAGE first.";
+                }
                 break;
             }
             case "OPEN_PREFLIGHT_REPORT": TryOpen(T("PREFLIGHT_REPORT.md")); break;
