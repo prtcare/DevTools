@@ -229,6 +229,7 @@ public static class OperatorCommandService
         "CREATE_CHATGPT_HANDOFF" => new[] { "CHATGPT_HANDOFF.md", "DEEPSEEK_PROMPT.md" },
         "RUN_VERIFICATION" => new[] { "VERIFICATION_REPORT.md" },
         "CREATE_CLAUDE_REVIEW_PACKAGE" => new[] { "REVIEW_PACKET.md", "CLAUDE_REVIEW_PACKAGE.md" },
+        "COPY_FOR_CLAUDE" => new[] { "CLAUDE_REVIEW_PACKAGE.md" },
         "RECORD_CLAUDE_RESULT" => new[] { "CLAUDE_REVIEW_RESULT.md" },
         "CREATE_CORRECTION_CONTEXT" => new[] { "FIX_CONTEXT.md" },
         "RUN_GOVERNED_COMPLETION" => new[] { "COMPLETION_REPORT.md" },

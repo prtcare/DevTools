@@ -793,8 +793,6 @@ public sealed class MainViewModel : ObservableObject
     {
         string? file = cmd.ArtifactFile;
         string? path = string.IsNullOrWhiteSpace(file) ? null : T(file);
-        if (cmd.CommandId == "COPY_FOR_CLAUDE" && path is not null && !File.Exists(path))
-            path = T("CLAUDE_REVIEW_PROMPT.md"); // packet preferred, prompt fallback
 
         if (path is null || !File.Exists(path))
         {
@@ -814,7 +812,15 @@ public sealed class MainViewModel : ObservableObject
         switch (cmd.CommandId)
         {
             case "OPEN_DEEPSEEK_PROMPT": TryOpen(T("DEEPSEEK_PROMPT.md")); break;
-            case "OPEN_REVIEW_PACKET": TryOpen(T("REVIEW_PACKET.md")); break;
+            case "OPEN_REVIEW_PACKET":
+            {
+                // New model: Claude reviews the CURRENT CLAUDE REVIEW MANIFEST. Open the
+                // manifest when present, else fall back to the legacy packet pointer.
+                string p = T("CLAUDE_REVIEW_PACKAGE.md");
+                if (!File.Exists(p)) p = T("REVIEW_PACKET.md");
+                TryOpen(p);
+                break;
+            }
             case "OPEN_PREFLIGHT_REPORT": TryOpen(T("PREFLIGHT_REPORT.md")); break;
             case "OPEN_VERIFICATION_REPORT": TryOpen(T("VERIFICATION_REPORT.md")); break;
             case "OPEN_CONSISTENCY_REPORT": TryOpen(T("WORKBOOK_CONSISTENCY_REPORT.md")); break;

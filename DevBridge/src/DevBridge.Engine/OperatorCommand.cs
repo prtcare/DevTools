@@ -454,8 +454,16 @@ public static class OperatorCommandCatalog
             new OperatorCommand
             {
                 CommandId = "COPY_FOR_CLAUDE", DisplayName = "Copy for Claude",
-                Kind = OperatorCommandKind.Clipboard, ArtifactFile = "REVIEW_PACKET.md",
-                Description = "Copies tasks/REVIEW_PACKET.md (falls back to CLAUDE_REVIEW_PROMPT.md) to the clipboard.",
+                Kind = OperatorCommandKind.Script,
+                RequiredStates = new[] { "VERIFIED" },
+                ResultingExpectedState = "VERIFIED", // copy is read-only; lifecycle state unchanged
+                Scripts = new[] { "Copy-ClaudeReviewManifest.ps1" },
+                RequiresTaskIdentity = true,
+                DangerLevel = OperatorDangerLevel.ReadOnly,
+                TimeoutMs = 600000,
+                Description = "DB-M07 governed copy: at click time reads tasks/CLAUDE_REVIEW_PACKAGE.md FRESH, re-verifies it is " +
+                              "the CURRENT CLAUDE REVIEW MANIFEST (Test-CrmManifestCurrent) and copies it to the clipboard " +
+                              "('COPIED FOR CLAUDE'). A stale/historical packet is never copied (CLAUDE_REVIEW_PACKAGE_NOT_READY).",
             },
             new OperatorCommand
             {

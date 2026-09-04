@@ -249,6 +249,23 @@ public static class StateReader
         string? pkgMd = SafeRead(Path.Combine(cfg.TasksDir, "CLAUDE_REVIEW_PACKAGE.md"));
         if (pkgMd is not null) pkg = ClaudeReviewPackageValidation.Validate(pkgMd);
 
+        // DB-M07 Claude Review Manifest readiness for the CURRENT cycle: current-task
+        // dbM07 carries a ready stamp whose nodeId/changeId match the current task AND
+        // the manifest file exists. A legacy/stale REVIEW_PACKET.md (old model, no dbM07
+        // stamp) is deliberately NOT current — COPY FOR CLAUDE stays disabled until the
+        // current manifest is generated.
+        bool manifestReady = false;
+        string? manifestId = null;
+        if (ct is not null && nodeId is not null && changeId is not null
+            && ct.Value.TryGetProperty("dbM07", out var db7) && db7.ValueKind == JsonValueKind.Object)
+        {
+            manifestReady = IsTrue(StateJson.Str(db7, "ready"))
+                && string.Equals(StateJson.Str(db7, "nodeId"), nodeId, StringComparison.Ordinal)
+                && string.Equals(StateJson.Str(db7, "changeId"), changeId, StringComparison.Ordinal)
+                && File.Exists(Path.Combine(cfg.TasksDir, "CLAUDE_REVIEW_PACKAGE.md"));
+            if (manifestReady) manifestId = StateJson.Str(db7, "manifestId");
+        }
+
         // DB-M11 advisory review recommendation (Role B; read-only, never blocking).
         M11ReviewRecommendation? m11 = null;
         var m11r = StateJson.TryRead(Path.Combine(cfg.StateDir, "db-m11-review-recommendation.json"));
@@ -313,6 +330,8 @@ public static class StateReader
             PreDevBridgeBaseline = preBaseline,
             HandoffValidation = handoff,
             ReviewPackageValidation = pkg,
+            ClaudeReviewManifestReady = manifestReady,
+            ClaudeReviewManifestId = manifestId,
             M10Eligibility = m10,
             RoadmapGuard = roadmapGuard,
             M11Recommendation = m11,

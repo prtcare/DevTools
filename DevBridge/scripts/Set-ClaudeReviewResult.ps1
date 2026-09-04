@@ -8,6 +8,13 @@
 #   GOVERNANCE_ISSUE             -> GOVERNANCE_ISSUE / human review
 #   HUMAN_DECISION_REQUIRED      -> HUMAN_DECISION_REQUIRED / human decision
 #
+# DB-M07 identity gate (hardened): the recorded result must belong to the CURRENT
+# node/change and the CURRENT CLAUDE REVIEW MANIFEST (Test-CrmManifestCurrent) with
+# a DB-M06 PASS for the same identity. A historical/stale review (e.g. a previous
+# node/change or an old manifest) is rejected with DB08_OUTCOME:
+# CLAUDE_RESULT_IDENTITY_MISMATCH and is NEVER recorded for the current cycle.
+# The reviewed identity + manifest id are persisted in state\claude-review.json.
+#
 # The decision + verbatim review text come from DB08_DECISION / DB08_REVIEW_TEXT
 # (fixture/operator channel) or from the DB-M12.2 one-command input parameters
 # (DB_COMMAND_INPUT_PARAMETERS = {"decision": "...", "reviewText": "..."}).
@@ -23,6 +30,7 @@ Set-StrictMode -Version Latest
 $ErrorActionPreference = "Stop"
 
 . (Join-Path $PSScriptRoot "Set-DevBridgeStateEntry.ps1")
+. (Join-Path $PSScriptRoot "ClaudeReviewManifestSupport.ps1")
 
 $script:Root = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
 $script:StateDir = Join-Path $script:Root "state"
@@ -79,6 +87,38 @@ $mode = Get-DevBridgeMode $ct $script:CfgPath
 if ($env:DB_COMMAND_INPUT_MODE) { $mode = $env:DB_COMMAND_INPUT_MODE }
 $trial = ($mode -eq "TRIAL")
 
+# ---- DB-M07 identity gate: the recorded result must belong to the CURRENT
+# review subject and the CURRENT CLAUDE REVIEW MANIFEST. An old/historical
+# review (e.g. a previous node/change or a stale manifest) is rejected with
+# CLAUDE_RESULT_IDENTITY_MISMATCH and is NEVER recorded for the current cycle.
+$resultNodeId = $nodeId
+$resultChangeId = $changeId
+if ($env:DB_COMMAND_INPUT_NODE_ID)   { $resultNodeId = [string]$env:DB_COMMAND_INPUT_NODE_ID }
+elseif ($env:DB08_NODE_ID)           { $resultNodeId = [string]$env:DB08_NODE_ID }
+if ($env:DB_COMMAND_INPUT_CHANGE_ID) { $resultChangeId = [string]$env:DB_COMMAND_INPUT_CHANGE_ID }
+elseif ($env:DB08_CHANGE_ID)         { $resultChangeId = [string]$env:DB08_CHANGE_ID }
+
+function Out-IdentityMismatch([string]$reason) {
+    Out-Markers "CLAUDE_RESULT_IDENTITY_MISMATCH" $false @("Claude result rejected for the current cycle: " + $reason) $false ""
+}
+
+if ($resultNodeId -ne $nodeId) { Out-IdentityMismatch ("result node " + $resultNodeId + " != current node " + $nodeId + ".") }
+if ($resultChangeId -ne $changeId) { Out-IdentityMismatch ("result change " + $resultChangeId + " != current change " + $changeId + ".") }
+
+# The review must have been performed against the CURRENT manifest (identity +
+# deterministic Manifest ID bound to the current DB-M06 evidence + ready stamp).
+$manifest = Test-CrmManifestCurrent -StateDir $script:StateDir -TasksDir $script:TasksDir
+if (-not $manifest.Ready) {
+    Out-IdentityMismatch ("there is no current CLAUDE REVIEW MANIFEST for " + $nodeId + " / " + $changeId + " (" + $manifest.Reason + ").")
+}
+
+# DB-M06 must be a PASS for the SAME node/change (covered by the manifest gate,
+# asserted explicitly for a clear reason when the manifest is missing).
+$verifGate = Read-DevBridgeJson (Join-Path $script:StateDir "verification.json")
+if ($null -eq $verifGate -or [string](Get-DevBridgeField $verifGate "primaryResult") -notlike "VERIFICATION_PASSED*") {
+    Out-Markers "STOP_DBM06_PASS_REQUIRED" $false @("DB-M06 verification must PASS for the same node/change before a Claude result can be recorded.") $false ""
+}
+
 # ---- route ----
 $dbM09Required = ($decision -eq "FIX")
 $routeLifecycleState = ""
@@ -96,12 +136,12 @@ $requiresHuman = ($decision -eq "GOVERNANCE_ISSUE" -or $decision -eq "HUMAN_DECI
 
 # ---- idempotency: the same decision for the same change is REUSED, never duplicated ----
 $existing = Read-DevBridgeJson $script:JsonPath
-if ($null -ne $existing -and [string](Get-DevBridgeField $existing "changeId") -eq $changeId -and [string](Get-DevBridgeField $existing "decision") -eq $decision) {
+if ($null -ne $existing -and [string](Get-DevBridgeField $existing "changeId") -eq $changeId -and [string](Get-DevBridgeField $existing "nodeId") -eq $nodeId -and [string](Get-DevBridgeField $existing "decision") -eq $decision) {
     Out-Markers "REUSED" $true @("tasks/CLAUDE_REVIEW_RESULT.md", "state/claude-review.json") $requiresHuman $(if ($decision -eq "GOVERNANCE_ISSUE") { "HUMAN_GOVERNANCE_REVIEW" } elseif ($decision -eq "HUMAN_DECISION_REQUIRED") { "HUMAN_DECISION" } else { "" })
 }
 
 # ---- evidence files ----
-$md = "DecisionToken: " + $decision + "`n`n" + $reviewText + "`n"
+$md = "DecisionToken: " + $decision + "`nNode: " + $nodeId + "`nChange: " + $changeId + "`nManifest ID: " + $manifest.ManifestId + "`n`n" + $reviewText + "`n"
 [System.IO.File]::WriteAllText($script:ResultMdPath, $md, (New-Object System.Text.UTF8Encoding($false)))
 
 $json = [ordered]@{
@@ -109,6 +149,10 @@ $json = [ordered]@{
     nodeId               = $nodeId
     changeId             = $changeId
     name                 = $taskName
+    reviewedNodeId       = $resultNodeId
+    reviewedChangeId     = $resultChangeId
+    reviewedManifestId   = $manifest.ManifestId
+    reviewedAgainstDbM06 = $manifest.VerifiedAtUtc
     decision             = $decision
     dbM09Required        = $dbM09Required
     trialMode            = $trial

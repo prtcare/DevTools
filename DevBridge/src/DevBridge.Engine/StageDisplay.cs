@@ -118,7 +118,8 @@ public static class StageDisplayResolver
     /// once verification has passed and the package is the immediate next step.</summary>
     private static string ResolveClaudeReviewPackage(DevBridgeState s, Func<LifecycleStageKey, StageState?> engine)
     {
-        if (s.Artifacts.ReviewPacket || s.Artifacts.ClaudeReviewPrompt) return Pass;
+        if (s.ClaudeReviewManifestReady) return Pass;   // CURRENT manifest (dbM07 stamp for this node/change)
+        if (s.Artifacts.ReviewPacket || s.Artifacts.ClaudeReviewPrompt) return Pass; // legacy artifact present
         if (engine(LifecycleStageKey.Verification) == StageState.Complete
             || engine(LifecycleStageKey.Claude) == StageState.Current
             || engine(LifecycleStageKey.Claude) == StageState.Complete) return Ready;

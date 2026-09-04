@@ -79,6 +79,13 @@ public sealed class DevBridgeState
     public ChatGptHandoffValidationResult? HandoffValidation { get; init; }
     public bool HandoffReady => HandoffValidation?.IsReady ?? false;
     public ClaudeReviewPackageValidationResult? ReviewPackageValidation { get; init; }
+
+    // ---- DB-M07 Claude Review Manifest (new review model: Claude reads the ACTUAL
+    // Nexus files). True only when current-task dbM07 carries a ready stamp for THIS
+    // node/change AND the manifest file exists — a legacy/stale REVIEW_PACKET.md from
+    // a previous cycle is never treated as the current manifest. ----
+    public bool ClaudeReviewManifestReady { get; init; }
+    public string? ClaudeReviewManifestId { get; init; }
     public M10CompletionEligibilityResult? M10Eligibility { get; init; }
     public RoadmapGuardVerdict? RoadmapGuard { get; init; }       // before/after protected fingerprint
     public M11ReviewRecommendation? M11Recommendation { get; init; }

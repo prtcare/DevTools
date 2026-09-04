@@ -310,7 +310,11 @@ public static class NextActionEngine
         if (s.Status == "VERIFIED" || (IsVerificationPassed(s) && s.ClaudeDecision is null && !s.Artifacts.ClaudeReviewResult))
         {
             var buttons = new List<string>();
-            if (s.Artifacts.ReviewPacket)
+            // COPY + RECORD only unlock for the CURRENT CLAUDE REVIEW MANIFEST (dbM07
+            // ready stamp for this node/change + manifest file). A legacy REVIEW_PACKET.md
+            // from a previous cycle is never the current manifest -> CREATE is shown so a
+            // fresh manifest is generated instead of copying stale context.
+            if (s.ClaudeReviewManifestReady)
             {
                 buttons.Add("COPY_FOR_CLAUDE");
                 buttons.Add("RECORD_CLAUDE_RESULT"); // once Claude returns its verdict, record it (DB-M07/08)
