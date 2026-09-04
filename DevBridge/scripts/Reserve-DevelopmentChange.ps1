@@ -271,6 +271,106 @@ function Get-GitBaseline([string]$repo) {
 }
 
 # ---------------------------------------------------------------------------
+# Multi-repository baseline support (DB-M04 integrity fix)
+#
+# A reservation may span MORE than one repository in its EXACT reserved scope.
+# Every reserved repository is baselined independently (path / branch / HEAD /
+# staged / modified / untracked / reserved-scope file hashes) so DB-M06 can
+# classify PRE-EXISTING / GOVERNANCE / TASK delta per repository. The
+# workbook-owner repository remains the PRIMARY baseline (gitBaseline and
+# repositoryStates[0] keep their historical meaning for DB-13 / M05 / the C#
+# reader); sibling reserved repositories each get an identical independent
+# record.
+# ---------------------------------------------------------------------------
+
+function Get-PersonalBasePath {
+    # Sibling root that holds the governed repositories, derived from the
+    # canonical workbook path in config (config is never redirected by self-test,
+    # so resolution is stable under DB04_WORKBOOK_OVERRIDE / DB_DEV_CONTROL_*).
+    $wbPath = [string]$script:Config.developmentControlWorkbook
+    if (-not $wbPath) { return "" }
+    $repoDir = Split-Path $wbPath -Parent
+    return (Split-Path $repoDir -Parent)
+}
+
+function Resolve-RepositoryPath([string]$repoName) {
+    if (-not $repoName) { return "" }
+    $name = $repoName.Trim()
+    # 1) explicit config mapping wins: config "repositories" may hold "Name=Path"
+    #    strings or { name; path } objects.
+    foreach ($entry in @($script:Config.repositories)) {
+        if ($entry -is [string]) {
+            if ($entry -match '^\s*([^=]+?)\s*=\s*(.+?)\s*$') {
+                if ($Matches[1].Trim() -ieq $name) { return $Matches[2].Trim() }
+            } elseif ($entry.Trim() -ieq $name) {
+                return (Join-Path (Get-PersonalBasePath) $name)
+            }
+        } elseif ($entry.PSObject.Properties['name'] -and ([string]$entry.name).Trim() -ieq $name -and $entry.PSObject.Properties['path']) {
+            return ([string]$entry.path).Trim()
+        }
+    }
+    # 2) conventional sibling root: <personal-base>\<RepoName>
+    return (Join-Path (Get-PersonalBasePath) $name)
+}
+
+function Get-RepoScopeHashes([string]$repoPath, $gitSnap, [string[]]$projects) {
+    # Reserved-scope file hashes for one repository. When a reserved project has a
+    # governed DevelopmentControl folder, every file under it is hashed (original
+    # DB-M04 behaviour). Otherwise the repository is byte-baselined over its
+    # PRE-EXISTING dirty files under the reserved project(s) only (bounded) so DB-M06
+    # can separate pre-existing content from task drift on an already-dirty repo.
+    $out = New-Object System.Collections.Generic.List[object]
+    if (-not $gitSnap.isGitRepo) { return $out }
+    $hashed = @{}
+    foreach ($p in @($projects)) {
+        if (-not $p) { continue }
+        $projDir = Join-Path $repoPath ("src\" + $p)
+        $govDir = Join-Path $projDir "DevelopmentControl"
+        if (Test-Path $govDir) {
+            foreach ($f in @(Get-ChildItem $govDir -Recurse -File)) {
+                # Normalize to forward slashes so hash paths match git-status rel paths
+                # (git always reports '/') and the sibling-repo / DB-M06 comparisons.
+                $rel = ($f.FullName.Substring($repoPath.Length + 1)) -replace '\\', '/'
+                if ($hashed.ContainsKey($rel)) { continue }
+                $hashed[$rel] = $true
+                $o = New-Object PSCustomObject
+                $o | Add-Member NoteProperty -Name path -Value $rel
+                $o | Add-Member NoteProperty -Name sha256 -Value (Get-FileSha256 $f.FullName)
+                $o | Add-Member NoteProperty -Name bytes -Value $f.Length
+                $out.Add($o)
+            }
+        } else {
+            $cands = New-Object System.Collections.Generic.List[string]
+            $projPrefix = "src/" + $p + "/"
+            foreach ($ln in @($gitSnap.stagedFiles)) {
+                if ($ln.Length -ge 4) { $cands.Add($ln.Substring(3)) }
+            }
+            foreach ($ln in @($gitSnap.modifiedFiles)) {
+                if ($ln.Length -ge 4) { $cands.Add($ln.Substring(3)) }
+            }
+            foreach ($ln in @($gitSnap.untrackedFiles)) {
+                if ($ln) { $cands.Add($ln) }
+            }
+            foreach ($rel in @($cands)) {
+                $relN = $rel -replace '\\', '/'
+                if (-not $relN.StartsWith($projPrefix, [System.StringComparison]::OrdinalIgnoreCase)) { continue }
+                if ($relN -match '/bin/|/obj/') { continue }
+                if ($hashed.ContainsKey($rel)) { continue }
+                $full = Join-Path $repoPath $rel
+                if (-not (Test-Path $full)) { continue }
+                $hashed[$rel] = $true
+                $o = New-Object PSCustomObject
+                $o | Add-Member NoteProperty -Name path -Value $rel
+                $o | Add-Member NoteProperty -Name sha256 -Value (Get-FileSha256 $full)
+                $o | Add-Member NoteProperty -Name bytes -Value ((Get-Item $full).Length)
+                $out.Add($o)
+            }
+        }
+    }
+    return $out
+}
+
+# ---------------------------------------------------------------------------
 # PART 0/1 - load DB-M03 outputs, idempotency, revalidation
 # ---------------------------------------------------------------------------
 $preflight = Read-Json $script:PreflightPath
@@ -581,23 +681,71 @@ if ((Get-Item $backupPath).Length -le 0 -or $backupHash -ne $wbBefore) {
 
 # ---------------------------------------------------------------------------
 # Git + scope baseline BEFORE the reservation write (pre-existing changes)
+#
+# MULTI-REPOSITORY: every repository in the EXACT reserved scope is baselined
+# independently (path / branch / HEAD / staged / modified / untracked /
+# reserved-scope file hashes). The workbook-owner repository is the PRIMARY
+# baseline (gitBaseline / repositoryStates[0]).
 # ---------------------------------------------------------------------------
-$repoRoot = "C:\Personal\Nexus.Developer"
-$gitBefore = Get-GitBaseline $repoRoot
-$scopeHashes = New-Object System.Collections.Generic.List[object]
-$scopeProject = @($preflight.projects | Select-Object -First 1)
-$scopeDir = Join-Path $repoRoot ("src\" + $scopeProject + "\DevelopmentControl")
-if (Test-Path $scopeDir) {
-    foreach ($f in @(Get-ChildItem $scopeDir -Recurse -File)) {
-        $rel = $f.FullName.Substring($repoRoot.Length + 1)
-        $h = Get-FileSha256 $f.FullName
-        $o = New-Object PSCustomObject
-        $o | Add-Member NoteProperty -Name path -Value $rel
-        $o | Add-Member NoteProperty -Name sha256 -Value $h
-        $o | Add-Member NoteProperty -Name bytes -Value $f.Length
-        $scopeHashes.Add($o)
-    }
+$reservedRepoNames = @(@($preflight.repositories) | Where-Object { $_ -and ([string]$_).Trim() } | ForEach-Object { ([string]$_).Trim() } | Select-Object -Unique)
+$workbookOwnerName = ""
+$cfgWbPath = [string]$script:Config.developmentControlWorkbook
+if ($cfgWbPath) {
+    $cfgWbRepoDir = Split-Path $cfgWbPath -Parent
+    if ($cfgWbRepoDir) { $workbookOwnerName = (Split-Path $cfgWbRepoDir -Leaf) }
 }
+if ($reservedRepoNames.Count -eq 0 -and $workbookOwnerName) {
+    $reservedRepoNames = @($workbookOwnerName)
+}
+
+$baselineRepos = New-Object System.Collections.Generic.List[object]
+$baselineSeen = @{}
+foreach ($rn in $reservedRepoNames) {
+    $rp = Resolve-RepositoryPath $rn
+    if (-not $rp -or $baselineSeen.ContainsKey($rp)) { continue }
+    $baselineSeen[$rp] = $true
+    if (-not (Test-Path $rp) -or -not (Test-Path (Join-Path $rp ".git"))) {
+        $primaryMissing = ($rn -ieq $workbookOwnerName) -or ($reservedRepoNames.Count -eq 1)
+        if ($envSelf -eq "1" -and -not $primaryMissing) {
+            Write-Output ("DB04_MULTIREPO_WARN: reserved repository {0} not found as a git repo at {1}; skipped (self-test)." -f $rn, $rp)
+            continue
+        }
+        Stop-Outcome "STOP_REPO_NOT_FOUND" ("Reserved repository {0} is not a git repository at {1}. DB-M04 must baseline every reserved repository." -f $rn, $rp)
+        Write-Output "DB04_RESULT_PASS: False"
+        exit 0
+    }
+    $baselineRepos.Add(@{ name = $rn; path = $rp; isPrimary = ($rn -ieq $workbookOwnerName); snap = $null; hashes = $null })
+}
+if ($baselineRepos.Count -eq 0) {
+    Stop-Outcome "STOP_REPO_NOT_FOUND" "No reserved repository could be resolved to a git repository; DB-M04 cannot capture a baseline."
+    Write-Output "DB04_RESULT_PASS: False"
+    exit 0
+}
+if (-not (@($baselineRepos | Where-Object { $_.isPrimary }).Count -gt 0)) {
+    $baselineRepos[0].isPrimary = $true
+}
+$primaryRepo = @($baselineRepos | Where-Object { $_.isPrimary } | Select-Object -First 1)
+
+# Snapshot every reserved repository + its reserved-scope hashes (pre-write).
+foreach ($br in $baselineRepos) {
+    $brPath = [string]$br.path
+    $snap = Get-GitBaseline $brPath
+    $ownedProjects = @($preflight.projects | Where-Object {
+        $pTok = ([string]$_).Trim()
+        $pTok -and (Test-Path (Join-Path $brPath ("src\" + $pTok)))
+    })
+    $br.snap = $snap
+    # Get-RepoScopeHashes returns via the pipeline, so PowerShell unrolls its List to a
+    # scalar / Object[] / nothing depending on how many files it hashed. Coerce to a
+    # stable Object[] so every consumer can rely on .Count / foreach / @().
+    $br.hashes = @(Get-RepoScopeHashes $brPath $snap @($ownedProjects))
+}
+
+# Primary (workbook-owner) pre-existing change record, kept for backward
+# compatibility on current-task.preExistingChanges and gitBaseline.preExistingChanges.
+$repoRoot = [string]$primaryRepo.path
+$gitBefore = $primaryRepo.snap
+$scopeHashes = $primaryRepo.hashes
 $preExisting = @{
     modified = @($gitBefore.modifiedFiles)
     staged   = @($gitBefore.stagedFiles)
@@ -869,19 +1017,27 @@ $reservationEvidence = @{
     reservedAt = $ts
 }
 
-$repoState = New-Object PSCustomObject
-$repoState | Add-Member NoteProperty -Name repository -Value "Nexus.Developer"
-$repoState | Add-Member NoteProperty -Name path -Value $repoRoot
-$repoState | Add-Member NoteProperty -Name branch -Value $gitAfter.branch
-$repoState | Add-Member NoteProperty -Name headCommit -Value $gitAfter.headCommit
-$repoState | Add-Member NoteProperty -Name headSubject -Value $gitAfter.headSubject
-$repoState | Add-Member NoteProperty -Name isGitRepo -Value $gitAfter.isGitRepo
-$repoState | Add-Member NoteProperty -Name stagedFiles -Value @($gitAfter.stagedFiles)
-$repoState | Add-Member NoteProperty -Name modifiedFiles -Value @($gitAfter.modifiedFiles)
-$repoState | Add-Member NoteProperty -Name untrackedFiles -Value @($gitAfter.untrackedFiles)
-$repoState | Add-Member NoteProperty -Name dirty -Value (($gitAfter.modifiedFiles.Count + $gitAfter.untrackedFiles.Count + $gitAfter.stagedFiles.Count) -gt 0)
-$repoState | Add-Member NoteProperty -Name capturedAt -Value $gitAfter.capturedAt
-$repoState | Add-Member NoteProperty -Name scopeFileHashes -Value @($scopeHashes.ToArray())
+# repositoryStates[0] is the PRIMARY (workbook-owner) repository, followed by every
+# other reserved repository with its own independent post-write observation.
+$repoStates = New-Object System.Collections.Generic.List[object]
+foreach ($br in $baselineRepos) {
+    $isPrim = [bool]$br.isPrimary
+    $snap = if ($isPrim) { $gitAfter } else { $br.snap }
+    $rs = New-Object PSCustomObject
+    $rs | Add-Member NoteProperty -Name repository -Value ([string]$br.name)
+    $rs | Add-Member NoteProperty -Name path -Value ([string]$br.path)
+    $rs | Add-Member NoteProperty -Name branch -Value $snap.branch
+    $rs | Add-Member NoteProperty -Name headCommit -Value $snap.headCommit
+    $rs | Add-Member NoteProperty -Name headSubject -Value $snap.headSubject
+    $rs | Add-Member NoteProperty -Name isGitRepo -Value $snap.isGitRepo
+    $rs | Add-Member NoteProperty -Name stagedFiles -Value @($snap.stagedFiles)
+    $rs | Add-Member NoteProperty -Name modifiedFiles -Value @($snap.modifiedFiles)
+    $rs | Add-Member NoteProperty -Name untrackedFiles -Value @($snap.untrackedFiles)
+    $rs | Add-Member NoteProperty -Name dirty -Value (($snap.modifiedFiles.Count + $snap.untrackedFiles.Count + $snap.stagedFiles.Count) -gt 0)
+    $rs | Add-Member NoteProperty -Name capturedAt -Value $snap.capturedAt
+    $rs | Add-Member NoteProperty -Name scopeFileHashes -Value @($br.hashes)
+    $repoStates.Add($rs)
+}
 
 $newState = $current | ConvertTo-Json -Depth 30 | ConvertFrom-Json
 $newState | Add-Member NoteProperty -Name changeId -Value $changeId -Force
@@ -890,7 +1046,7 @@ $newState | Add-Member NoteProperty -Name status -Value "RESERVED" -Force
 $newState | Add-Member NoteProperty -Name reservedAt -Value $ts -Force
 $newState | Add-Member NoteProperty -Name nextAllowedAction -Value "CHATGPT_HANDOFF" -Force
 $newState | Add-Member NoteProperty -Name reservationEvidence -Value $reservationEvidence -Force
-$newState | Add-Member NoteProperty -Name repositoryStates -Value @($repoState) -Force
+$newState | Add-Member NoteProperty -Name repositoryStates -Value $repoStates.ToArray() -Force
 $newState | Add-Member NoteProperty -Name preExistingChanges -Value $preExisting -Force
 $newState | Add-Member NoteProperty -Name pendingGovernanceItems -Value $pendingItems -Force
 $newState | Add-Member NoteProperty -Name mode -Value $script:CycleMode -Force
@@ -913,6 +1069,44 @@ Write-JsonUtf8 $script:CurrentTaskPath $newState
 # ---------------------------------------------------------------------------
 # PART 13 - outputs
 # ---------------------------------------------------------------------------
+
+# Per-repository baseline records (serializable) written into reservation.json.
+# repositoryBaselines[0] is the PRIMARY (workbook-owner) baseline; every other
+# reserved repository follows with its own independent pre-implementation
+# evidence, so DB-M06 can classify PRE-EXISTING / GOVERNANCE / TASK delta per repo.
+$repositoryBaselines = @()
+foreach ($br in $baselineRepos) {
+    $isPrim = [bool]$br.isPrimary
+    $snap = if ($isPrim) { $gitBefore } else { $br.snap }
+    $postRes = if ($isPrim) { @($gitAfter.modifiedFiles) } else { @() }
+    $note = if ($isPrim) {
+        "Captured before the DB-M04 reservation write. Later DB-M06 distinguishes PRE-EXISTING CHANGE from TASK CHANGE."
+    } else {
+        ("Captured before the DB-M04 reservation write (independent baseline for reserved repository {0}). DB-M06 classifies PRE-EXISTING vs TASK delta per repository." -f $br.name)
+    }
+    $entry = @{
+        name = [string]$br.name
+        repository = [string]$br.path
+        path = [string]$br.path
+        isPrimary = $isPrim
+        isGitRepo = [bool]$snap.isGitRepo
+        branch = $snap.branch
+        headCommit = $snap.headCommit
+        headSubject = $snap.headSubject
+        preReservationClean = ((@($snap.stagedFiles).Count + @($snap.modifiedFiles).Count + @($snap.untrackedFiles).Count) -eq 0)
+        preExistingChanges = @{
+            modified = @($snap.modifiedFiles)
+            staged = @($snap.stagedFiles)
+            untracked = @($snap.untrackedFiles)
+            note = $note
+        }
+        postReservationModifiedFiles = $postRes
+        scopeFileHashes = @($br.hashes)
+        capturedAt = $snap.capturedAt
+    }
+    $repositoryBaselines += $entry
+}
+
 $reservationRecord = @{
     milestone = "DB-M04"
     changeId = $changeId
@@ -942,8 +1136,9 @@ $reservationRecord = @{
         preReservationClean = (($gitBefore.modifiedFiles.Count + $gitBefore.stagedFiles.Count + $gitBefore.untrackedFiles.Count) -eq 0)
         preExistingChanges = $preExisting
         postReservationModifiedFiles = @($gitAfter.modifiedFiles)
-        scopeFileHashes = @($scopeHashes.ToArray())
+        scopeFileHashes = @($scopeHashes)
     }
+    repositoryBaselines = $repositoryBaselines
     pendingGovernanceItems = $pendingItems
     mode = $script:CycleMode
     trialContainment = $script:TrialContainment
@@ -1005,12 +1200,22 @@ $null = $sb.AppendLine("- **Existing staged files:** {0}" -f (@($gitBefore.stage
 $null = $sb.AppendLine("- **Existing modified files:** {0}" -f (@($gitBefore.modifiedFiles) -join "; "))
 $null = $sb.AppendLine("- **Existing untracked files:** {0}" -f (@($gitBefore.untrackedFiles) -join "; "))
 $null = $sb.AppendLine("- **Scope file hashes:**")
-if ($scopeHashes.Count -gt 0) {
-    foreach ($h in @($scopeHashes.ToArray())) {
+if (@($scopeHashes).Count -gt 0) {
+    foreach ($h in @($scopeHashes)) {
         $null = $sb.AppendLine(("  - {0}  SHA256 {1}" -f $h.path, $h.sha256))
     }
 } else { $null = $sb.AppendLine("  _(none found under the reserved scope)_") }
 $null = $sb.AppendLine("- **Captured at:** {0}" -f $gitBefore.capturedAt)
+$null = $sb.AppendLine("")
+$null = $sb.AppendLine("### Reserved Repository Baselines (independent per repository)")
+$null = $sb.AppendLine("")
+foreach ($br in $baselineRepos) {
+    $isPrim = [bool]$br.isPrimary
+    $bs = if ($isPrim) { $gitBefore } else { $br.snap }
+    $primTag = if ($isPrim) { "PRIMARY (workbook owner); " } else { "" }
+    $null = $sb.AppendLine(("- **{0}** ({1}) - {2}branch {3} @ {4}" -f $br.name, $br.path, $primTag, $bs.branch, $bs.headCommit))
+    $null = $sb.AppendLine(("  - pre-existing: {0} modified, {1} staged, {2} untracked; {3} scope-file hashes" -f @($bs.modifiedFiles).Count, @($bs.stagedFiles).Count, @($bs.untrackedFiles).Count, @($br.hashes).Count))
+}
 $null = $sb.AppendLine("")
 $null = $sb.AppendLine("## Parallel Development Context")
 $null = $sb.AppendLine("")
@@ -1079,13 +1284,17 @@ if ($envSelf -ne "1") {
     Write-Output ("Workbook backup         : PASS ({0})" -f $backupName)
     Write-Output ("Workbook write verified : PASS (Change ID once, Activity once, all 14 sheets load, SHA256 {0} -> {1})" -f $wbBefore.Substring(0,8), $wbAfter.Substring(0,8))
     Write-Output ""
-    Write-Output ("Repository         : Nexus.Developer ({0})" -f $repoRoot)
+    Write-Output ("Reserved repositories: {0}" -f (@($baselineRepos | ForEach-Object { "{0} ({1})" -f $_.name, $_.path }) -join "; "))
     Write-Output ("Project            : {0}" -f ($preflight.projects -join ","))
     Write-Output ("Files/Globs        : {0}" -f ($preflight.filesGlobs -join ","))
     Write-Output ("Contract           : {0}" -f ($preflight.contractsApis -join ","))
     Write-Output ("Branch (proposed)  : {0}" -f $branchName)
-    Write-Output ("Branch             : {0}" -f $gitBefore.branch)
-    Write-Output ("Baseline HEAD      : {0}" -f $gitBefore.headCommit)
+    foreach ($br in $baselineRepos) {
+        $isPrim = [bool]$br.isPrimary
+        $bs = if ($isPrim) { $gitBefore } else { $br.snap }
+        $primTag = if ($isPrim) { " (primary)" } else { "" }
+        Write-Output ("Repository baseline: {0}{1} - branch {2} @ {3}; pre-existing {4} modified / {5} staged / {6} untracked; {7} scope-file hashes" -f $br.name, $primTag, $bs.branch, $bs.headCommit, @($bs.modifiedFiles).Count, @($bs.stagedFiles).Count, @($bs.untrackedFiles).Count, @($br.hashes).Count)
+    }
     if (@($preExisting.modified).Count -eq 0 -and @($preExisting.untracked).Count -eq 0 -and @($preExisting.staged).Count -eq 0) {
         Write-Output "Pre-existing changes: none (clean tree before reservation; only the governed workbook changed by DB-M04)"
     } else {

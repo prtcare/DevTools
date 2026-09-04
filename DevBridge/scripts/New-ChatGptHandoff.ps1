@@ -343,7 +343,14 @@ $script:ReservedScope = @{
     affectedNodes = @($script:ResRow.AffectedNodes -split "\|" | ForEach-Object { $_.Trim() } | Where-Object { $_ })
 }
 
-# Git baseline (captured at DB-M04)
+# Git baseline (captured at DB-M04). The PRIMARY (workbook-owner) repository stays the
+# flat backward-compatible projection ($script:RepoPath / Baseline* / PreExisting*).
+function Get-JsonField([object]$obj, [string]$name) {
+    if ($null -eq $obj) { return $null }
+    $f = $obj.PSObject.Properties[$name]
+    if ($null -eq $f) { return $null }
+    return $f.Value
+}
 $script:RepoPath = $script:Reservation.gitBaseline.repository
 $script:BaselineBranch = $script:Reservation.gitBaseline.branch
 $script:BaselineHead = $script:Reservation.gitBaseline.headCommit
@@ -352,6 +359,80 @@ $script:PreExistingStaged = @($script:Reservation.gitBaseline.preExistingChanges
 $script:PreExistingModified = @($script:Reservation.gitBaseline.preExistingChanges.modified)
 $script:PreExistingUntracked = @($script:Reservation.gitBaseline.preExistingChanges.untracked)
 $script:PostReservationModified = @($script:Reservation.gitBaseline.postReservationModifiedFiles)
+
+# Per-repository baseline evidence. DB-M04 captures an independent pre-implementation
+# baseline for EVERY repository in the exact reserved scope (not only the workbook-owner
+# repository), so DB-M06 can classify PRE-EXISTING / GOVERNANCE / TASK delta per repo.
+# This engine consumes reservation.repositoryBaselines (primary first). Reservations
+# that predate that field fall back to the single gitBaseline record, synthesized as the
+# primary baseline, so single-repository behavior is unchanged.
+$script:RepoBaselineRaw = New-Object System.Collections.Generic.List[object]
+# repositoryBaselines is absent on reservations captured before the multi-repository
+# baseline feature. Get-JsonField returns $null for a missing field, and @($null)
+# yields a ONE-element array containing $null (not empty) - so drop nulls here.
+# Otherwise the legacy gitBaseline fallback below would never run and the reserved
+# workbook-owner repository would be left without baseline evidence.
+foreach ($_rr in @(Get-JsonField $script:Reservation 'repositoryBaselines')) {
+    if ($null -ne $_rr) { $script:RepoBaselineRaw.Add($_rr) | Out-Null }
+}
+if ($script:RepoBaselineRaw.Count -eq 0) {
+    $_lgPath = [string]$script:Reservation.gitBaseline.repository
+    $_lgName = ""
+    foreach ($_rn in @($script:ReservedScope.repositories)) {
+        if (($_rn -ieq $_lgPath) -or ($_rn -ieq (Split-Path $_lgPath -Leaf))) { $_lgName = $_rn; break }
+    }
+    if (-not $_lgName) { $_lgName = Split-Path $_lgPath -Leaf }
+    $_lg = New-Object PSCustomObject
+    $_lg | Add-Member NoteProperty -Name name -Value $_lgName -Force
+    $_lg | Add-Member NoteProperty -Name path -Value $_lgPath -Force
+    $_lg | Add-Member NoteProperty -Name isPrimary -Value $true -Force
+    $_lg | Add-Member NoteProperty -Name branch -Value ([string]$script:Reservation.gitBaseline.branch) -Force
+    $_lg | Add-Member NoteProperty -Name headCommit -Value ([string]$script:Reservation.gitBaseline.headCommit) -Force
+    $_lg | Add-Member NoteProperty -Name headSubject -Value ([string]$script:Reservation.gitBaseline.headSubject) -Force
+    $_lg | Add-Member NoteProperty -Name preExistingChanges -Value $script:Reservation.gitBaseline.preExistingChanges -Force
+    $_lg | Add-Member NoteProperty -Name postReservationModifiedFiles -Value @($script:Reservation.gitBaseline.postReservationModifiedFiles) -Force
+    $_lg | Add-Member NoteProperty -Name scopeFileHashes -Value @($script:Reservation.gitBaseline.scopeFileHashes) -Force
+    $_lg | Add-Member NoteProperty -Name capturedAt -Value ([string](Get-JsonField $script:Reservation.gitBaseline 'capturedAt')) -Force
+    $script:RepoBaselineRaw.Add($_lg) | Out-Null
+}
+
+$script:RepoBaselines = New-Object System.Collections.Generic.List[object]
+foreach ($_raw in $script:RepoBaselineRaw) {
+    $_bpath = [string](Get-JsonField $_raw 'path')
+    if (-not $_bpath) { $_bpath = [string](Get-JsonField $_raw 'repository') }
+    $_bpreIn = Get-JsonField $_raw 'preExistingChanges'
+    $_bpre = New-Object PSCustomObject
+    $_bpre | Add-Member NoteProperty -Name modified -Value @(Get-JsonField $_bpreIn 'modified') -Force
+    $_bpre | Add-Member NoteProperty -Name staged -Value @(Get-JsonField $_bpreIn 'staged') -Force
+    $_bpre | Add-Member NoteProperty -Name untracked -Value @(Get-JsonField $_bpreIn 'untracked') -Force
+    $_bpre | Add-Member NoteProperty -Name note -Value ([string](Get-JsonField $_bpreIn 'note')) -Force
+    $_b = New-Object PSCustomObject
+    $_b | Add-Member NoteProperty -Name name -Value ([string](Get-JsonField $_raw 'name')) -Force
+    $_b | Add-Member NoteProperty -Name path -Value $_bpath -Force
+    $_b | Add-Member NoteProperty -Name isPrimary -Value ([bool](Get-JsonField $_raw 'isPrimary')) -Force
+    $_b | Add-Member NoteProperty -Name branch -Value ([string](Get-JsonField $_raw 'branch')) -Force
+    $_b | Add-Member NoteProperty -Name headCommit -Value ([string](Get-JsonField $_raw 'headCommit')) -Force
+    $_b | Add-Member NoteProperty -Name headSubject -Value ([string](Get-JsonField $_raw 'headSubject')) -Force
+    $_b | Add-Member NoteProperty -Name preExistingChanges -Value $_bpre -Force
+    $_b | Add-Member NoteProperty -Name postReservationModifiedFiles -Value @(Get-JsonField $_raw 'postReservationModifiedFiles') -Force
+    $_b | Add-Member NoteProperty -Name scopeFileHashes -Value @(Get-JsonField $_raw 'scopeFileHashes') -Force
+    $_b | Add-Member NoteProperty -Name capturedAt -Value ([string](Get-JsonField $_raw 'capturedAt')) -Force
+    $script:RepoBaselines.Add($_b) | Out-Null
+}
+
+# Reserved-scope coverage: EVERY repository in the exact reserved scope must carry an
+# independent baseline. A missing baseline means DB-M06 cannot classify that repository's
+# delta, so the implementation handoff is BLOCKED (governance gap, not a pass).
+$_missingBase = @()
+foreach ($_resrepo in @($script:ReservedScope.repositories)) {
+    $_cov = @($script:RepoBaselines | Where-Object {
+        ($_.name -ieq $_resrepo) -or ($_.path -and ($_.path -ieq $_resrepo)) -or ($_.path -and ((Split-Path $_.path -Leaf) -ieq $_resrepo))
+    })
+    if ($_cov.Count -eq 0) { $_missingBase += $_resrepo }
+}
+if ($_missingBase.Count -gt 0) {
+    Stop-Outcome "BASELINE_COVERAGE_GAP" ("Reserved repository baseline missing for: " + ($_missingBase -join ", ") + ". DB-M04 must capture an independent pre-implementation git baseline for EVERY reserved repository before an implementation handoff is generated.")
+}
 
 # Pending governance items (read, not hard-coded)
 $script:PendingItems = @($script:CurrentState.pendingGovernanceItems)
@@ -658,7 +739,7 @@ if ($script:DepOverlays.Count -gt 0) {
         Add-Line ("- Verification evidence (DB-M06): **" + $tp.verificationEvidence.m06Result + "** - tests " + $tp.verificationEvidence.testsPassed + "/" + $tp.verificationEvidence.testsTotal + " passed (build " + $tp.verificationEvidence.buildWarnings + " warning(s) / " + $tp.verificationEvidence.buildErrors + " error(s)).")
         Add-Line ("- Claude review (DB-M08): decision **" + $tp.claudeEvidence.decision + "**, trialMode " + $tp.claudeEvidence.trialMode + ", reviewed against DB-M06 = " + $tp.claudeEvidence.reviewedAgainstDbM06 + ".")
         Add-Line ("- Overlay status applied for selection: **TRIAL_DEPENDENCY_SATISFIED**; real completion capability = **NO**; repository reconciliation freshness = **" + $tp.repositoryReconciliation.freshness + "**.")
-        Add-Line "- Do NOT treat " + $tp.nodeId + " as Complete/Merged. The real Nexus restart point is the preserved PRE-DEVBRIDGE workbook + source/Git baseline; nothing from the proving environment becomes genuine Nexus progress."
+        Add-Line ("- Do NOT treat " + $tp.nodeId + " as Complete/Merged. The real Nexus restart point is the preserved PRE-DEVBRIDGE workbook + source/Git baseline; nothing from the proving environment becomes genuine Nexus progress.")
     }
     Add-Line ""
 }
@@ -803,7 +884,10 @@ if ($script:PendingItems.Count -gt 0) {
 
 # ---- Repository Governance ----
 Add-Section "Repository Governance"
-Add-Line ("- **Reserved repositories:** " + (@($script:ReservedScope.repositories) -join ", ") + " (git baseline captured for " + $script:RepoPath + ").")
+$script:BaselineMapLines = @($script:RepoBaselines | ForEach-Object {
+    "{0} ({1}, {2} @ {3})" -f $(if ($_.name) { $_.name } else { (Split-Path $_.path -Leaf) }), $_.path, $_.branch, $_.headCommit.Substring(0, [Math]::Min(12, $_.headCommit.Length))
+})
+Add-Line ("- **Reserved repositories:** " + (@($script:ReservedScope.repositories) -join ", ") + ". Independent pre-implementation git baseline captured for EACH reserved repository: " + ($script:BaselineMapLines -join "; ") + ".")
 Add-Line "- **Governance source:** Development Control workbook Session Protocol sheet (authoritative) + each reserved repository's own AGENTS.md boundary rules."
 Add-Line "- **Relevant rules (layer-agnostic, from the Session Protocol / workbook governance):"
 Add-Line "  - Layer-owned code stays in its owning layer repository; the desktop shell is a client/launcher only, not a place to implement layer-owned logic."
@@ -815,25 +899,38 @@ Add-Line "  - Stay strictly inside the exact reserved scope; report SCOPE_CHANGE
 
 # ---- Git Baseline ----
 Add-Section "Git Baseline"
-Add-Line ("- **Repository:** " + $script:RepoPath)
-Add-Line ("- **Branch:** " + $script:BaselineBranch)
-Add-Line ("- **Baseline HEAD:** " + $script:BaselineHead + " (" + $script:BaselineSubject + ")")
+Add-Line ("DB-M04 captured an independent pre-implementation baseline for EVERY repository in the exact reserved scope (" + (@($script:ReservedScope.repositories) -join ", ") + "). Per-repository baseline evidence below.")
 Add-Line ""
-Add-Line "**Three separate git categories - keep them distinct (DB-M06 will verify against them):**"
-Add-Line ""
-Add-Line "1. **PRE-EXISTING SOURCE STATE** (captured at DB-M04, before this reservation's write):"
-Add-Line ("   - staged files: " + $(if ($script:PreExistingStaged.Count -gt 0) { ($script:PreExistingStaged -join "; ") } else { "(none)" }))
-Add-Line ("   - modified files: " + $(if ($script:PreExistingModified.Count -gt 0) { ($script:PreExistingModified -join "; ") } else { "(none)" }))
-Add-Line ("   - untracked files: " + $(if ($script:PreExistingUntracked.Count -gt 0) { ($script:PreExistingUntracked -join "; ") } else { "(none)" }))
-Add-Line ""
-Add-Line ("   **Important:** the " + @($script:PreExistingUntracked).Count + " untracked file(s) and any pre-existing staged/modified files were captured at DB-M04 as PRE-EXISTING CHANGE in the baseline repository. They are NOT this task's (" + $script:NodeId + " / " + $script:ChangeId + ") implementation delta. DB-M06 must not classify them as this task's implementation, and DeepSeek must not touch or commit them.")
-Add-Line ""
-Add-Line "2. **GOVERNANCE WORKBOOK CHANGE** (DB-M04 reservation write): the authoritative NEXUS_DEVELOPMENT_CONTROL.xlsx appears modified in git because DB-M04 recorded this reservation (" + $script:ChangeId + ") and its Activity Log entry. This is GOVERNANCE STATE, not implementation."
-Add-Line ("   - post-reservation modified files (observed): " + $(if ($script:PostReservationModified.Count -gt 0) { ($script:PostReservationModified -join "; ") } else { "(none)" }))
-Add-Line ""
-Add-Line ("3. **CURRENT TASK IMPLEMENTATION DELTA** (to be produced by DeepSeek under the exact reserved scope): none exists yet at DB-M05 time. It must land strictly inside the reserved repositories/projects (" + (@($script:ReservedScope.repositories) -join ", ") + " / " + (@($script:ReservedScope.projects) -join ", ") + ")" + $(if (@($script:ReservedScope.filesGlobs).Count -gt 0) { (", under " + (@($script:ReservedScope.filesGlobs) -join ", ")) } else { ", with no narrower file/glob recorded" }) + ".")
-Add-Line ""
-Add-Line ("Baseline scope-file hashes: " + @($script:Reservation.gitBaseline.scopeFileHashes).Count + " files recorded at DB-M04 against the baseline repository. DB-M06 will compare post-implementation state against these.")
+$script:RepoIndex = 0
+foreach ($_rb in $script:RepoBaselines) {
+    $script:RepoIndex++
+    $_rbName = if ($_rb.name) { $_rb.name } else { (Split-Path $_rb.path -Leaf) }
+    $_primTag = if ($_rb.isPrimary) { " - **PRIMARY** (workbook owner: NEXUS_DEVELOPMENT_CONTROL.xlsx)" } else { "" }
+    Add-Line ("### " + $script:RepoIndex + ". " + $_rbName + " (" + $_rb.path + ")" + $_primTag)
+    Add-Line ("- **Branch:** " + $_rb.branch)
+    Add-Line ("- **Baseline HEAD:** " + $_rb.headCommit + " (" + $_rb.headSubject + ")")
+    Add-Line ""
+    Add-Line "**Three separate git categories - keep them distinct (DB-M06 will verify against them per repository):**"
+    Add-Line ""
+    Add-Line "1. **PRE-EXISTING SOURCE STATE** (captured at DB-M04, before this reservation's write):"
+    Add-Line ("   - staged files: " + $(if (@($_rb.preExistingChanges.staged).Count -gt 0) { (@($_rb.preExistingChanges.staged) -join "; ") } else { "(none)" }))
+    Add-Line ("   - modified files: " + $(if (@($_rb.preExistingChanges.modified).Count -gt 0) { (@($_rb.preExistingChanges.modified) -join "; ") } else { "(none)" }))
+    Add-Line ("   - untracked files: " + $(if (@($_rb.preExistingChanges.untracked).Count -gt 0) { (@($_rb.preExistingChanges.untracked) -join "; ") } else { "(none)" }))
+    Add-Line ""
+    Add-Line ("   **Important:** the " + @($_rb.preExistingChanges.untracked).Count + " untracked file(s) and any pre-existing staged/modified files were captured at DB-M04 as PRE-EXISTING CHANGE in repository " + $_rbName + ". They are NOT this task's (" + $script:NodeId + " / " + $script:ChangeId + ") implementation delta. DB-M06 must not classify them as this task's implementation, and DeepSeek must not touch or commit them.")
+    Add-Line ""
+    if ($_rb.isPrimary) {
+        Add-Line ("2. **GOVERNANCE WORKBOOK CHANGE** (DB-M04 reservation write): the authoritative NEXUS_DEVELOPMENT_CONTROL.xlsx appears modified in git because DB-M04 recorded this reservation (" + $script:ChangeId + ") and its Activity Log entry. This is GOVERNANCE STATE, not implementation.")
+    } else {
+        Add-Line ("2. **GOVERNANCE WORKBOOK CHANGE**: none in this repository - the authoritative NEXUS_DEVELOPMENT_CONTROL.xlsx workbook is owned by the PRIMARY reserved repository (" + $_rbName + " is not the workbook owner). DB-M04 made no governance write here, so this repository carries no governance-tool delta.")
+    }
+    Add-Line ("   - post-reservation modified files (observed): " + $(if (@($_rb.postReservationModifiedFiles).Count -gt 0) { (@($_rb.postReservationModifiedFiles) -join "; ") } else { "(none)" }))
+    Add-Line ""
+    Add-Line ("3. **CURRENT TASK IMPLEMENTATION DELTA** (to be produced by DeepSeek under the exact reserved scope): none exists yet at DB-M05 time. It must land strictly inside the reserved repositories/projects (" + (@($script:ReservedScope.repositories) -join ", ") + " / " + (@($script:ReservedScope.projects) -join ", ") + ")" + $(if (@($script:ReservedScope.filesGlobs).Count -gt 0) { (", under " + (@($script:ReservedScope.filesGlobs) -join ", ")) } else { ", with no narrower file/glob recorded" }) + ".")
+    Add-Line ""
+    Add-Line ("Baseline scope-file hashes: " + @($_rb.scopeFileHashes).Count + " files recorded at DB-M04 against repository " + $_rbName + ". DB-M06 will compare post-implementation state against these.")
+    Add-Line ""
+}
 
 # ---- Parallel Development Context ----
 Add-Section "Parallel Development Context"
@@ -847,7 +944,7 @@ if ($script:LaneC) {
     Add-Line ("| C | " + $script:NodeId + " (" + $script:ChangeId + ") - this reservation | RESERVED (this lane) | " + $script:LaneC.root + " | n/a (this lane) |")
 }
 Add-Line ""
-Add-Line ("Basis: lanes A/B operate under the DevBridge root; lane C operates under the reserved baseline repository (" + $script:RepoPath + "). No shared repository root, path, schema, contract or workbook writer with the reserved scope. Workbook serialization is independently guarded by PART 1 (live SHA256 vs the DB-M04 post-write hash).")
+Add-Line ("Basis: lanes A/B operate under the DevBridge root; lane C operates under the reserved baseline repositories (" + (@($script:RepoBaselines | ForEach-Object { if ($_.name) { $_.name } else { (Split-Path $_.path -Leaf) } }) -join ", ") + "). Lane C is reserved there only - no shared root, path, schema, contract or workbook writer with lanes A/B. Workbook serialization is independently guarded by PART 1 (live SHA256 vs the DB-M04 post-write hash).")
 Add-Line ""
 Add-Line ("**Parallel safety rule for DeepSeek:** do not modify or depend on any unfinished parallel-lane file (LANE A = " + $(if ($script:LaneA) { $script:LaneA.id } else { "DevBridge parallel lane" }) + "; LANE B = " + $(if ($script:LaneB) { $script:LaneB.id } else { "DevBridge parallel lane" }) + "). If a genuine shared-contract requirement with a parallel lane emerges, STOP and report it rather than touching that lane's files.")
 
@@ -1163,31 +1260,56 @@ Check-True "existing assets classified" ($md -match "REUSE|ALREADY_EXISTS|MISSIN
 Check-True "parallel dev context present" ($md -match "Parallel Development Context") "handoff section"
 Check-True "tool registry handled" ($md -match "Tool & Integration Registry") "handoff section"
 Check-True "git baseline preserved" ($md -match $script:BaselineHead) "handoff section"
+# Every reserved repository's own baseline must be present in the rendered handoff.
+$script:MissingBaselineRendered = @()
+foreach ($_rbrend in $script:RepoBaselines) {
+    $_rbrendHead = [string]$_rbrend.headCommit
+    $_rbrendName = if ($_rbrend.name) { $_rbrend.name } else { (Split-Path $_rbrend.path -Leaf) }
+    if ($_rbrendHead.Length -gt 0) {
+        if (-not $md.Contains($_rbrendHead)) { $script:MissingBaselineRendered += ($_rbrendName + " HEAD " + $_rbrendHead) }
+    } elseif (-not $md.Contains($_rbrendName)) {
+        $script:MissingBaselineRendered += ($_rbrendName + " (no HEAD recorded)")
+    }
+}
+Check-True "every reserved repository baseline rendered" ($script:MissingBaselineRendered.Count -eq 0) ("missing: " + ($script:MissingBaselineRendered -join "; "))
 Check-True "completion report template present" ($md -match "IMPLEMENTATION RESULT") "handoff section"
 
-# 14) No Nexus source code changed by M05 (git status: only workbook may be dirty)
-$script:GitLines = @()
-try {
-    $oldEap = $ErrorActionPreference; $ErrorActionPreference = "Continue"
-    $script:GitLines = @(& git -C $script:RepoPath status --porcelain=v1 2>$null)
-    $ErrorActionPreference = $oldEap
-} catch { $script:GitLines = @() }
-$script:GitLines = @($script:GitLines | ForEach-Object { "$_" })
-# Baseline at DB-M04: the workbook modified + pre-existing (staged/modified/untracked)
-# baseline-repo changes. Any OTHER line = Nexus source changed by this run (or by a
-# parallel lane) => failure.
-$script:UnexpectedGit = New-Object System.Collections.Generic.List[string]
-foreach ($gline in $script:GitLines) {
-    if ($gline -match "NEXUS_DEVELOPMENT_CONTROL\.xlsx") { continue }
-    # porcelain v1 line = 'XY PATH' (2 status chars + whitespace + repo-relative path)
-    $pathPart = (($gline -replace '^..\s+', '').Trim())
-    $knownMatch = $false
-    foreach ($pu in @($script:PreExistingUntracked)) {
-        if ($pathPart -ieq $pu) { $knownMatch = $true; break }
-    }
-    if (-not $knownMatch) { $script:UnexpectedGit.Add($gline) }
+# 14) No reserved-repository source code changed by M05. Live git status is checked
+#     per reserved repository; the ONLY allowed dirty lines in each repository are that
+#     repository's OWN pre-existing changes captured at DB-M04 (staged/modified/
+#     untracked) plus, in the PRIMARY (workbook-owner) repository only, the DB-M04
+#     governance workbook write. Any other line = reserved source changed by this run
+#     (or by a parallel lane) => failure.
+function ConvertTo-GitPathPart([string]$p) {
+    $p = $p.Trim()
+    if ($p -match '^..\s') { return $p.Substring(3).Trim() }
+    return $p
 }
-Check-True "no Nexus source code changed" ($script:UnexpectedGit.Count -eq 0) ("unexpected git lines: " + ($script:UnexpectedGit -join "; "))
+$script:UnexpectedGit = New-Object System.Collections.Generic.List[string]
+foreach ($_rbgit in $script:RepoBaselines) {
+    $_rbGitPath = [string]$_rbgit.path
+    if (-not $_rbGitPath) { continue }
+    if (-not (Test-Path -LiteralPath $_rbGitPath)) { continue }
+    $_rbGitLines = @()
+    try {
+        $oldEap = $ErrorActionPreference; $ErrorActionPreference = "Continue"
+        $_rbGitLines = @(& git -C $_rbGitPath status --porcelain=v1 2>$null)
+        $ErrorActionPreference = $oldEap
+    } catch { $_rbGitLines = @() }
+    $_rbGitLines = @($_rbGitLines | ForEach-Object { "$_" })
+    $_rbAllowed = New-Object 'System.Collections.Generic.HashSet[string]'
+    foreach ($_pp in @($_rbgit.preExistingChanges.staged)) { $null = $_rbAllowed.Add((ConvertTo-GitPathPart ([string]$_pp))) }
+    foreach ($_pp in @($_rbgit.preExistingChanges.modified)) { $null = $_rbAllowed.Add((ConvertTo-GitPathPart ([string]$_pp))) }
+    foreach ($_pp in @($_rbgit.preExistingChanges.untracked)) { $null = $_rbAllowed.Add((ConvertTo-GitPathPart ([string]$_pp))) }
+    foreach ($_rgline in $_rbGitLines) {
+        if ($_rbgit.isPrimary -and $_rgline -match "NEXUS_DEVELOPMENT_CONTROL\.xlsx") { continue }
+        $_rgPath = ConvertTo-GitPathPart $_rgline
+        if ($_rbAllowed.Contains($_rgPath)) { continue }
+        $_rbGitRepoLabel = if ($_rbgit.name) { $_rbgit.name } else { $_rbGitPath }
+        $script:UnexpectedGit.Add($_rgline + "  [reserved repository: " + $_rbGitRepoLabel + "]") | Out-Null
+    }
+}
+Check-True "no reserved source code changed" ($script:UnexpectedGit.Count -eq 0) ("unexpected git lines: " + ($script:UnexpectedGit -join "; "))
 
 # 15) No AI API was called - property of this session (not an engine assertion)
 Check-True "no AI API was called" $true "DB-M05 performs no external AI calls"
@@ -1267,7 +1389,7 @@ if ($md -match "Audit Findings") { Write-Output "Audit Findings: YES" } else { W
 if ($md -match "REUSE|ALREADY_EXISTS|MISSING") { Write-Output "Existing Assets: YES" } else { Write-Output "Existing Assets: NO" }
 if ($md -match "Tool & Integration Registry") { Write-Output "Tool Registry: YES" } else { Write-Output "Tool Registry: NO" }
 Write-Output ("Parallel context: LANE A (" + $(if ($script:LaneA) { $script:LaneA.id } else { "?" }) + " " + $(if ($script:LaneA) { $script:LaneA.status } else { "?" }) + ", overlap NO), LANE B (" + $(if ($script:LaneB) { $script:LaneB.id } else { "?" }) + " " + $(if ($script:LaneB) { $script:LaneB.status } else { "?" }) + ", overlap NO), LANE C (this reservation) - recheck PASS")
-if ($md -match $script:BaselineHead) { Write-Output "Git baseline: YES" } else { Write-Output "Git baseline: NO" }
+if ($script:MissingBaselineRendered.Count -eq 0 -and $md -match $script:BaselineHead) { Write-Output "Git baseline: YES (all reserved repositories rendered)" } else { Write-Output ("Git baseline: NO" + $(if ($script:MissingBaselineRendered.Count -gt 0) { (" (missing: " + ($script:MissingBaselineRendered -join "; ") + ")") } else { "" })) }
 Write-Output ""
 Write-Output "CHATGPT_HANDOFF:"
 Write-Output ("  " + $script:HandoffPath)
