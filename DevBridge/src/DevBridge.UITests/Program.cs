@@ -231,6 +231,15 @@ internal static class Program
         Check(lifecycle is { Kind: OperatorCommandKind.Script, WritesWorkbook: false }
               && gitObs is { Kind: OperatorCommandKind.Script, WritesWorkbook: false },
             "WIRE-11", "GET_CURRENT_LIFECYCLE_STATE + REFRESH_GIT_GATE_STATE read-only script commands");
+        var reconcile = OperatorCommandCatalog.Get("RECONCILE_CORRECTION")!;
+        Check(reconcile.Kind == OperatorCommandKind.Script && reconcile.RequiresTaskIdentity
+              && reconcile.DangerLevel == OperatorDangerLevel.ReadOnly
+              && reconcile.Scripts.Contains("Confirm-CorrectedImplementation.ps1")
+              && reconcile.RequiredStates.Contains("DB_M09_FIX_REQUIRED")
+              && reconcile.ResultingExpectedState == "DB_M09_FIX_REQUIRED",
+            "WIRE-12", "DB-M15 RECONCILE_CORRECTION read-only script command from DB_M09_FIX_REQUIRED");
+        Check(OperatorCommandCatalog.Get("RUN_VERIFICATION")!.RequiredStates.Contains("DB_M09_FIX_REQUIRED"),
+            "WIRE-13", "M06 RUN_VERIFICATION callable from DB_M09_FIX_REQUIRED (re-verifies reconciled corrected attempt)");
 
         // =====================================================================
         // E. M05 ZERO-CONTEXT HANDOFF GATE

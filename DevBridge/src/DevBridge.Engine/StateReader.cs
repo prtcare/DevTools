@@ -266,6 +266,21 @@ public static class StateReader
             if (manifestReady) manifestId = StateJson.Str(db7, "manifestId");
         }
 
+        // DB-M15 correction reconciliation (post CORRECT_CURRENT_ATTEMPT): current-task
+        // dbM09 carries a correctionReconciled stamp whose result is CORRECTION_DELTA_DETECTED.
+        // True only for the CURRENT cycle (same node/change as the M09 fix decision).
+        bool correctionReconciled = false;
+        if (ct is not null && nodeId is not null && changeId is not null
+            && ct.Value.TryGetProperty("dbM09", out var db9) && db9.ValueKind == JsonValueKind.Object)
+        {
+            string? db9Node = StateJson.Str(db9, "nodeId");
+            string? db9Change = StateJson.Str(db9, "changeId");
+            bool db9Applies = string.Equals(db9Node, nodeId, StringComparison.Ordinal)
+                && string.Equals(db9Change, changeId, StringComparison.Ordinal);
+            if (db9Applies && db9.TryGetProperty("correctionReconciled", out var rec) && rec.ValueKind == JsonValueKind.Object)
+                correctionReconciled = string.Equals(StateJson.Str(rec, "result"), "CORRECTION_DELTA_DETECTED", StringComparison.Ordinal);
+        }
+
         // DB-M11 advisory review recommendation (Role B; read-only, never blocking).
         M11ReviewRecommendation? m11 = null;
         var m11r = StateJson.TryRead(Path.Combine(cfg.StateDir, "db-m11-review-recommendation.json"));
@@ -332,6 +347,7 @@ public static class StateReader
             ReviewPackageValidation = pkg,
             ClaudeReviewManifestReady = manifestReady,
             ClaudeReviewManifestId = manifestId,
+            CorrectionReconciled = correctionReconciled,
             M10Eligibility = m10,
             RoadmapGuard = roadmapGuard,
             M11Recommendation = m11,

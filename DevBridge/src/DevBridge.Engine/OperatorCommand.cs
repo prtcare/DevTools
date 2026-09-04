@@ -197,7 +197,9 @@ public static class OperatorCommandCatalog
                 CommandId = "RUN_VERIFICATION",
                 DisplayName = "Run Verification",
                 Kind = OperatorCommandKind.Script,
-                RequiredStates = new[] { "AWAITING_CHATGPT_PROMPT", "VERIFIED" },
+                // DB_M09_FIX_REQUIRED is included so a corrected attempt (reconciled by
+                // DB-M15) can be re-verified IN the fix loop before returning to Claude.
+                RequiredStates = new[] { "AWAITING_CHATGPT_PROMPT", "VERIFIED", "DB_M09_FIX_REQUIRED" },
                 ResultingExpectedState = "VERIFIED",
                 Scripts = new[] { "Run-Verification.ps1" },
                 RequiresTaskIdentity = true,
@@ -205,7 +207,8 @@ public static class OperatorCommandCatalog
                 TimeoutMs = 600000,
                 Description = "DB-M06 governed verification: runs the configured (or auto-discovered) build/test " +
                               "commands for the CURRENT task, records state/verification.json + tasks/VERIFICATION_REPORT.md, " +
-                              "and transitions to VERIFIED on PASS. A verification FAILURE reports DB06_RESULT_PASS: False.",
+                              "and transitions to VERIFIED on PASS. A verification FAILURE reports DB06_RESULT_PASS: False. " +
+                              "In the DB-M09 fix loop it verifies the reconciled corrected attempt (CORRECT_CURRENT_ATTEMPT).",
             },
             new OperatorCommand
             {
@@ -274,6 +277,25 @@ public static class OperatorCommandCatalog
                 Description = "DB-M09 governed correction context: assembles tasks/FIX_CONTEXT.md from the Claude fix " +
                               "findings of the CURRENT task while preserving the existing task evidence; scope widening " +
                               "is never silent.",
+            },
+            new OperatorCommand
+            {
+                CommandId = "RECONCILE_CORRECTION",
+                DisplayName = "Reconcile Corrected Implementation",
+                Kind = OperatorCommandKind.Script,
+                RequiredStates = new[] { "DB_M09_FIX_REQUIRED" },
+                ResultingExpectedState = "DB_M09_FIX_REQUIRED", // reconciliation stays in the fix loop until DB-M06 re-verifies
+                Scripts = new[] { "Confirm-CorrectedImplementation.ps1" },
+                RequiresTaskIdentity = true,
+                DangerLevel = OperatorDangerLevel.ReadOnly, // reads repos/workbook; writes only the dbM09 reconciliation stamp
+                TimeoutMs = 600000,
+                Description = "DB-M15 governed correction reconciliation: after a CORRECT_CURRENT_ATTEMPT is " +
+                              "implemented OUTSIDE DevBridge, re-runs the read-only delta classifier over the " +
+                              "reserved repositories and detects the incremental correction delta against the " +
+                              "DB-M09 fix baseline (hash-based) or the DB-M07 manifest current-task delta (path-based). " +
+                              "When a delta is detected it stamps current-task dbM09.correctionReconciled so the fix " +
+                              "loop enables RUN VERIFICATION on the corrected attempt. The lifecycle status stays " +
+                              "DB_M09_FIX_REQUIRED; no implementation or verification is re-run here.",
             },
             new OperatorCommand
             {

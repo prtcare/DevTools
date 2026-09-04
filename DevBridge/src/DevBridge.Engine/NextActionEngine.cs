@@ -36,6 +36,7 @@ public static class NextActionEngine
         ("OPEN_REVIEW_PACKET", "OPEN REVIEW PACKET"),
         ("RECORD_CLAUDE_RESULT", "RECORD CLAUDE RESULT"),
         ("COPY_FIX_CONTEXT", "COPY FIX CONTEXT"),
+        ("RECONCILE_CORRECTION", "RECONCILE CORRECTION"),
         ("RUN_GOVERNED_COMPLETION", "RUN GOVERNED COMPLETION"),
         ("CLOSE_TRIAL_CYCLE", "CLOSE TRIAL CYCLE"),
         ("START_NEXT_CYCLE", "START NEXT CYCLE"),
@@ -239,8 +240,62 @@ public static class NextActionEngine
         }
 
         // ---- 4. claude fix required (DB-M09) ----
-        if (s.ClaudeFixRequired || (s.ClaudeDecision is not null && s.ClaudeDecision.StartsWith("FAIL", StringComparison.OrdinalIgnoreCase)))
+        // A FIX decision keeps the cycle on the fix loop UNTIL a FRESH DB-M06
+        // verification of the corrected attempt lands (VerifiedAtUtc > ClaudeReviewedAtUtc).
+        // Once re-verified, the historical FIX no longer blocks the normal verified flow
+        // (the corrected delta goes back to Claude). While a FIX is live on the governed
+        // M09 position, the correction loop offers RECONCILE CORRECTION (DB-M15) and -
+        // once an externally-completed CORRECT_CURRENT_ATTEMPT has been reconciled as a
+        // detected delta - re-verification of the corrected implementation (DB-M06).
+        bool fixLive = s.ClaudeFixRequired || (s.ClaudeDecision is not null && s.ClaudeDecision.StartsWith("FAIL", StringComparison.OrdinalIgnoreCase));
+        if (fixLive && !FixReVerified(s))
         {
+            if (s.Status == "DB_M09_FIX_REQUIRED" && s.CorrectionReconciled)
+            {
+                // DB-M15 reconciled the corrected implementation -> re-verify it, then
+                // Claude re-reviews the corrected delta.
+                return Build(
+                    "The corrected implementation was detected and reconciled. Run verification on the corrected delta, then re-review the task in Claude.",
+                    hasTask: true, current: LifecycleStageKey.FixLoop,
+                    stages: Markers(m =>
+                        m.Key == LifecycleStageKey.Claude ? StageState.Failed
+                        : m.Key == LifecycleStageKey.FixLoop ? StageState.Current
+                        : m.Key == LifecycleStageKey.Completion || m.Key == LifecycleStageKey.ControlValidation || m.Key == LifecycleStageKey.Done ? StageState.Waiting
+                        : IsBefore(m.Key, LifecycleStageKey.Claude) ? StageState.Complete
+                        : StageState.Waiting),
+                    buttons: new[] { "RUN_VERIFICATION", "COPY_FIX_CONTEXT", "OPEN_REVIEW_PACKET", "OPEN_DETAIL" },
+                    failure: new FailureInfo("CLAUDE", "Claude Review", s.ClaudeReviewedAtUtc,
+                        s.ClaudeFixDetail ?? $"decision={s.ClaudeDecision}",
+                        "Address the findings, regenerate the implementation prompt, and re-run implementation + verification."),
+                    residuals: s.ResidualObservations.Count);
+            }
+            // Governed M09 position: the correction loop owns the lifecycle. RECONCILE
+            // CORRECTION reconciles a CORRECT_CURRENT_ATTEMPT implemented OUTSIDE
+            // DevBridge without ever leaving the M09 position.
+            if (s.Status == "DB_M09_FIX_REQUIRED")
+            {
+                string instruction = s.Artifacts.FixContext
+                    ? "Claude found issues. Copy the correction context to ChatGPT. When the CORRECT_CURRENT_ATTEMPT is implemented outside DevBridge, run RECONCILE CORRECTION."
+                    : "Claude found issues. Send the fix context to ChatGPT.";
+                var m09Buttons = s.Artifacts.FixContext
+                    ? new[] { "COPY_FIX_CONTEXT", "RECONCILE_CORRECTION", "OPEN_REVIEW_PACKET", "OPEN_DETAIL" }
+                    : new[] { "RECONCILE_CORRECTION", "OPEN_REVIEW_PACKET", "OPEN_DETAIL" };
+                return Build(instruction,
+                    hasTask: true, current: LifecycleStageKey.FixLoop,
+                    stages: Markers(m =>
+                        m.Key == LifecycleStageKey.Claude ? StageState.Failed
+                        : m.Key == LifecycleStageKey.FixLoop ? StageState.Current
+                        : m.Key == LifecycleStageKey.Completion || m.Key == LifecycleStageKey.ControlValidation || m.Key == LifecycleStageKey.Done ? StageState.Waiting
+                        : IsBefore(m.Key, LifecycleStageKey.Claude) ? StageState.Complete
+                        : StageState.Waiting),
+                    buttons: m09Buttons,
+                    failure: new FailureInfo("CLAUDE", "Claude Review", s.ClaudeReviewedAtUtc,
+                        s.ClaudeFixDetail ?? $"decision={s.ClaudeDecision}",
+                        "Address the findings, regenerate the implementation prompt, and re-run implementation + verification."),
+                    residuals: s.ResidualObservations.Count);
+            }
+            // Legacy/non-governed M09 position (status advanced past DB_M09_FIX_REQUIRED):
+            // preserve the historical fix-loop instruction and buttons exactly.
             return Build(
                 "Claude found issues. Send the fix context to ChatGPT.",
                 hasTask: true, current: LifecycleStageKey.FixLoop,
@@ -475,6 +530,17 @@ public static class NextActionEngine
     private static bool IsConsistencyFailed(DevBridgeState s)
         => s.ConsistencyResult is not null
            && !s.ConsistencyResult.StartsWith("PASS", StringComparison.OrdinalIgnoreCase);
+
+    /// <summary>
+    /// A FIX decision is superseded once a FRESH DB-M06 verification of the corrected
+    /// attempt lands (VerifiedAtUtc later than ClaudeReviewedAtUtc). Both timestamps are
+    /// written as ISO-8601 UTC, so an ordinal string compare is chronological.
+    /// </summary>
+    private static bool FixReVerified(DevBridgeState s)
+    {
+        if (string.IsNullOrWhiteSpace(s.VerifiedAtUtc) || string.IsNullOrWhiteSpace(s.ClaudeReviewedAtUtc)) return false;
+        return string.CompareOrdinal(s.VerifiedAtUtc, s.ClaudeReviewedAtUtc) > 0;
+    }
 
     private static bool CompletionMatchesCurrent(DevBridgeState s)
     {

@@ -42,6 +42,79 @@ function Out-Markers([string]$token, [bool]$pass, [string[]]$evidence) {
     exit 0
 }
 
+# ---- DB-M15 fix-baseline capture (additive + best-effort) ----
+# Captures the CURRENT-task delta (repo-relative path + SHA-256) of every reserved
+# repository at fix-context creation time. Confirm-CorrectedImplementation.ps1 (DB-M15)
+# later compares the post-CORRECT_CURRENT_ATTEMPT delta against this baseline to detect
+# the incremental correction delta, so the fix loop can require a FRESH DB-M06
+# verification of the corrected attempt. The capture is best-effort: it only runs when a
+# reservation + the DB06D classifier are present and NOT in a selftest fixture; any
+# failure leaves the baseline empty and DB-M15 falls back to the DB-M07 manifest
+# current-task delta. It never alters the DB09 markers or exit code.
+$script:FixBaseline = $null
+function Invoke-FixBaselineCapture {
+    if ($env:DB09_SELFTEST -eq "1") { return $null }
+    $resPath = Join-Path $script:StateDir "reservation.json"
+    $classifier = Join-Path $PSScriptRoot "Measure-Dbm06ImplementationDelta.ps1"
+    if (-not (Test-Path -LiteralPath $resPath)) { return $null }
+    if (-not (Test-Path -LiteralPath $classifier)) { return $null }
+    $res = Read-DevBridgeJson $resPath
+    if ($null -eq $res) { return $null }
+    $baselines = @(Get-DevBridgeField $res "repositoryBaselines")
+    if ($baselines.Count -eq 0) { return $null }
+
+    $repos = New-Object System.Collections.Generic.List[object]
+    foreach ($_b in $baselines) {
+        $_repoPath = [string](Get-DevBridgeField $_b "path")
+        if (-not $_repoPath) { continue }
+        try { $_repoFull = (Resolve-Path -LiteralPath $_repoPath -ErrorAction Stop).Path } catch { return $null }
+        if (-not (Test-Path -LiteralPath (Join-Path $_repoFull ".git"))) { continue }
+        $_label = [string](Get-DevBridgeField $_b "name")
+        if (-not $_label) { $_label = Split-Path $_repoFull -Leaf }
+
+        $env:DB06D_REPO = $_repoPath
+        $env:DB06D_RESERVATION = $resPath
+        $co = @()
+        try {
+            $co = @(& powershell.exe -NoProfile -ExecutionPolicy Bypass -File $classifier 2>&1)
+        } catch {
+            Remove-Item env:DB06D_REPO -ErrorAction SilentlyContinue
+            Remove-Item env:DB06D_RESERVATION -ErrorAction SilentlyContinue
+            return $null
+        } finally {
+            Remove-Item env:DB06D_REPO -ErrorAction SilentlyContinue
+            Remove-Item env:DB06D_RESERVATION -ErrorAction SilentlyContinue
+        }
+        $co = @($co | ForEach-Object { "$_" })
+        $joined = ($co -join "`n")
+        $om = [regex]::Match($joined, 'DB06D_OUTCOME:\s*(\S+)')
+        if (-not $om.Success -or $om.Groups[1].Value -ne "DELTA_CLASSIFICATION_PASS") { return $null }
+
+        $files = New-Object System.Collections.Generic.List[object]
+        foreach ($_line in $co) {
+            if ($_line -notlike 'DB06D_FILE:*') { continue }
+            $dm = [regex]::Match($_line, 'DB06D_FILE:\s*([^|]+?)\s*\|\s*([A-Z_]+)')
+            if (-not $dm.Success) { continue }
+            if ($dm.Groups[2].Value -notlike '*CURRENT_TASK_DELTA*') { continue }
+            $rel = $dm.Groups[1].Value.Trim()
+            $full = Join-Path $_repoFull $rel
+            if (-not (Test-Path -LiteralPath $full)) { continue }
+            $h = ""
+            try { $h = (Get-FileHash -LiteralPath $full -Algorithm SHA256).Hash } catch { continue }
+            if (-not $h) { continue }
+            $files.Add([ordered]@{ path = $rel; sha256 = $h })
+        }
+        if ($files.Count -eq 0) { continue }  # no current-task delta in this repo
+        $repos.Add([ordered]@{ name = $_label; path = $_repoFull; deltaFiles = @($files) })
+    }
+    if ($repos.Count -eq 0) { return $null }
+    return [ordered]@{
+        capturedAtUtc = $script:NowUtc
+        reference     = "DB06D_CURRENT_TASK_DELTA"
+        repos         = @($repos.ToArray())
+    }
+}
+
 $ct = Read-DevBridgeJson $script:CurrentTaskPath
 if ($null -eq $ct) { Out-Markers "STOP_NO_CURRENT_TASK" $false @("No current-task.json; run DB-M03 preflight first.") }
 
@@ -122,6 +195,11 @@ if ($script:Db181Block) { $context = $context + "`r`n`r`n" + $script:Db181Block 
 if (-not (Test-Path $script:TasksDir)) { New-Item -ItemType Directory -Force -Path $script:TasksDir | Out-Null }
 [System.IO.File]::WriteAllText($script:ContextPath, $context, (New-Object System.Text.UTF8Encoding($false)))
 
+# Best-effort fix-baseline capture for the DB-M15 reconciliation reference. Captured
+# only on a FRESH creation (the REUSED guard above returned early for an existing
+# context); a live cycle whose dbM09 predates this falls back to the DB-M07 manifest.
+$script:FixBaseline = Invoke-FixBaselineCapture
+
 $db9 = [ordered]@{
     result        = "FIX_CONTEXT_CREATED"
     nodeId        = $nodeId
@@ -132,6 +210,7 @@ $db9 = [ordered]@{
     generatedAtUtc = $script:NowUtc
     evidence      = @("tasks/FIX_CONTEXT.md")
 }
+if ($null -ne $script:FixBaseline) { $db9["fixBaseline"] = $script:FixBaseline }
 Set-DevBridgeStateEntry $script:CurrentTaskPath @{ dbM09 = $db9 }
 
 Out-Markers "FIX_CONTEXT_CREATED" $true @("tasks/FIX_CONTEXT.md")

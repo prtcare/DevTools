@@ -134,6 +134,18 @@ function Has-Property($obj, [string]$key) {
     return ($null -ne $obj -and ($obj.PSObject.Properties.Name -contains $key))
 }
 
+# Stamps the DB-M07 current-manifest evidence chain into a fixture so the DB-M08
+# record-time gate (Test-CrmManifestCurrent) is satisfiable with a GENERIC identity:
+# current-task dbM07 ready stamp + verification.json PASS (verifiedAtUtc) + a
+# CLAUDE_REVIEW_PACKAGE.md bound to the deterministic manifest id. This mirrors what
+# a real DB-M06 + DB-M07 run leaves behind, without any real reservation/repo.
+function Add-CrmCurrentEvidence([hashtable]$fixture, [string]$verifiedAtUtc) {
+    $id = "DB07-MANIFEST|" + $fixture.changeId + "|N-01-0.1|" + $verifiedAtUtc
+    Set-DevBridgeStateEntry (Join-Path $fixture.stateDir "current-task.json") @{ dbM07 = [ordered]@{ ready = $true; nodeId = "N-01-0.1"; changeId = $fixture.changeId; manifestId = $id } } | Out-Null
+    Write-FixtureJson $fixture "verification.json" @{ milestone = "DB-M06"; nodeId = "N-01-0.1"; changeId = $fixture.changeId; primaryResult = "VERIFICATION_PASSED"; verifiedAtUtc = $verifiedAtUtc }
+    Write-FixtureMd $fixture "CLAUDE_REVIEW_PACKAGE.md" ("# Claude Review Manifest`nNode: N-01-0.1`nChange: " + $fixture.changeId + "`nManifest ID: " + $id + "`n`nCURRENT_TASK_DELTA files: NONE`n")
+}
+
 # --- M06 RUN_VERIFICATION ----------------------------------------------------
 Write-Output "== M06 Run-Verification =="
 $f = New-Fixture "m06_pass" "AWAITING_CHATGPT_PROMPT" "COPY_TO_CHATGPT" "N-01-0.1" "CHG-20260831-010"
@@ -153,20 +165,31 @@ $t2 = Read-FixtureTask $f2
 Assert-True "M06 S2 no forced lifecycle transition on fail" ($t2.status -eq "AWAITING_CHATGPT_PROMPT") ("got " + $t2.status)
 
 # --- M07 CREATE_CLAUDE_REVIEW_PACKAGE ----------------------------------------
-Write-Output "== M07 New-ClaudeReviewPackage =="
-$f = New-Fixture "m07" "VERIFIED" "CLAUDE_REVIEW" "N-01-0.1" "CHG-20260831-012"
-Write-FixtureJson $f "verification.json" @{ milestone = "DB-M06"; nodeId = "N-01-0.1"; changeId = "CHG-20260831-012"; primaryResult = "VERIFICATION_PASSED"; trialMode = $true }
+# A real package is only produced for a reserved repo with a governed brief of the
+# CURRENT task (reservation.json + reachable repo baselines + DEEPSEEK_PROMPT.md).
+# A generic fixture has no such scope chain, so DB-M07 must report NOT_READY and
+# NEVER leave a copyable manifest behind (no stale package to record against). The
+# positive create path is covered separately (real DB-M07 runs + the
+# DevBridge.Tests FakeScriptRunner scenario).
+Write-Output "== M07 New-ClaudeReviewPackage (readiness gate) =="
+$f = New-Fixture "m07_notready" "VERIFIED" "CLAUDE_REVIEW" "N-01-0.1" "CHG-20260831-012"
+Write-FixtureJson $f "verification.json" @{ milestone = "DB-M06"; nodeId = "N-01-0.1"; changeId = "CHG-20260831-012"; primaryResult = "VERIFICATION_PASSED"; verifiedAtUtc = "2026-08-31T02:00:00Z" }
 $r = Invoke-Script "New-ClaudeReviewPackage.ps1" "DB07" $f @{}
-Assert-True "M07 S3 package created for generic fixture" ($r.outcome -eq "CLAUDE_REVIEW_PACKAGE_CREATED" -and $r.pass) ("got " + $r.outcome)
-Assert-True "M07 S3 writes both package files" ((Test-Path (Join-Path $f.tasksDir "CLAUDE_REVIEW_PACKAGE.md")) -and (Test-Path (Join-Path $f.tasksDir "REVIEW_PACKET.md"))) "missing files"
+Assert-True "M07 S3 generic fixture (no scope chain) -> CLAUDE_REVIEW_PACKAGE_NOT_READY" ($r.outcome -eq "CLAUDE_REVIEW_PACKAGE_NOT_READY" -and -not $r.pass) ("got " + $r.outcome)
+Assert-True "M07 S3 never writes a copyable manifest (no stale package)" (-not (Test-Path (Join-Path $f.tasksDir "CLAUDE_REVIEW_PACKAGE.md")) -and -not (Test-Path (Join-Path $f.tasksDir "REVIEW_PACKET.md"))) "package file present"
 $t = Read-FixtureTask $f
-Assert-True "M07 S3 lifecycle unchanged (stays VERIFIED)" ($t.status -eq "VERIFIED") ("got " + $t.status)
+Assert-True "M07 S3 lifecycle unchanged (VERIFIED) + dbM07 ready=false recorded" ($t.status -eq "VERIFIED" -and -not $t.dbM07.ready -and $t.dbM07.nodeId -eq "N-01-0.1") ("got " + $t.status + " dbM07.ready=" + $t.dbM07.ready)
 $r3 = Invoke-Script "New-ClaudeReviewPackage.ps1" "DB07" $f @{}
-Assert-True "M07 S4 re-run is idempotent REUSED" ($r3.outcome -eq "REUSED" -and $r3.pass) ("got " + $r3.outcome)
+Assert-True "M07 S4 re-run NOT_READY is not a false REUSED" ($r3.outcome -eq "CLAUDE_REVIEW_PACKAGE_NOT_READY" -and -not $r3.pass) ("got " + $r3.outcome)
 
 # --- M08 RECORD_CLAUDE_RESULT ------------------------------------------------
+# Every recorded decision must be made against the CURRENT CLAUDE REVIEW MANIFEST
+# (DB-M07 identity gate). The fixtures below satisfy that gate with a GENERIC
+# identity (dbM07 ready stamp + verification PASS + bound manifest file) so each
+# route is proven independent of any real WI/CHG work item.
 Write-Output "== M08 Set-ClaudeReviewResult =="
 $f = New-Fixture "m08_pass" "VERIFIED" "CLAUDE_REVIEW" "N-01-0.1" "CHG-20260831-013"
+Add-CrmCurrentEvidence $f "2026-08-31T02:00:00Z"
 $r = Invoke-Script "Set-ClaudeReviewResult.ps1" "DB08" $f @{ DB08_DECISION = "PASS"; DB08_REVIEW_TEXT = "Decision: PASS. Looks good for trial." }
 Assert-True "M08 S5 PASS trial -> recorded + routed to trial stop" ($r.outcome -eq "CLAUDE_RESULT_RECORDED" -and $r.pass -and -not $r.human) ("got " + $r.outcome + " human=" + $r.human)
 $t = Read-FixtureTask $f
@@ -177,26 +200,31 @@ $r6 = Invoke-Script "Set-ClaudeReviewResult.ps1" "DB08" $f @{ DB08_DECISION = "P
 Assert-True "M08 S6 duplicate decision is REUSED (no duplicate evidence)" ($r6.outcome -eq "REUSED" -and $r6.pass) ("got " + $r6.outcome)
 
 $f = New-Fixture "m08_real" "VERIFIED" "CLAUDE_REVIEW" "N-01-0.1" "CHG-20260831-014" "REAL_NEXUS_DEVELOPMENT"
+Add-CrmCurrentEvidence $f "2026-08-31T03:00:00Z"
 $r = Invoke-Script "Set-ClaudeReviewResult.ps1" "DB08" $f @{ DB08_DECISION = "PASS"; DB08_REVIEW_TEXT = "Review decision: PASS. Approved for real change." }
 $t = Read-FixtureTask $f
 Assert-True "M08 S7 PASS real -> CLAUDE_REVIEW_PASSED_REAL / AWAITING_HUMAN_PR" ($r.outcome -eq "CLAUDE_RESULT_RECORDED" -and $t.status -eq "CLAUDE_REVIEW_PASSED_REAL" -and $t.nextAllowedAction -eq "AWAITING_HUMAN_PR") ("got " + $t.status)
 
 $f = New-Fixture "m08_fix" "VERIFIED" "CLAUDE_REVIEW" "N-01-0.1" "CHG-20260831-015"
+Add-CrmCurrentEvidence $f "2026-08-31T04:00:00Z"
 $r = Invoke-Script "Set-ClaudeReviewResult.ps1" "DB08" $f @{ DB08_DECISION = "FIX"; DB08_REVIEW_TEXT = "### Review decision: FIX - Row 9 needs a correction." }
 $t = Read-FixtureTask $f
 $c8 = Get-Content (Join-Path $f.stateDir "claude-review.json") -Raw -Encoding UTF8 | ConvertFrom-Json
 Assert-True "M08 S8 FIX -> DB_M09_FIX_REQUIRED / CORRECT_CURRENT_ATTEMPT + dbM09Required" ($t.status -eq "DB_M09_FIX_REQUIRED" -and $t.nextAllowedAction -eq "CORRECT_CURRENT_ATTEMPT" -and $c8.dbM09Required) ("got " + $t.status)
 
 $f = New-Fixture "m08_gov" "VERIFIED" "CLAUDE_REVIEW" "N-01-0.1" "CHG-20260831-016"
+Add-CrmCurrentEvidence $f "2026-08-31T05:00:00Z"
 $r = Invoke-Script "Set-ClaudeReviewResult.ps1" "DB08" $f @{ DB08_DECISION = "GOVERNANCE_ISSUE"; DB08_REVIEW_TEXT = "**Decision:** GOVERNANCE_ISSUE - Roadmap boundary concern." }
 $t = Read-FixtureTask $f
 Assert-True "M08 S9 GOVERNANCE_ISSUE -> human governance review" ($t.status -eq "GOVERNANCE_ISSUE" -and $r.human -and $r.humanType -eq "HUMAN_GOVERNANCE_REVIEW") ("got " + $t.status + " type=" + $r.humanType)
 
 $f = New-Fixture "m08_hdr" "VERIFIED" "CLAUDE_REVIEW" "N-01-0.1" "CHG-20260831-017"
+Add-CrmCurrentEvidence $f "2026-08-31T06:00:00Z"
 $r = Invoke-Script "Set-ClaudeReviewResult.ps1" "DB08" $f @{ DB08_DECISION = "HUMAN_DECISION_REQUIRED"; DB08_REVIEW_TEXT = "Decision: HUMAN_DECISION_REQUIRED - a human must decide." }
 $t = Read-FixtureTask $f
 Assert-True "M08 S10 HUMAN_DECISION_REQUIRED -> human decision" ($t.status -eq "HUMAN_DECISION_REQUIRED" -and $r.human -and $r.humanType -eq "HUMAN_DECISION") ("got " + $t.status)
 
+# STOP_INVALID_DECISION fires before the manifest gate, so m08_bad needs NO evidence.
 $f = New-Fixture "m08_bad" "VERIFIED" "CLAUDE_REVIEW" "N-01-0.1" "CHG-20260831-018"
 $r = Invoke-Script "Set-ClaudeReviewResult.ps1" "DB08" $f @{ DB08_DECISION = "BOGUS"; DB08_REVIEW_TEXT = "x" }
 $t = Read-FixtureTask $f
@@ -213,6 +241,38 @@ $t = Read-FixtureTask $f
 Assert-True "M09 S12 existing task preserved (status + identity unchanged)" ($t.status -eq "DB_M09_FIX_REQUIRED" -and $t.nodeId -eq "N-01-0.1" -and $t.name -match "fixture m09") ("got " + $t.status)
 $r9 = Invoke-Script "New-CorrectionContext.ps1" "DB09" $f @{}
 Assert-True "M09 S13 re-run is idempotent REUSED" ($r9.outcome -eq "REUSED" -and $r9.pass) ("got " + $r9.outcome)
+
+# --- DB-M15 RECONCILE_CORRECTION ----------------------------------------------
+Write-Output "== DB-M15 Confirm-CorrectedImplementation =="
+# Real M09 -> DB-M15 sequence: a FIX context is created first (dbM09 stamped), then
+# the externally-implemented CORRECT_CURRENT_ATTEMPT is reconciled as a detected delta.
+$f = New-Fixture "m15_detected" "DB_M09_FIX_REQUIRED" "CORRECT_CURRENT_ATTEMPT" "N-01-0.1" "CHG-20260831-040"
+Write-FixtureJson $f "claude-review.json" @{ nodeId = "N-01-0.1"; changeId = "CHG-20260831-040"; decision = "FIX"; dbM09Required = $true; reviewText = "Fix row 9." }
+$r09b = Invoke-Script "New-CorrectionContext.ps1" "DB09" $f @{}
+Assert-True "M15 S27a M09 fix context pre-stamped" ($r09b.outcome -eq "FIX_CONTEXT_CREATED") ("got " + $r09b.outcome)
+$r = Invoke-Script "Confirm-CorrectedImplementation.ps1" "DB15" $f @{ DB15_SELFTEST = "1"; DB15_SELFTEST_RESULT = "CORRECTION_DELTA_DETECTED"; DB15_SELFTEST_DELTA = "a.tsx|b.tsx" }
+Assert-True "M15 S27 DETECTED -> reconciliation pass" ($r.outcome -eq "CORRECTION_DELTA_DETECTED" -and $r.pass) ("got " + $r.outcome)
+Assert-True "M15 S27 read-only (no workbook/source/git)" (-not $r.wbModified -and -not $r.gitModified) "flags set"
+$t = Read-FixtureTask $f
+Assert-True "M15 S27 lifecycle stays DB_M09_FIX_REQUIRED (no re-run/verification)" ($t.status -eq "DB_M09_FIX_REQUIRED" -and $t.nextAllowedAction -eq "CORRECT_CURRENT_ATTEMPT") ("got " + $t.status)
+$c15 = Get-Content (Join-Path $f.stateDir "current-task.json") -Raw -Encoding UTF8 | ConvertFrom-Json
+Assert-True "M15 S27 dbM09.correctionReconciled stamped with detected result" ($c15.dbM09.correctionReconciled.result -eq "CORRECTION_DELTA_DETECTED") ("got " + $c15.dbM09.correctionReconciled.result)
+Assert-True "M15 S27 dbM09 preserved (nodeId + changeId not clobbered)" ($c15.dbM09.nodeId -eq "N-01-0.1" -and $c15.dbM09.changeId -eq "CHG-20260831-040") ("got " + $c15.dbM09.nodeId)
+$deltaLines = @($r.output -split "`n" | Where-Object { $_ -match '^DB15_DELTA_FILE:' })
+Assert-True "M15 S27 delta files emitted per repo" ($deltaLines.Count -ge 2) ("delta lines=" + $deltaLines.Count)
+
+$f = New-Fixture "m15_none" "DB_M09_FIX_REQUIRED" "CORRECT_CURRENT_ATTEMPT" "N-01-0.1" "CHG-20260831-041"
+Write-FixtureJson $f "claude-review.json" @{ nodeId = "N-01-0.1"; changeId = "CHG-20260831-041"; decision = "FIX"; dbM09Required = $true }
+$r = Invoke-Script "Confirm-CorrectedImplementation.ps1" "DB15" $f @{ DB15_SELFTEST = "1"; DB15_SELFTEST_RESULT = "CORRECTION_DELTA_NONE" }
+Assert-True "M15 S28 NONE -> no incremental delta, pass true" ($r.outcome -eq "CORRECTION_DELTA_NONE" -and $r.pass) ("got " + $r.outcome)
+$c15b = Get-Content (Join-Path $f.stateDir "current-task.json") -Raw -Encoding UTF8 | ConvertFrom-Json
+$db9b = $null
+if ($c15b.PSObject.Properties.Name -contains "dbM09") { $db9b = $c15b.dbM09 }
+Assert-True "M15 S28 no reconciliation stamp written" (-not (Has-Property $db9b "correctionReconciled")) "stamp present"
+
+$f = New-Fixture "m15_badstate" "VERIFIED" "CLAUDE_REVIEW" "N-01-0.1" "CHG-20260831-042"
+$r = Invoke-Script "Confirm-CorrectedImplementation.ps1" "DB15" $f @{ DB15_SELFTEST = "1"; DB15_SELFTEST_RESULT = "CORRECTION_DELTA_DETECTED" }
+Assert-True "M15 S29 reconcile only from DB_M09_FIX_REQUIRED" ($r.outcome -eq "STOP_INVALID_LIFECYCLE_STATE" -and -not $r.pass) ("got " + $r.outcome)
 
 # --- M10 RUN_GOVERNED_COMPLETION ---------------------------------------------
 Write-Output "== M10 Complete-GovernedCycle =="
@@ -351,7 +411,7 @@ Assert-True "I4 DB-M23 files untouched by suite" $db23Same "ai-routing files cha
 
 # I5 no prior WI/CHG identity hard-coded in the reusable scripts
 $hardcoded = ""
-foreach ($name in @("Run-Verification.ps1","New-ClaudeReviewPackage.ps1","Set-ClaudeReviewResult.ps1","New-CorrectionContext.ps1","Complete-GovernedCycle.ps1","Invoke-WorkbookValidation.ps1","New-ClaudeWorkbookReviewPackage.ps1","Get-GitGateState.ps1","Get-CurrentLifecycleState.ps1","Set-DevBridgeStateEntry.ps1")) {
+foreach ($name in @("Run-Verification.ps1","New-ClaudeReviewPackage.ps1","Set-ClaudeReviewResult.ps1","New-CorrectionContext.ps1","Confirm-CorrectedImplementation.ps1","Complete-GovernedCycle.ps1","Invoke-WorkbookValidation.ps1","New-ClaudeWorkbookReviewPackage.ps1","Get-GitGateState.ps1","Get-CurrentLifecycleState.ps1","Set-DevBridgeStateEntry.ps1")) {
     $content = [System.IO.File]::ReadAllText((Join-Path $PSScriptRoot $name))
     if ($content -match "WI-07-0\.2\.4|CHG-20260830-017|CHG-20260830-016|ACT-20260830-018") { $hardcoded += " " + $name }
 }

@@ -35,6 +35,7 @@ public sealed class DevBridgeState
     public string? VerificationPrimaryResult { get; init; }
     public string? ClaudeDecision { get; init; }
     public bool ClaudeFixRequired { get; init; }
+    public bool CorrectionReconciled { get; init; }   // DB-M15 stamped a CORRECTION_DELTA_DETECTED reconciliation
     public bool CompletionWritten { get; init; }
     public string? CompletionNodeId { get; init; }
     public string? CompletionChangeId { get; init; }

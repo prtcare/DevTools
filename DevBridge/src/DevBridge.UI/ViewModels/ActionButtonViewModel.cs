@@ -49,8 +49,8 @@ public sealed class ActionButtonViewModel : ObservableObject
             => "PRIMARY",
 
         // Lifecycle / support actions
-        "COPY_FIX_CONTEXT" or "RUN_GOVERNED_COMPLETION" or "CLOSE_TRIAL_CYCLE"
-            or "START_NEXT_CYCLE" or "VALIDATE_WORKBOOK"
+        "COPY_FIX_CONTEXT" or "RECONCILE_CORRECTION" or "RUN_GOVERNED_COMPLETION"
+            or "CLOSE_TRIAL_CYCLE" or "START_NEXT_CYCLE" or "VALIDATE_WORKBOOK"
             => "LIFECYCLE",
 
         // Read-only report / navigation opens

@@ -294,9 +294,18 @@ FakeScriptRunner Runner(params (string script, Func<string, ScriptRunOutcome> be
 // ---- 9. AWAITING CLAUDE REVIEW (packet ready) ---------------------------------
 {
     string root = NewRoot("awaitclaude");
-    W(root, @"state/current-task.json", StateJson("VERIFIED", "CLAUDE_REVIEW", changeId: "CHG-20260830-025"));
+    // AWAIT_CLAUDE under the DB-M07 manifest model: COPY/RECORD unlock only for the
+    // CURRENT CLAUDE REVIEW MANIFEST (current-task dbM07 ready stamp for this
+    // node/change + tasks/CLAUDE_REVIEW_PACKAGE.md). A REVIEW_PACKET.md alone is the
+    // legacy wrapper and never counts as the current manifest.
+    W(root, @"state/current-task.json",
+        "{\"nodeId\":\"WI-07-0.2.4\",\"name\":\"Test Task\",\"nodeType\":\"WorkItem\",\"phase\":\"P0\",\"layer\":\"App\","
+      + "\"changeId\":\"CHG-20260830-025\",\"status\":\"VERIFIED\",\"nextAllowedAction\":\"CLAUDE_REVIEW\","
+      + "\"dbM07\":{\"ready\":true,\"nodeId\":\"WI-07-0.2.4\",\"changeId\":\"CHG-20260830-025\",\"manifestId\":\"MFT-20260830-025\"},"
+      + "\"selectedAt\":\"2026-08-30T18:15:00Z\"}");
     W(root, @"state/verification.json", "{\"nodeId\":\"WI-07-0.2.4\",\"primaryResult\":\"VERIFICATION_PASSED\",\"verifiedAtUtc\":\"2026-08-30T18:15:00Z\"}");
     W(root, @"tasks/VERIFICATION_REPORT.md", "VERIFICATION_PASSED");
+    W(root, @"tasks/CLAUDE_REVIEW_PACKAGE.md", "# CLAUDE REVIEW PACKAGE - CHG-20260830-025\n\nManifest ID: MFT-20260830-025");
     W(root, @"tasks/REVIEW_PACKET.md", "Claude review packet: verification results, changed files, acceptance criteria.");
     var cfg = DevBridgeConfig.Load(root);
     var n = NextActionEngine.Evaluate(StateReader.Read(cfg));
@@ -564,13 +573,13 @@ FakeScriptRunner Runner(params (string script, Func<string, ScriptRunOutcome> be
 
 // ---- C. command catalog integrity ------------------------------------------
 {
-    Check(OperatorCommandCatalog.All.Count == 31, "CATALOG: 31 commands", $"{OperatorCommandCatalog.All.Count}");
+    Check(OperatorCommandCatalog.All.Count == 32, "CATALOG: 32 commands", $"{OperatorCommandCatalog.All.Count}");
     var ids = OperatorCommandCatalog.All.Values.Select(c => c.CommandId).ToArray();
     Check(ids.Distinct(StringComparer.OrdinalIgnoreCase).Count() == ids.Length, "CATALOG: unique ids", "duplicate id");
     Check(OperatorCommandCatalog.Get("START_PREFLIGHT") is not null, "CATALOG: known id resolves", "null");
     Check(OperatorCommandCatalog.Get("BOGUS") is null, "CATALOG: unknown id -> null", "resolved");
     var autoScripts = OperatorCommandCatalog.All.Values.Where(c => c.Kind == OperatorCommandKind.Script).ToList();
-    Check(autoScripts.Count == 14, "CATALOG: 14 script-backed", $"{autoScripts.Count}");
+    Check(autoScripts.Count == 16, "CATALOG: 16 script-backed", $"{autoScripts.Count}");
     Check(autoScripts.All(c => c.Scripts.Length > 0), "CATALOG: every script command names a backend script",
         string.Join(",", autoScripts.Select(c => c.CommandId)));
     // DB-M12.2: RUN_GOVERNED_COMPLETION and RECORD_CLAUDE_RESULT deliberately leave
@@ -611,7 +620,7 @@ FakeScriptRunner Runner(params (string script, Func<string, ScriptRunOutcome> be
         "CATALOG: restore baseline never auto-runs destructive restore",
         OperatorCommandCatalog.Get("RESTORE_REAL_NEXUS_BASELINE")!.GuidedReason!);
     var clip = OperatorCommandCatalog.All.Values.Where(c => c.Kind == OperatorCommandKind.Clipboard).ToList();
-    Check(clip.Count == 4 && clip.All(c => !string.IsNullOrWhiteSpace(c.ArtifactFile)), "CATALOG: clipboard commands have artifact files", $"{clip.Count}");
+    Check(clip.Count == 3 && clip.All(c => !string.IsNullOrWhiteSpace(c.ArtifactFile)), "CATALOG: clipboard commands have artifact files", $"{clip.Count}");
     Check(OperatorCommandCatalog.Get("RESERVE_TASK")!.WritesWorkbook && OperatorCommandCatalog.Get("RESERVE_TASK")!.RequiresUserInput,
         "CATALOG: reserve is an operator-confirmed workbook write", "not flagged");
     Check(!OperatorCommandCatalog.Get("START_PREFLIGHT")!.WritesWorkbook, "CATALOG: preflight is read-only", "flagged write");
@@ -1645,6 +1654,98 @@ Console.WriteLine("DB-M12.2 reusable lifecycle backend commands");
     string allText = string.Join(" ", OperatorCommandCatalog.All.Values.Select(c => c.CommandId + " " + c.Description + " " + string.Join(" ", c.Scripts)));
     Check(!allText.Contains("WI-07-0.2.4", StringComparison.Ordinal) && !allText.Contains("CHG-20260830-017", StringComparison.Ordinal) && !allText.Contains("CHG-20260830-028", StringComparison.Ordinal),
         "DB-M12.4:T8 no prior trial identity hard-coded", "hard-coded id found");
+}
+
+// ---- DB-M15.1. governed M09 (FIX), correction NOT yet reconciled ----
+// RECONCILE CORRECTION is the way out; RUN VERIFICATION must stay disabled until a
+// CORRECT_CURRENT_ATTEMPT is reconciled as a detected delta (DB-M15).
+{
+    string root = NewRoot("m15-notreconciled");
+    W(root, @"state/current-task.json",
+        "{\"nodeId\":\"WI-07-0.2.4\",\"name\":\"Correction task\",\"nodeType\":\"WorkItem\",\"phase\":\"P0\",\"layer\":\"App\","
+      + "\"changeId\":\"CHG-M15-01\",\"status\":\"DB_M09_FIX_REQUIRED\",\"nextAllowedAction\":\"CORRECT_CURRENT_ATTEMPT\","
+      + "\"dbM09\":{\"result\":\"FIX_CONTEXT_CREATED\",\"nodeId\":\"WI-07-0.2.4\",\"changeId\":\"CHG-M15-01\"},"
+      + "\"selectedAt\":\"2026-09-03T17:04:09Z\"}");
+    W(root, @"state/claude-review.json", "{\"nodeId\":\"WI-07-0.2.4\",\"changeId\":\"CHG-M15-01\",\"decision\":\"FIX\",\"dbM09Required\":true,\"reviewedAt\":\"2026-09-03T18:30:00Z\"}");
+    W(root, @"tasks/FIX_CONTEXT.md", "FIX_CONTEXT for CHG-M15-01 (CORRECT_CURRENT_ATTEMPT).");
+    W(root, @"tasks/REVIEW_PACKET.md", "Review packet.");
+    var s = StateReader.Read(DevBridgeConfig.Load(root));
+    var n = NextActionEngine.Evaluate(s);
+    Check(!s.CorrectionReconciled, "DB-M15.1: not-reconciled flag", s.CorrectionReconciled.ToString());
+    Check(n.Instruction.Contains("RECONCILE CORRECTION", StringComparison.Ordinal), "DB-M15.1: reconcile instruction", n.Instruction);
+    Check(SetsEqual(n.EnabledButtons, new[] { "COPY_FIX_CONTEXT", "RECONCILE_CORRECTION", "OPEN_REVIEW_PACKET", "OPEN_DETAIL" }), "DB-M15.1: buttons",
+        $"got [{EnabledDesc(n.EnabledButtons)}]");
+    Check(!n.EnabledButtons.Contains("RUN_VERIFICATION"), "DB-M15.1: run-verify disabled pre-reconcile", "RUN_VERIFICATION enabled");
+    Check(n.Stages.Any(m => m.Key == LifecycleStageKey.FixLoop && m.State == StageState.Current), "DB-M15.1: fix loop current", "fix loop not current");
+}
+
+// ---- DB-M15.2. governed M09 (FIX), correction RECONCILED (DB-M15 stamp) ----
+// The corrected implementation delta was detected -> RUN VERIFICATION enables so a
+// FRESH DB-M06 verifies the corrected attempt before it returns to Claude.
+{
+    string root = NewRoot("m15-reconciled");
+    W(root, @"state/current-task.json",
+        "{\"nodeId\":\"WI-07-0.2.4\",\"name\":\"Correction task\",\"nodeType\":\"WorkItem\",\"phase\":\"P0\",\"layer\":\"App\","
+      + "\"changeId\":\"CHG-M15-02\",\"status\":\"DB_M09_FIX_REQUIRED\",\"nextAllowedAction\":\"CORRECT_CURRENT_ATTEMPT\","
+      + "\"dbM09\":{\"result\":\"FIX_CONTEXT_CREATED\",\"nodeId\":\"WI-07-0.2.4\",\"changeId\":\"CHG-M15-02\","
+      + "\"correctionReconciled\":{\"result\":\"CORRECTION_DELTA_DETECTED\",\"reconciledAtUtc\":\"2026-09-03T19:00:00Z\",\"reference\":\"manifest_current_task_delta\"}},"
+      + "\"selectedAt\":\"2026-09-03T17:04:09Z\"}");
+    W(root, @"state/claude-review.json", "{\"nodeId\":\"WI-07-0.2.4\",\"changeId\":\"CHG-M15-02\",\"decision\":\"FIX\",\"dbM09Required\":true,\"reviewedAt\":\"2026-09-03T18:30:00Z\"}");
+    W(root, @"tasks/FIX_CONTEXT.md", "FIX_CONTEXT for CHG-M15-02 (CORRECT_CURRENT_ATTEMPT).");
+    W(root, @"tasks/REVIEW_PACKET.md", "Review packet.");
+    var s2 = StateReader.Read(DevBridgeConfig.Load(root));
+    var n2 = NextActionEngine.Evaluate(s2);
+    Check(s2.CorrectionReconciled, "DB-M15.2: reconciled flag", s2.CorrectionReconciled.ToString());
+    Check(n2.Instruction.Contains("Run verification on the corrected delta", StringComparison.Ordinal), "DB-M15.2: re-verify instruction", n2.Instruction);
+    Check(SetsEqual(n2.EnabledButtons, new[] { "RUN_VERIFICATION", "COPY_FIX_CONTEXT", "OPEN_REVIEW_PACKET", "OPEN_DETAIL" }), "DB-M15.2: buttons",
+        $"got [{EnabledDesc(n2.EnabledButtons)}]");
+    Check(!n2.EnabledButtons.Contains("RECONCILE_CORRECTION"), "DB-M15.2: reconcile no longer offered", "RECONCILE_CORRECTION enabled");
+}
+
+// ---- DB-M15.3. reconciled correction then FRESH DB-M06 re-verification ----
+// verifiedAtUtc AFTER the Claude review -> FixReVerified: the historical FIX no
+// longer blocks the normal VERIFIED flow; the corrected delta returns to Claude.
+{
+    string root = NewRoot("m15-reverified");
+    W(root, @"state/current-task.json",
+        "{\"nodeId\":\"WI-07-0.2.4\",\"name\":\"Correction task\",\"nodeType\":\"WorkItem\",\"phase\":\"P0\",\"layer\":\"App\","
+      + "\"changeId\":\"CHG-M15-03\",\"status\":\"VERIFIED\",\"nextAllowedAction\":\"CLAUDE_REVIEW\","
+      + "\"dbM09\":{\"result\":\"FIX_CONTEXT_CREATED\",\"nodeId\":\"WI-07-0.2.4\",\"changeId\":\"CHG-M15-03\","
+      + "\"correctionReconciled\":{\"result\":\"CORRECTION_DELTA_DETECTED\",\"reconciledAtUtc\":\"2026-09-03T19:00:00Z\"}},"
+      + "\"selectedAt\":\"2026-09-03T17:04:09Z\"}");
+    W(root, @"state/verification.json", "{\"nodeId\":\"WI-07-0.2.4\",\"changeId\":\"CHG-M15-03\",\"primaryResult\":\"VERIFICATION_PASSED\",\"verifiedAtUtc\":\"2026-09-03T19:30:00Z\"}");
+    W(root, @"state/claude-review.json", "{\"nodeId\":\"WI-07-0.2.4\",\"changeId\":\"CHG-M15-03\",\"decision\":\"FIX\",\"dbM09Required\":true,\"reviewedAt\":\"2026-09-03T18:30:00Z\"}");
+    W(root, @"tasks/FIX_CONTEXT.md", "FIX_CONTEXT for CHG-M15-03 (CORRECT_CURRENT_ATTEMPT).");
+    var s3 = StateReader.Read(DevBridgeConfig.Load(root));
+    var n3 = NextActionEngine.Evaluate(s3);
+    Check(s3.CorrectionReconciled, "DB-M15.3: reconciled flag", s3.CorrectionReconciled.ToString());
+    Check(n3.Instruction.Contains("Verification passed", StringComparison.Ordinal), "DB-M15.3: verified flow resumes", n3.Instruction);
+    Check(SetsEqual(n3.EnabledButtons, new[] { "CREATE_CLAUDE_REVIEW_PACKAGE", "OPEN_VERIFICATION_REPORT", "OPEN_DETAIL" }), "DB-M15.3: buttons",
+        $"got [{EnabledDesc(n3.EnabledButtons)}]");
+    Check(!n3.EnabledButtons.Contains("COPY_FIX_CONTEXT") && !n3.EnabledButtons.Contains("RECONCILE_CORRECTION") && !n3.EnabledButtons.Contains("RUN_VERIFICATION"),
+        "DB-M15.3: historical FIX superseded", EnabledDesc(n3.EnabledButtons));
+}
+
+// ---- DB-M15.4. RECONCILE_CORRECTION execution (catalog entry + governed route) ----
+// DB-M15 (RECONCILE_CORRECTION) is only callable from DB_M09_FIX_REQUIRED and is a
+// read-only reconciliation: it never writes the workbook/source/git and leaves the
+// lifecycle on the M09 position until a fresh DB-M06 re-verifies the corrected delta.
+{
+    string root = NewRoot("db12-m15");
+    WriteState(root, "DB_M09_FIX_REQUIRED", "CORRECT_CURRENT_ATTEMPT", "CHG-20260830-071");
+    W(root, @"state/claude-review.json", "{\"nodeId\":\"WI-07-0.2.4\",\"changeId\":\"CHG-20260830-071\",\"decision\":\"FIX\",\"dbM09Required\":true,\"reviewedAt\":\"2026-08-31T18:30:00Z\"}");
+    W(root, @"tasks/FIX_CONTEXT.md", "fix findings for CHG-20260830-071 (CORRECT_CURRENT_ATTEMPT).");
+    var cfg = DevBridgeConfig.Load(root);
+    Check(CommandAvailabilityEvaluator.Evaluate(cfg, OperatorCommandCatalog.Get("RECONCILE_CORRECTION")!) == CommandAvailability.Available,
+        "DB-M15.4: reconcile available from governed M09", CommandAvailabilityEvaluator.Evaluate(cfg, OperatorCommandCatalog.Get("RECONCILE_CORRECTION")!).ToString());
+    Check(CommandAvailabilityEvaluator.Evaluate(cfg, OperatorCommandCatalog.Get("RUN_VERIFICATION")!) == CommandAvailability.Available,
+        "DB-M15.4: run-verification available from governed M09 (executor)", CommandAvailabilityEvaluator.Evaluate(cfg, OperatorCommandCatalog.Get("RUN_VERIFICATION")!).ToString());
+    var fake15 = Runner(("Confirm-CorrectedImplementation.ps1", _ => Ok("DB15_OUTCOME: CORRECTION_DELTA_DETECTED\nDB15_RESULT_PASS: True\nDB15_WORKBOOK_MODIFIED: False\nDB15_NEXUS_SOURCE_MODIFIED: False\nDB15_GIT_MODIFIED: False")));
+    var r15 = OperatorCommandService.Execute(cfg, OperatorCommandCatalog.Get("RECONCILE_CORRECTION")!, fake15);
+    Check(r15.Result == CommandResultCode.SUCCESS && r15.NewState == "DB_M09_FIX_REQUIRED", "DB-M15.4: reconcile success + state preserved", $"{r15.Result}/{r15.NewState}");
+    Check(r15.ResultCodeToken == "CORRECTION_DELTA_DETECTED", "DB-M15.4: reconcile result code", r15.ResultCodeToken);
+    Check(r15.WorkbookModified == false && r15.NexusSourceModified == false && r15.GitModified == false, "DB-M15.4: reconcile is read-only", $"{r15.WorkbookModified}/{r15.NexusSourceModified}/{r15.GitModified}");
+    Check(fake15.Invoked.Count == 1 && fake15.Invoked[0] == "Confirm-CorrectedImplementation.ps1", "DB-M15.4: confirm script invoked", string.Join("|", fake15.Invoked));
 }
 
 // ==================================================================== report
