@@ -277,7 +277,7 @@ function Invoke-Db33ScenarioA {
 
     # M08 PASS (controlled human Claude decision)
     $r8 = Invoke-Db33Backend $f "Set-ClaudeReviewResult.ps1" @() @{
-        DB08_DECISION = "PASS"; DB08_REVIEW_TEXT = "TRIAL approval: scope delta acceptable; supervised flow coherent."; DB08_STATE_DIR = $f.state; DB08_TASKS_DIR = $f.tasks; DB_COMMAND_INPUT_MODE = "TRIAL" }
+        DB08_DECISION = "PASS"; DB08_REVIEW_TEXT = "Review decision: PASS - TRIAL approval: scope delta acceptable; supervised flow coherent."; DB08_STATE_DIR = $f.state; DB08_TASKS_DIR = $f.tasks; DB_COMMAND_INPUT_MODE = "TRIAL" }
     $task = Get-FixtureTask $f
     $claude = Read-FJson $f.state "claude-review.json"
     Assert-Db33 $s "m08-pass-recorded" ((Get-Db33Marker $r8 "DB08_OUTCOME") -eq "CLAUDE_RESULT_RECORDED") ("outcome=" + (Get-Db33Marker $r8 "DB08_OUTCOME"))
@@ -344,7 +344,7 @@ function Invoke-Db33ScenarioB {
     # M07 + M08 FIX -> DB_M09_FIX_REQUIRED
     $r7 = Invoke-Db33Backend $f "New-ClaudeReviewPackage.ps1" @() @{ DB07_STATE_DIR = $f.state; DB07_TASKS_DIR = $f.tasks }
     $r8f = Invoke-Db33Backend $f "Set-ClaudeReviewResult.ps1" @() @{
-        DB08_DECISION = "FIX"; DB08_REVIEW_TEXT = "TRIAL fix: verification detected a scoped defect; correct the current attempt."; DB08_STATE_DIR = $f.state; DB08_TASKS_DIR = $f.tasks; DB_COMMAND_INPUT_MODE = "TRIAL" }
+        DB08_DECISION = "FIX"; DB08_REVIEW_TEXT = "### Review decision: FIX - TRIAL fix: verification detected a scoped defect; correct the current attempt."; DB08_STATE_DIR = $f.state; DB08_TASKS_DIR = $f.tasks; DB_COMMAND_INPUT_MODE = "TRIAL" }
     $task = Get-FixtureTask $f
     $claude = Read-FJson $f.state "claude-review.json"
     Assert-Db33 $s "m08-fix-decision" ($claude -and [string]$claude.decision -eq "FIX") "claude-review.json decision=FIX"
@@ -366,7 +366,7 @@ function Invoke-Db33ScenarioB {
     $r7b = Invoke-Db33Backend $f "New-ClaudeReviewPackage.ps1" @() @{ DB07_STATE_DIR = $f.state; DB07_TASKS_DIR = $f.tasks }
     Assert-Db33 $s "m07-reused" ((Get-Db33Marker $r7b "DB07_OUTCOME") -eq "REUSED") ("outcome=" + (Get-Db33Marker $r7b "DB07_OUTCOME"))
     $r8 = Invoke-Db33Backend $f "Set-ClaudeReviewResult.ps1" @() @{
-        DB08_DECISION = "PASS"; DB08_REVIEW_TEXT = "TRIAL approval after correction."; DB08_STATE_DIR = $f.state; DB08_TASKS_DIR = $f.tasks; DB_COMMAND_INPUT_MODE = "TRIAL" }
+        DB08_DECISION = "PASS"; DB08_REVIEW_TEXT = "Decision: PASS - TRIAL approval after correction."; DB08_STATE_DIR = $f.state; DB08_TASKS_DIR = $f.tasks; DB_COMMAND_INPUT_MODE = "TRIAL" }
     $task = Get-FixtureTask $f
     Assert-Db33 $s "m08-pass-after-fix" ($task -and [string]$task.status -eq "CLAUDE_REVIEW_PASSED_TRIAL" -and [string]$task.nextAllowedAction -eq "TRIAL_CYCLE_SAFE_STOP") ("status=" + $(if ($task) { $task.status } else { "-" }))
     return $f
@@ -518,7 +518,7 @@ function Invoke-Db33ScenarioG {
     Assert-Db33 $s "m07-real-package" ((Get-Db33Marker $r7 "DB07_OUTCOME") -eq "CLAUDE_REVIEW_PACKAGE_CREATED") ("outcome=" + (Get-Db33Marker $r7 "DB07_OUTCOME"))
     # M08 PASS in REAL mode -> CLAUDE_REVIEW_PASSED_REAL / AWAITING_HUMAN_PR (real backend).
     $r8 = Invoke-Db33Backend $f "Set-ClaudeReviewResult.ps1" @() @{
-        DB08_DECISION = "PASS"; DB08_REVIEW_TEXT = "REAL approval."; DB08_STATE_DIR = $f.state; DB08_TASKS_DIR = $f.tasks; DB_COMMAND_INPUT_MODE = "REAL_NEXUS_DEVELOPMENT" }
+        DB08_DECISION = "PASS"; DB08_REVIEW_TEXT = "Decision: PASS. REAL approval."; DB08_STATE_DIR = $f.state; DB08_TASKS_DIR = $f.tasks; DB_COMMAND_INPUT_MODE = "REAL_NEXUS_DEVELOPMENT" }
     $task = Get-FixtureTask $f
     Assert-Db33 $s "m08-real-awaits-pr" ($task -and [string]$task.status -eq "CLAUDE_REVIEW_PASSED_REAL" -and [string]$task.nextAllowedAction -eq "AWAITING_HUMAN_PR") ("status=" + $(if ($task) { $task.status } else { "-" }))
 
@@ -692,7 +692,7 @@ function Invoke-Db33ScenarioK {
     $r6 = Invoke-Db33Backend $f "Run-Verification.ps1" @() @{ DB06_SELFTEST = "1"; DB06_STATE_DIR = $f.state; DB06_TASKS_DIR = $f.tasks }
     $r7 = Invoke-Db33Backend $f "New-ClaudeReviewPackage.ps1" @() @{ DB07_STATE_DIR = $f.state; DB07_TASKS_DIR = $f.tasks }
     $r8 = Invoke-Db33Backend $f "Set-ClaudeReviewResult.ps1" @() @{
-        DB08_DECISION = "PASS"; DB08_REVIEW_TEXT = "TRIAL approval."; DB08_STATE_DIR = $f.state; DB08_TASKS_DIR = $f.tasks; DB_COMMAND_INPUT_MODE = "TRIAL" }
+        DB08_DECISION = "PASS"; DB08_REVIEW_TEXT = "Decision: PASS. TRIAL approval."; DB08_STATE_DIR = $f.state; DB08_TASKS_DIR = $f.tasks; DB_COMMAND_INPUT_MODE = "TRIAL" }
     $r24 = Invoke-Db33Backend $f "Close-TrialCycle.ps1" @("-NodeId", "WI-07-0.2.5", "-ChangeId", $changeId) @{
         DB24_STATE_DIR = $f.state; DB24_TASKS_DIR = $f.tasks; DB24_WORKBOOK_OVERRIDE = $f.wb; DB_DEV_CONTROL_WORKBOOK_OVERRIDE = $f.wb }
     $fpAfter = Invoke-Db33Backend $f "Get-ProtectedRoadmapFingerprint.ps1" @() @{}

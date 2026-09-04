@@ -167,33 +167,33 @@ Assert-True "M07 S4 re-run is idempotent REUSED" ($r3.outcome -eq "REUSED" -and 
 # --- M08 RECORD_CLAUDE_RESULT ------------------------------------------------
 Write-Output "== M08 Set-ClaudeReviewResult =="
 $f = New-Fixture "m08_pass" "VERIFIED" "CLAUDE_REVIEW" "N-01-0.1" "CHG-20260831-013"
-$r = Invoke-Script "Set-ClaudeReviewResult.ps1" "DB08" $f @{ DB08_DECISION = "PASS"; DB08_REVIEW_TEXT = "Looks good for trial." }
+$r = Invoke-Script "Set-ClaudeReviewResult.ps1" "DB08" $f @{ DB08_DECISION = "PASS"; DB08_REVIEW_TEXT = "Decision: PASS. Looks good for trial." }
 Assert-True "M08 S5 PASS trial -> recorded + routed to trial stop" ($r.outcome -eq "CLAUDE_RESULT_RECORDED" -and $r.pass -and -not $r.human) ("got " + $r.outcome + " human=" + $r.human)
 $t = Read-FixtureTask $f
 Assert-True "M08 S5 trial route CLAUDE_REVIEW_PASSED_TRIAL / TRIAL_CYCLE_SAFE_STOP" ($t.status -eq "CLAUDE_REVIEW_PASSED_TRIAL" -and $t.nextAllowedAction -eq "TRIAL_CYCLE_SAFE_STOP") ("got " + $t.status + "/" + $t.nextAllowedAction)
 $c5 = Get-Content (Join-Path $f.stateDir "claude-review.json") -Raw -Encoding UTF8 | ConvertFrom-Json
 Assert-True "M08 S5 claude-review.json decision/trial/route recorded" ($c5.decision -eq "PASS" -and $c5.trialMode -and $c5.routeLifecycleState -eq "CLAUDE_REVIEW_PASSED_TRIAL") ("got " + $c5.decision)
-$r6 = Invoke-Script "Set-ClaudeReviewResult.ps1" "DB08" $f @{ DB08_DECISION = "PASS"; DB08_REVIEW_TEXT = "Looks good for trial." }
+$r6 = Invoke-Script "Set-ClaudeReviewResult.ps1" "DB08" $f @{ DB08_DECISION = "PASS"; DB08_REVIEW_TEXT = "Decision: PASS. Looks good for trial." }
 Assert-True "M08 S6 duplicate decision is REUSED (no duplicate evidence)" ($r6.outcome -eq "REUSED" -and $r6.pass) ("got " + $r6.outcome)
 
 $f = New-Fixture "m08_real" "VERIFIED" "CLAUDE_REVIEW" "N-01-0.1" "CHG-20260831-014" "REAL_NEXUS_DEVELOPMENT"
-$r = Invoke-Script "Set-ClaudeReviewResult.ps1" "DB08" $f @{ DB08_DECISION = "PASS"; DB08_REVIEW_TEXT = "Approved for real change." }
+$r = Invoke-Script "Set-ClaudeReviewResult.ps1" "DB08" $f @{ DB08_DECISION = "PASS"; DB08_REVIEW_TEXT = "Review decision: PASS. Approved for real change." }
 $t = Read-FixtureTask $f
 Assert-True "M08 S7 PASS real -> CLAUDE_REVIEW_PASSED_REAL / AWAITING_HUMAN_PR" ($r.outcome -eq "CLAUDE_RESULT_RECORDED" -and $t.status -eq "CLAUDE_REVIEW_PASSED_REAL" -and $t.nextAllowedAction -eq "AWAITING_HUMAN_PR") ("got " + $t.status)
 
 $f = New-Fixture "m08_fix" "VERIFIED" "CLAUDE_REVIEW" "N-01-0.1" "CHG-20260831-015"
-$r = Invoke-Script "Set-ClaudeReviewResult.ps1" "DB08" $f @{ DB08_DECISION = "FIX"; DB08_REVIEW_TEXT = "Row 9 needs a correction." }
+$r = Invoke-Script "Set-ClaudeReviewResult.ps1" "DB08" $f @{ DB08_DECISION = "FIX"; DB08_REVIEW_TEXT = "### Review decision: FIX - Row 9 needs a correction." }
 $t = Read-FixtureTask $f
 $c8 = Get-Content (Join-Path $f.stateDir "claude-review.json") -Raw -Encoding UTF8 | ConvertFrom-Json
 Assert-True "M08 S8 FIX -> DB_M09_FIX_REQUIRED / CORRECT_CURRENT_ATTEMPT + dbM09Required" ($t.status -eq "DB_M09_FIX_REQUIRED" -and $t.nextAllowedAction -eq "CORRECT_CURRENT_ATTEMPT" -and $c8.dbM09Required) ("got " + $t.status)
 
 $f = New-Fixture "m08_gov" "VERIFIED" "CLAUDE_REVIEW" "N-01-0.1" "CHG-20260831-016"
-$r = Invoke-Script "Set-ClaudeReviewResult.ps1" "DB08" $f @{ DB08_DECISION = "GOVERNANCE_ISSUE"; DB08_REVIEW_TEXT = "Roadmap boundary concern." }
+$r = Invoke-Script "Set-ClaudeReviewResult.ps1" "DB08" $f @{ DB08_DECISION = "GOVERNANCE_ISSUE"; DB08_REVIEW_TEXT = "**Decision:** GOVERNANCE_ISSUE - Roadmap boundary concern." }
 $t = Read-FixtureTask $f
 Assert-True "M08 S9 GOVERNANCE_ISSUE -> human governance review" ($t.status -eq "GOVERNANCE_ISSUE" -and $r.human -and $r.humanType -eq "HUMAN_GOVERNANCE_REVIEW") ("got " + $t.status + " type=" + $r.humanType)
 
 $f = New-Fixture "m08_hdr" "VERIFIED" "CLAUDE_REVIEW" "N-01-0.1" "CHG-20260831-017"
-$r = Invoke-Script "Set-ClaudeReviewResult.ps1" "DB08" $f @{ DB08_DECISION = "HUMAN_DECISION_REQUIRED"; DB08_REVIEW_TEXT = "A human must decide." }
+$r = Invoke-Script "Set-ClaudeReviewResult.ps1" "DB08" $f @{ DB08_DECISION = "HUMAN_DECISION_REQUIRED"; DB08_REVIEW_TEXT = "Decision: HUMAN_DECISION_REQUIRED - a human must decide." }
 $t = Read-FixtureTask $f
 Assert-True "M08 S10 HUMAN_DECISION_REQUIRED -> human decision" ($t.status -eq "HUMAN_DECISION_REQUIRED" -and $r.human -and $r.humanType -eq "HUMAN_DECISION") ("got " + $t.status)
 

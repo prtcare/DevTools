@@ -15,9 +15,19 @@
 # CLAUDE_RESULT_IDENTITY_MISMATCH and is NEVER recorded for the current cycle.
 # The reviewed identity + manifest id are persisted in state\claude-review.json.
 #
-# The decision + verbatim review text come from DB08_DECISION / DB08_REVIEW_TEXT
-# (fixture/operator channel) or from the DB-M12.2 one-command input parameters
+# The verbatim review text comes from DB08_REVIEW_TEXT (fixture/operator channel)
+# or from the DB-M12.2 one-command input parameters
 # (DB_COMMAND_INPUT_PARAMETERS = {"decision": "...", "reviewText": "..."}).
+#
+# DB-M08 DECISION PARSER HARDENING: the recorded decision is recognized ONLY
+# from an explicit review-decision field in the review text ("Decision: X",
+# "Review decision: X", "### Review decision: X", "**Decision:** X", where X is
+# PASS | FIX | GOVERNANCE_ISSUE | HUMAN_DECISION_REQUIRED). The supplied
+# decision is advisory/confirmatory only. A review text that names NO explicit
+# decision is rejected (CLAUDE_RESULT_DECISION_NOT_PARSEABLE) and one that names
+# CONFLICTING decisions is rejected (CLAUDE_RESULT_DECISION_AMBIGUOUS) - PASS is
+# NEVER silently defaulted and the lifecycle is NOT advanced on either rejection.
+#
 # Writes tasks\CLAUDE_REVIEW_RESULT.md + state\claude-review.json and transitions
 # current-task.json. Never modifies the workbook.
 #
@@ -56,6 +66,39 @@ function Out-Markers([string]$token, [bool]$pass, [string[]]$evidence, [bool]$hu
     exit 0
 }
 
+# ---- DB-M08 decision-parser: extract the SINGLE explicit review-decision field
+# from the review text. Supported forms (case-insensitive label + token):
+#   Decision: PASS                 Review decision: FIX
+#   ### Review decision: FIX       **Decision:** GOVERNANCE_ISSUE
+#   - **Review decision:** HUMAN_DECISION_REQUIRED
+# The token must be one of the four allowed decisions. Returns:
+#   @{ Status = "Unique";      Decision = "<token>" }
+#   @{ Status = "NotParseable" }  (no explicit valid decision field)
+#   @{ Status = "Ambiguous";   Values = @(<conflicting tokens>) }
+function Test-ReviewDecisionText([string]$text) {
+    $validTokens = @("PASS", "FIX", "GOVERNANCE_ISSUE", "HUMAN_DECISION_REQUIRED")
+    $found = @{}
+    if (-not [string]::IsNullOrWhiteSpace($text)) {
+        foreach ($line in ($text -split "\r?\n")) {
+            # strip leading markdown/heading/bullet decoration, then test for an
+            # explicit "decision" (optionally "review decision") assignment.
+            $candidate = [string]$line.TrimStart('#', ' ', "`t", '*', '_', '`', '>', '-', '(', ')', '[')
+            if ($candidate -match '^(?<label>(review\s+)?decision)\s*[*_`]*\s*[:：]\s*(?<rest>.*)$') {
+                $chunk = [string]$Matches['rest']
+                $chunk = [string]($chunk -replace '^[\s*_`>#\-\(\)\[\]]+', '')
+                if ($chunk -match '^(?<tok>[A-Za-z_][A-Za-z_]*)(\s|$|[^A-Za-z_])') {
+                    $tok = $Matches['tok'].ToUpperInvariant()
+                    if ($validTokens -contains $tok) { $found[$tok] = $true }
+                }
+            }
+        }
+    }
+    $keys = @($found.Keys)
+    if ($keys.Count -eq 0) { return @{ Status = "NotParseable"; Decision = ""; Values = @() } }
+    if ($keys.Count -gt 1) { return @{ Status = "Ambiguous"; Decision = ""; Values = $keys } }
+    return @{ Status = "Unique"; Decision = [string]$keys[0]; Values = $keys }
+}
+
 $ct = Read-DevBridgeJson $script:CurrentTaskPath
 if ($null -eq $ct) { Out-Markers "STOP_NO_CURRENT_TASK" $false @("No current-task.json; run DB-M03 preflight first.") $false "" }
 
@@ -79,7 +122,9 @@ if (-not $reviewText -and $env:DB08_REVIEW_TEXT) { $reviewText = [string]$env:DB
 if (-not $reviewText) { $reviewText = "(no review text supplied)" }
 
 $valid = @("PASS", "FIX", "GOVERNANCE_ISSUE", "HUMAN_DECISION_REQUIRED")
-if ($valid -notcontains $decision) {
+# A supplied (advisory) decision is validated when present; an empty supplied
+# decision is allowed here so the authoritative text parse below can fill it in.
+if ($decision -and ($valid -notcontains $decision)) {
     Out-Markers "STOP_INVALID_DECISION" $false @("Decision must be one of: " + ($valid -join ", ")) $false ""
 }
 
@@ -118,6 +163,21 @@ $verifGate = Read-DevBridgeJson (Join-Path $script:StateDir "verification.json")
 if ($null -eq $verifGate -or [string](Get-DevBridgeField $verifGate "primaryResult") -notlike "VERIFICATION_PASSED*") {
     Out-Markers "STOP_DBM06_PASS_REQUIRED" $false @("DB-M06 verification must PASS for the same node/change before a Claude result can be recorded.") $false ""
 }
+
+# ---- DB-M08 hardening: the recorded decision is the review text's SINGLE
+# explicit decision field. A text naming no decision or conflicting decisions is
+# rejected and the lifecycle is never advanced; PASS is never silently defaulted.
+$parse = Test-ReviewDecisionText $reviewText
+if ($parse.Status -eq "Ambiguous") {
+    Out-Markers "CLAUDE_RESULT_DECISION_AMBIGUOUS" $false @("Review text contains conflicting explicit decisions: " + (($parse.Values | Sort-Object) -join ", ") + ". Record exactly ONE explicit decision field; nothing was written and the lifecycle was not advanced.") $false ""
+}
+if ($parse.Status -eq "NotParseable") {
+    Out-Markers "CLAUDE_RESULT_DECISION_NOT_PARSEABLE" $false @("No explicit review decision field found in the review text (expected 'Decision: PASS|FIX|GOVERNANCE_ISSUE|HUMAN_DECISION_REQUIRED' or a 'Review decision: <token>' variant). PASS is never silently defaulted; nothing was written and the lifecycle was not advanced.") $false ""
+}
+if ($decision -and $decision -ne $parse.Decision) {
+    Write-Output ("DB08_NOTE: supplied decision '" + $decision + "' differs from the review text's explicit decision '" + $parse.Decision + "'; recording the review text decision.")
+}
+$decision = $parse.Decision
 
 # ---- route ----
 $dbM09Required = ($decision -eq "FIX")

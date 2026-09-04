@@ -406,7 +406,7 @@ Check "T10" "the rejected (historical WI-07/016) result is NOT recorded" `
 # T11 allowed decisions are recorded (PASS -> CLAUDE_RESULT_RECORDED)
 # =====================================================================
 $c11 = New-PostCreateCopy "m08-good-pass"
-$o11 = Invoke-Backend "M08" @{ DB08_STATE_DIR = $c11.State; DB08_TASKS_DIR = $c11.Tasks; DB08_DECISION = "PASS"; DB08_REVIEW_TEXT = "all acceptance criteria met" }
+$o11 = Invoke-Backend "M08" @{ DB08_STATE_DIR = $c11.State; DB08_TASKS_DIR = $c11.Tasks; DB08_DECISION = "PASS"; DB08_REVIEW_TEXT = "Review decision: PASS - all acceptance criteria met" }
 Check "T11" "a valid PASS for the CURRENT node/change is recorded (CLAUDE_RESULT_RECORDED)" `
     ((Get-Marker $o11 "DB08_OUTCOME") -eq "CLAUDE_RESULT_RECORDED" -and (Get-Marker $o11 "DB08_RESULT_PASS") -eq "True") `
     ((Get-Marker $o11 "DB08_OUTCOME") + " / " + (Get-Marker $o11 "DB08_RESULT_PASS"))
@@ -456,7 +456,7 @@ $snapBefore = Get-RepoSnapshot $good13.Repo
 $target13 = Join-Path $good13.Base "copied.txt"
 $null = Invoke-Backend "M07" @{ DB07_STATE_DIR = $good13.State; DB07_TASKS_DIR = $good13.Tasks }
 $null = Invoke-Backend "Copy" @{ DB07_STATE_DIR = $good13.State; DB07_TASKS_DIR = $good13.Tasks; DB07_COPY_TARGET_FILE = $target13 }
-$null = Invoke-Backend "M08" @{ DB08_STATE_DIR = $good13.State; DB08_TASKS_DIR = $good13.Tasks; DB08_DECISION = "PASS"; DB08_REVIEW_TEXT = "ok" }
+$null = Invoke-Backend "M08" @{ DB08_STATE_DIR = $good13.State; DB08_TASKS_DIR = $good13.Tasks; DB08_DECISION = "PASS"; DB08_REVIEW_TEXT = "Decision: PASS. ok" }
 $snapAfter = Get-RepoSnapshot $good13.Repo
 Check "T13" "DB-M07 + COPY + DB-M08 leave the reserved repository working tree byte-for-byte unchanged" `
     ($snapAfter.Snapshot -eq $snapBefore.Snapshot -and $snapAfter.Head -eq $snapBefore.Head) `
