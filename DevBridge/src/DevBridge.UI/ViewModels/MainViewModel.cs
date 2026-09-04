@@ -48,7 +48,31 @@ public sealed class MainViewModel : ObservableObject
         HumanGateActions = ActionButtons.Where(b => b.Group == "HUMAN").ToList();
 
         BackendRoot = _cfg.Root;
+        BuildLabel = LoadBuildLabel();
         Refresh();
+    }
+
+    /// <summary>BUILD &lt;short-git-hash&gt; label for the header, read from the
+    /// devbridge-build.json that DevBridge-Launch.ps1 stamps next to the published
+    /// DevBridge.exe. Empty when the metadata is absent or unreadable, in which case
+    /// the header indicator simply collapses.</summary>
+    private static string LoadBuildLabel()
+    {
+        try
+        {
+            string path = Path.Combine(AppContext.BaseDirectory, "devbridge-build.json");
+            if (!File.Exists(path)) return "";
+            using var doc = JsonDocument.Parse(File.ReadAllText(path));
+            if (!doc.RootElement.TryGetProperty("gitHead", out var head) || head.ValueKind != JsonValueKind.String)
+                return "";
+            string sha = (head.GetString() ?? "").Trim();
+            if (sha.Length == 0) return "";
+            return "BUILD " + (sha.Length > 7 ? sha[..7] : sha);
+        }
+        catch (Exception)
+        {
+            return "";
+        }
     }
 
     // ----------------------------------------------------------------- commands
@@ -100,6 +124,9 @@ public sealed class MainViewModel : ObservableObject
     public string LastRefreshTime { get => _lastRefreshTime; set => SetProperty(ref _lastRefreshTime, value); }
 
     public string BackendRoot { get; }
+
+    /// <summary>Published build indicator (e.g. "BUILD d6f42da"); empty when unknown.</summary>
+    public string BuildLabel { get; }
 
     // ----------------------------------------------------------- next action panel
     private string _instruction = "";
