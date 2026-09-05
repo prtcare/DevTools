@@ -75,6 +75,11 @@ public static class StateReader
         bool claudeFixRequired = false;
         bool claudeEvidenceApplies = false;
         string? claudeAt = null;
+        // DB-M08 record binding: the DB-M06 verification identity (verifiedAtUtc) and
+        // manifest id the review was recorded against (Set-ClaudeReviewResult.ps1). This
+        // is what makes the review evidence verification-CYCLE-aware instead of just
+        // node/change-aware.
+        string? reviewedAgainstDbM06 = null;
         var claudeJson = StateJson.TryRead(Path.Combine(cfg.StateDir, "claude-review.json"));
         if (claudeJson is not null)
         {
@@ -85,6 +90,7 @@ public static class StateReader
             {
                 claudeDecision = StateJson.Str(claudeJson, "decision");
                 claudeAt = StateJson.Str(claudeJson, "reviewedAt");
+                reviewedAgainstDbM06 = StateJson.Str(claudeJson, "reviewedAgainstDbM06");
                 if (claudeJson.Value.TryGetProperty("dbM09Required", out var d9) && d9.ValueKind == JsonValueKind.True)
                     claudeFixRequired = true;
             }
@@ -96,6 +102,19 @@ public static class StateReader
                 && !txt.Contains("PASS", StringComparison.OrdinalIgnoreCase) ? "FAIL" : "PASS";
             claudeFixRequired = txt is not null && txt.Contains("CLAUDE_FIX_REQUIRED", StringComparison.OrdinalIgnoreCase);
         }
+
+        // ---- DB-M08 / Claude-review freshness for the CURRENT verification cycle ----
+        // A recorded review is bound to the DB-M06 verification it was reviewed against
+        // (reviewedAgainstDbM06 = that cycle's verifiedAtUtc). Once a FRESH DB-M06
+        // verification of a corrected attempt lands with a NEW verifiedAtUtc, the earlier
+        // review is HISTORICAL evidence for the PRIOR cycle — it must not satisfy DB-M07
+        // for the corrected cycle, even though node and change are unchanged. Positive
+        // proof only: a record with no binding field (legacy evidence) is never guessed
+        // stale, so pre-binding records keep their historical meaning.
+        bool claudeReviewStale = claudeEvidenceApplies
+            && !string.IsNullOrWhiteSpace(reviewedAgainstDbM06)
+            && !string.IsNullOrWhiteSpace(verifiedAt)
+            && !string.Equals(reviewedAgainstDbM06, verifiedAt, StringComparison.Ordinal);
 
         // ---- completion + consistency ----
         bool completionWritten = false;
@@ -251,18 +270,32 @@ public static class StateReader
 
         // DB-M07 Claude Review Manifest readiness for the CURRENT cycle: current-task
         // dbM07 carries a ready stamp whose nodeId/changeId match the current task AND
-        // the manifest file exists. A legacy/stale REVIEW_PACKET.md (old model, no dbM07
-        // stamp) is deliberately NOT current — COPY FOR CLAUDE stays disabled until the
-        // current manifest is generated.
+        // the manifest file exists AND the stamp is bound to the CURRENT applied DB-M06
+        // verification (dbM07.verifiedAtUtc == verifiedAt). Same node/change is NOT
+        // enough: after a fresh DB-M06 verification of a corrected attempt, the previous
+        // cycle's package is stale even though it names the same task — it must be
+        // regenerated against the latest DB-M06. A legacy/stale REVIEW_PACKET.md (old
+        // model, no dbM07 stamp) is deliberately NOT current — COPY FOR CLAUDE stays
+        // disabled until the current manifest is generated.
         bool manifestReady = false;
+        bool manifestStale = false;
         string? manifestId = null;
         if (ct is not null && nodeId is not null && changeId is not null
             && ct.Value.TryGetProperty("dbM07", out var db7) && db7.ValueKind == JsonValueKind.Object)
         {
-            manifestReady = IsTrue(StateJson.Str(db7, "ready"))
+            bool stamped = IsTrue(StateJson.Str(db7, "ready"))
                 && string.Equals(StateJson.Str(db7, "nodeId"), nodeId, StringComparison.Ordinal)
                 && string.Equals(StateJson.Str(db7, "changeId"), changeId, StringComparison.Ordinal)
                 && File.Exists(Path.Combine(cfg.TasksDir, "CLAUDE_REVIEW_PACKAGE.md"));
+            string? db7VerifiedAt = StateJson.Str(db7, "verifiedAtUtc");
+            bool boundToCurrentVerification = stamped
+                && !string.IsNullOrWhiteSpace(db7VerifiedAt)
+                && !string.IsNullOrWhiteSpace(verifiedAt)
+                && string.Equals(db7VerifiedAt, verifiedAt, StringComparison.Ordinal);
+            manifestReady = boundToCurrentVerification;
+            // Positive proof a stamped manifest is stale: it exists for this node/change
+            // but is bound to an OLDER DB-M06 verification than the one now applied.
+            manifestStale = stamped && !boundToCurrentVerification;
             if (manifestReady) manifestId = StateJson.Str(db7, "manifestId");
         }
 
@@ -347,6 +380,8 @@ public static class StateReader
             ReviewPackageValidation = pkg,
             ClaudeReviewManifestReady = manifestReady,
             ClaudeReviewManifestId = manifestId,
+            ClaudeReviewManifestStale = manifestStale,
+            ClaudeReviewStale = claudeReviewStale,
             CorrectionReconciled = correctionReconciled,
             M10Eligibility = m10,
             RoadmapGuard = roadmapGuard,

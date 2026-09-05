@@ -114,12 +114,19 @@ public static class StageDisplayResolver
         _ => NotStarted,
     };
 
-    /// <summary>Claude Review Package: PASS once the packet artifact exists, READY
-    /// once verification has passed and the package is the immediate next step.</summary>
+    /// <summary>Claude Review Package: PASS only for the CURRENT manifest (dbM07 stamp
+    /// bound to the current DB-M06 verification). A stamped package bound to an OLDER
+    /// DB-M06 (a previous correction cycle) is stale and must be REGENERATED, so it
+    /// never renders PASS — even though its legacy REVIEW_PACKET.md cover pointer is
+    /// still on disk. Legacy pre-stamp artifacts (REVIEW_PACKET.md alone, no dbM07) keep
+    /// their historical PASS. READY once verification has passed and (re)generation of
+    /// the package is the immediate next step.</summary>
     private static string ResolveClaudeReviewPackage(DevBridgeState s, Func<LifecycleStageKey, StageState?> engine)
     {
-        if (s.ClaudeReviewManifestReady) return Pass;   // CURRENT manifest (dbM07 stamp for this node/change)
-        if (s.Artifacts.ReviewPacket || s.Artifacts.ClaudeReviewPrompt) return Pass; // legacy artifact present
+        if (s.ClaudeReviewManifestReady) return Pass;   // CURRENT manifest (dbM07 stamp for this node/change, bound to current DB-M06)
+        // A stale stamped package carries its legacy REVIEW_PACKET.md/CLAUDE_REVIEW_PROMPT.md
+        // cover pointer too; that must NOT be mistaken for a current package.
+        if (!s.ClaudeReviewManifestStale && (s.Artifacts.ReviewPacket || s.Artifacts.ClaudeReviewPrompt)) return Pass; // legacy artifact present
         if (engine(LifecycleStageKey.Verification) == StageState.Complete
             || engine(LifecycleStageKey.Claude) == StageState.Current
             || engine(LifecycleStageKey.Claude) == StageState.Complete) return Ready;

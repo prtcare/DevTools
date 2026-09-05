@@ -241,14 +241,15 @@ public static class NextActionEngine
 
         // ---- 4. claude fix required (DB-M09) ----
         // A FIX decision keeps the cycle on the fix loop UNTIL a FRESH DB-M06
-        // verification of the corrected attempt lands (VerifiedAtUtc > ClaudeReviewedAtUtc).
-        // Once re-verified, the historical FIX no longer blocks the normal verified flow
-        // (the corrected delta goes back to Claude). While a FIX is live on the governed
-        // M09 position, the correction loop offers RECONCILE CORRECTION (DB-M15) and -
-        // once an externally-completed CORRECT_CURRENT_ATTEMPT has been reconciled as a
+        // verification of the corrected attempt lands (VerifiedAtUtc > ClaudeReviewedAtUtc,
+        // or the review is verification-stale: bound to an OLDER DB-M06 identity). Once
+        // re-verified, the historical FIX no longer blocks the normal verified flow (the
+        // corrected delta goes back to Claude). While a FIX is live on the governed M09
+        // position, the correction loop offers RECONCILE CORRECTION (DB-M15) and - once
+        // an externally-completed CORRECT_CURRENT_ATTEMPT has been reconciled as a
         // detected delta - re-verification of the corrected implementation (DB-M06).
         bool fixLive = s.ClaudeFixRequired || (s.ClaudeDecision is not null && s.ClaudeDecision.StartsWith("FAIL", StringComparison.OrdinalIgnoreCase));
-        if (fixLive && !FixReVerified(s))
+        if (fixLive && !s.ClaudeReviewStale && !FixReVerified(s))
         {
             if (s.Status == "DB_M09_FIX_REQUIRED" && s.CorrectionReconciled)
             {
@@ -318,8 +319,10 @@ public static class NextActionEngine
         // The trial-stop and real-Git-gate branches above fire first for their statuses.
         // This safety net still refuses completion whenever eligibility is not proven:
         // a trial can never complete, and a real cycle without a confirmed human merge or
-        // with a changed protected roadmap fingerprint is blocked.
-        if (s.ClaudeDecision is not null && s.ClaudeDecision.StartsWith("PASS", StringComparison.OrdinalIgnoreCase))
+        // with a changed protected roadmap fingerprint is blocked. A stale PASS (bound to
+        // an OLDER DB-M06 verification, i.e. a previous correction cycle) is NOT honored —
+        // the corrected delta must be re-reviewed before any completion path re-opens.
+        if (s.ClaudeDecision is not null && s.ClaudeDecision.StartsWith("PASS", StringComparison.OrdinalIgnoreCase) && !s.ClaudeReviewStale)
         {
             bool eligible = s.M10Eligibility?.Eligible == true;
             string instruction = eligible

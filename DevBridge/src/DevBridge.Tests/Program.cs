@@ -296,12 +296,14 @@ FakeScriptRunner Runner(params (string script, Func<string, ScriptRunOutcome> be
     string root = NewRoot("awaitclaude");
     // AWAIT_CLAUDE under the DB-M07 manifest model: COPY/RECORD unlock only for the
     // CURRENT CLAUDE REVIEW MANIFEST (current-task dbM07 ready stamp for this
-    // node/change + tasks/CLAUDE_REVIEW_PACKAGE.md). A REVIEW_PACKET.md alone is the
-    // legacy wrapper and never counts as the current manifest.
+    // node/change BOUND to the current DB-M06 verification via verifiedAtUtc ==
+    // verification.json verifiedAtUtc + tasks/CLAUDE_REVIEW_PACKAGE.md). A
+    // REVIEW_PACKET.md alone is the legacy wrapper and never counts as the current
+    // manifest.
     W(root, @"state/current-task.json",
         "{\"nodeId\":\"WI-07-0.2.4\",\"name\":\"Test Task\",\"nodeType\":\"WorkItem\",\"phase\":\"P0\",\"layer\":\"App\","
       + "\"changeId\":\"CHG-20260830-025\",\"status\":\"VERIFIED\",\"nextAllowedAction\":\"CLAUDE_REVIEW\","
-      + "\"dbM07\":{\"ready\":true,\"nodeId\":\"WI-07-0.2.4\",\"changeId\":\"CHG-20260830-025\",\"manifestId\":\"MFT-20260830-025\"},"
+      + "\"dbM07\":{\"ready\":true,\"nodeId\":\"WI-07-0.2.4\",\"changeId\":\"CHG-20260830-025\",\"manifestId\":\"MFT-20260830-025\",\"verifiedAtUtc\":\"2026-08-30T18:15:00Z\"},"
       + "\"selectedAt\":\"2026-08-30T18:15:00Z\"}");
     W(root, @"state/verification.json", "{\"nodeId\":\"WI-07-0.2.4\",\"primaryResult\":\"VERIFICATION_PASSED\",\"verifiedAtUtc\":\"2026-08-30T18:15:00Z\"}");
     W(root, @"tasks/VERIFICATION_REPORT.md", "VERIFICATION_PASSED");
@@ -1746,6 +1748,231 @@ Console.WriteLine("DB-M12.2 reusable lifecycle backend commands");
     Check(r15.ResultCodeToken == "CORRECTION_DELTA_DETECTED", "DB-M15.4: reconcile result code", r15.ResultCodeToken);
     Check(r15.WorkbookModified == false && r15.NexusSourceModified == false && r15.GitModified == false, "DB-M15.4: reconcile is read-only", $"{r15.WorkbookModified}/{r15.NexusSourceModified}/{r15.GitModified}");
     Check(fake15.Invoked.Count == 1 && fake15.Invoked[0] == "Confirm-CorrectedImplementation.ps1", "DB-M15.4: confirm script invoked", string.Join("|", fake15.Invoked));
+}
+
+// ---- DB-M07 POST-CORRECTION FRESHNESS (verification-cycle-aware binding) ------
+// The freshness defect: after CORRECT_CURRENT_ATTEMPT, a FRESH DB-M06 verification of
+// the corrected delta must invalidate the PREVIOUS Claude review package and the
+// PREVIOUS Claude review as evidence for the new cycle. A package/review is valid ONLY
+// when bound to the CURRENT DB-M06 verification identity (dbM07.verifiedAtUtc /
+// reviewedAgainstDbM06 == verification.json verifiedAtUtc). Same node+change is NOT
+// enough. Scenarios 1-11 are generic: they use their own node/change identities and
+// never touch a Nexus workbook (read-only derive, asserted in scenario 11).
+const string DB07_OLD = "2026-09-04T11:02:44Z"; // DB-M06 verification of the PRIOR (pre-correction) cycle
+const string DB07_NEW = "2026-09-05T01:10:25Z"; // FRESH DB-M06 verification of the CORRECTED delta
+string ManId(string node, string change, string v) => $"DB07-MANIFEST|{change}|{node}|{v}";
+
+// (1) FIRST DB-M06 PASS + no package yet -> DB-M07 CREATE is ready (COPY/RECORD not yet).
+{
+    string root = NewRoot("fr-firstpass");
+    W(root, @"state/current-task.json",
+        "{\"nodeId\":\"WI-12-0.4.1\",\"name\":\"Freshness 1\",\"nodeType\":\"WorkItem\",\"phase\":\"P0\",\"layer\":\"App\","
+      + "\"changeId\":\"CHG-FRESH-001\",\"status\":\"VERIFIED\",\"nextAllowedAction\":\"CLAUDE_REVIEW\","
+      + "\"selectedAt\":\"2026-09-05T01:20:00Z\"}");
+    W(root, @"state/verification.json", "{\"nodeId\":\"WI-12-0.4.1\",\"changeId\":\"CHG-FRESH-001\",\"primaryResult\":\"VERIFICATION_PASSED\",\"verifiedAtUtc\":\"" + DB07_NEW + "\"}");
+    var s1 = StateReader.Read(DevBridgeConfig.Load(root));
+    var n1 = NextActionEngine.Evaluate(s1);
+    Check(!s1.ClaudeReviewManifestReady && !s1.ClaudeReviewManifestStale && !s1.ClaudeReviewStale,
+        "DB07FR(1): first pass — no manifest/review flags yet", $"{s1.ClaudeReviewManifestReady}/{s1.ClaudeReviewManifestStale}/{s1.ClaudeReviewStale}");
+    Check(n1.EnabledButtons.Contains("CREATE_CLAUDE_REVIEW_PACKAGE"), "DB07FR(1): CREATE ready on first pass", EnabledDesc(n1.EnabledButtons));
+    Check(!n1.EnabledButtons.Contains("COPY_FOR_CLAUDE") && !n1.EnabledButtons.Contains("RECORD_CLAUDE_RESULT"),
+        "DB07FR(1): no COPY/RECORD before a package exists", EnabledDesc(n1.EnabledButtons));
+}
+
+// (2) Package BOUND to the CURRENT DB-M06 verification -> manifest CURRENT (COPY/RECORD).
+{
+    string root = NewRoot("fr-current");
+    const string node = "WI-12-0.4.1";
+    const string change = "CHG-FRESH-001";
+    string mid = ManId(node, change, DB07_NEW);
+    W(root, @"state/current-task.json",
+        "{\"nodeId\":\"" + node + "\",\"name\":\"Freshness 2\",\"nodeType\":\"WorkItem\",\"phase\":\"P0\",\"layer\":\"App\","
+      + "\"changeId\":\"" + change + "\",\"status\":\"VERIFIED\",\"nextAllowedAction\":\"CLAUDE_REVIEW\","
+      + "\"dbM07\":{\"ready\":true,\"nodeId\":\"" + node + "\",\"changeId\":\"" + change + "\",\"manifestId\":\"" + mid + "\",\"verifiedAtUtc\":\"" + DB07_NEW + "\"},"
+      + "\"selectedAt\":\"2026-09-05T01:25:00Z\"}");
+    W(root, @"state/verification.json", "{\"nodeId\":\"" + node + "\",\"changeId\":\"" + change + "\",\"primaryResult\":\"VERIFICATION_PASSED\",\"verifiedAtUtc\":\"" + DB07_NEW + "\"}");
+    W(root, @"tasks/CLAUDE_REVIEW_PACKAGE.md", "# Claude Review Manifest\n\nNode: " + node + "\nChange: " + change + "\nManifest ID: " + mid);
+    var s2 = StateReader.Read(DevBridgeConfig.Load(root));
+    var n2 = NextActionEngine.Evaluate(s2);
+    Check(s2.ClaudeReviewManifestReady && !s2.ClaudeReviewManifestStale && s2.ClaudeReviewManifestId == mid,
+        "DB07FR(2): package bound to current DB-M06 is the current manifest", $"{s2.ClaudeReviewManifestReady}/{s2.ClaudeReviewManifestId}");
+    Check(SetsEqual(n2.EnabledButtons, new[] { "COPY_FOR_CLAUDE", "RECORD_CLAUDE_RESULT", "OPEN_REVIEW_PACKET", "OPEN_VERIFICATION_REPORT", "OPEN_DETAIL" }),
+        "DB07FR(2): COPY/RECORD for the current manifest", $"got [{EnabledDesc(n2.EnabledButtons)}]");
+    Check(!n2.EnabledButtons.Contains("CREATE_CLAUDE_REVIEW_PACKAGE"), "DB07FR(2): no regenerate for a current manifest", EnabledDesc(n2.EnabledButtons));
+}
+
+// (3) A recorded Claude PASS/FIX bound to the SAME verification is recognized FOR THAT
+//     verification only: FIX keeps the fix loop live (3a); PASS is honored (3b).
+{
+    // 3a: FIX bound to the current verification stays live on the governed M09 position.
+    string root = NewRoot("fr-fixbound");
+    const string node = "WI-12-0.4.1";
+    const string change = "CHG-FRESH-002";
+    string mid = ManId(node, change, DB07_NEW);
+    W(root, @"state/current-task.json",
+        "{\"nodeId\":\"" + node + "\",\"name\":\"Freshness 3a\",\"nodeType\":\"WorkItem\",\"phase\":\"P0\",\"layer\":\"App\","
+      + "\"changeId\":\"" + change + "\",\"status\":\"DB_M09_FIX_REQUIRED\",\"nextAllowedAction\":\"CORRECT_CURRENT_ATTEMPT\","
+      + "\"dbM09\":{\"result\":\"FIX_CONTEXT_CREATED\",\"nodeId\":\"" + node + "\",\"changeId\":\"" + change + "\"},"
+      + "\"dbM07\":{\"ready\":true,\"nodeId\":\"" + node + "\",\"changeId\":\"" + change + "\",\"manifestId\":\"" + mid + "\",\"verifiedAtUtc\":\"" + DB07_NEW + "\"},"
+      + "\"selectedAt\":\"2026-09-05T01:30:00Z\"}");
+    W(root, @"state/verification.json", "{\"nodeId\":\"" + node + "\",\"changeId\":\"" + change + "\",\"primaryResult\":\"VERIFICATION_PASSED\",\"verifiedAtUtc\":\"" + DB07_NEW + "\"}");
+    W(root, @"state/claude-review.json", "{\"nodeId\":\"" + node + "\",\"changeId\":\"" + change + "\",\"decision\":\"FIX\",\"dbM09Required\":true,"
+      + "\"reviewedAgainstDbM06\":\"" + DB07_NEW + "\",\"reviewedManifestId\":\"" + mid + "\",\"reviewedAt\":\"2026-09-05T02:00:00Z\"}");
+    W(root, @"tasks/FIX_CONTEXT.md", "FIX_CONTEXT for " + change);
+    W(root, @"tasks/CLAUDE_REVIEW_PACKAGE.md", "# Claude Review Manifest\n\nNode: " + node + "\nChange: " + change + "\nManifest ID: " + mid);
+    var s3a = StateReader.Read(DevBridgeConfig.Load(root));
+    var n3a = NextActionEngine.Evaluate(s3a);
+    Check(!s3a.ClaudeReviewStale, "DB07FR(3a): FIX bound to current verification is NOT stale", s3a.ClaudeReviewStale.ToString());
+    Check(SetsEqual(n3a.EnabledButtons, new[] { "COPY_FIX_CONTEXT", "RECONCILE_CORRECTION", "OPEN_REVIEW_PACKET", "OPEN_DETAIL" }),
+        "DB07FR(3a): live FIX keeps the correction loop", $"got [{EnabledDesc(n3a.EnabledButtons)}]");
+    Check(n3a.Stages.Any(m => m.Key == LifecycleStageKey.FixLoop && m.State == StageState.Current), "DB07FR(3a): fix loop current", "not current");
+}
+{
+    // 3b: PASS bound to the current verification is honored (drives the trial-stop path).
+    string root = NewRoot("fr-passbound");
+    const string node = "WI-12-0.4.1";
+    const string change = "CHG-FRESH-003";
+    string mid = ManId(node, change, DB07_NEW);
+    W(root, @"state/current-task.json",
+        "{\"nodeId\":\"" + node + "\",\"name\":\"Freshness 3b\",\"nodeType\":\"WorkItem\",\"phase\":\"P0\",\"layer\":\"App\","
+      + "\"changeId\":\"" + change + "\",\"status\":\"VERIFIED\",\"nextAllowedAction\":\"CLAUDE_REVIEW\","
+      + "\"mode\":\"TRIAL\","
+      + "\"dbM07\":{\"ready\":true,\"nodeId\":\"" + node + "\",\"changeId\":\"" + change + "\",\"manifestId\":\"" + mid + "\",\"verifiedAtUtc\":\"" + DB07_NEW + "\"},"
+      + "\"selectedAt\":\"2026-09-05T01:35:00Z\"}");
+    W(root, @"state/verification.json", "{\"nodeId\":\"" + node + "\",\"changeId\":\"" + change + "\",\"primaryResult\":\"VERIFICATION_PASSED\",\"verifiedAtUtc\":\"" + DB07_NEW + "\"}");
+    W(root, @"state/claude-review.json", "{\"nodeId\":\"" + node + "\",\"changeId\":\"" + change + "\",\"decision\":\"PASS\",\"dbM09Required\":false,"
+      + "\"reviewedAgainstDbM06\":\"" + DB07_NEW + "\",\"reviewedManifestId\":\"" + mid + "\",\"reviewedAt\":\"2026-09-05T02:10:00Z\"}");
+    W(root, @"tasks/CLAUDE_REVIEW_PACKAGE.md", "# Claude Review Manifest\n\nNode: " + node + "\nChange: " + change + "\nManifest ID: " + mid);
+    W(root, @"tasks/REVIEW_PACKET.md", "cover");
+    var s3b = StateReader.Read(DevBridgeConfig.Load(root));
+    var n3b = NextActionEngine.Evaluate(s3b);
+    Check(!s3b.ClaudeReviewStale && s3b.ClaudeReviewManifestReady, "DB07FR(3b): PASS bound to current verification is current", $"{s3b.ClaudeReviewStale}/{s3b.ClaudeReviewManifestReady}");
+    Check(n3b.Instruction.Contains("Trial PASS accepted", StringComparison.Ordinal), "DB07FR(3b): bound PASS is honored", n3b.Instruction);
+}
+
+// (4)(5)(6)(7)(9)(10)(11) CORRECTION LOOP core: after CORRECT_CURRENT_ATTEMPT a FRESH
+// DB-M06 re-verifies the SAME node+change. The previous package + previous review are
+// now STALE evidence (scenarios 4/5), CREATE re-enables (6), COPY/RECORD stay disabled
+// (7), historical evidence is preserved read-only (9), identity is generic (10), and no
+// Nexus/workbook is ever touched (11).
+{
+    string root = NewRoot("fr-stalecore");
+    const string node = "WI-12-0.4.1";
+    const string change = "CHG-FRESH-002";      // SAME node+change across both verification cycles
+    string staleId = ManId(node, change, DB07_OLD);
+    W(root, @"state/current-task.json",
+        "{\"nodeId\":\"" + node + "\",\"name\":\"Correction task\",\"nodeType\":\"WorkItem\",\"phase\":\"P0\",\"layer\":\"App\","
+      + "\"changeId\":\"" + change + "\",\"status\":\"VERIFIED\",\"nextAllowedAction\":\"CLAUDE_REVIEW\","
+      + "\"dbM07\":{\"ready\":true,\"nodeId\":\"" + node + "\",\"changeId\":\"" + change + "\",\"manifestId\":\"" + staleId + "\",\"verifiedAtUtc\":\"" + DB07_OLD + "\"},"
+      + "\"dbM09\":{\"result\":\"FIX_CONTEXT_CREATED\",\"nodeId\":\"" + node + "\",\"changeId\":\"" + change + "\","
+      + "\"correctionReconciled\":{\"result\":\"CORRECTION_DELTA_DETECTED\",\"reconciledAtUtc\":\"2026-09-04T23:00:00Z\"}},"
+      + "\"selectedAt\":\"2026-09-04T17:00:00Z\"}");
+    W(root, @"state/verification.json", "{\"nodeId\":\"" + node + "\",\"changeId\":\"" + change + "\",\"primaryResult\":\"VERIFICATION_PASSED\",\"verifiedAtUtc\":\"" + DB07_NEW + "\"}");
+    W(root, @"state/claude-review.json", "{\"nodeId\":\"" + node + "\",\"changeId\":\"" + change + "\",\"decision\":\"FIX\",\"dbM09Required\":true,"
+      + "\"reviewedAgainstDbM06\":\"" + DB07_OLD + "\",\"reviewedManifestId\":\"" + staleId + "\",\"reviewedAt\":\"2026-09-04T13:06:46Z\"}");
+    // Historical evidence on disk: the PRIOR-cycle manifest file + its legacy cover
+    // pointer + the recorded FIX report. None may be deleted by the derive.
+    W(root, @"tasks/CLAUDE_REVIEW_PACKAGE.md", "# Claude Review Manifest\n\nNode: " + node + "\nChange: " + change + "\nManifest ID: " + staleId + "\nDB-M06 verified (utc): " + DB07_OLD);
+    W(root, @"tasks/REVIEW_PACKET.md", "legacy cover pointer for the STALE package");
+    W(root, @"tasks/CLAUDE_REVIEW_RESULT.md", "FIX\nCLAUDE_FIX_REQUIRED");
+    W(root, @"tasks/FIX_CONTEXT.md", "FIX_CONTEXT for " + change);
+    var before = Directory.GetFiles(root, "*", SearchOption.AllDirectories)
+        .Select(p => Path.GetRelativePath(root, p)).OrderBy(x => x, StringComparer.Ordinal).ToArray();
+
+    var s4 = StateReader.Read(DevBridgeConfig.Load(root));
+    var n4 = NextActionEngine.Evaluate(s4);
+    var display = StageDisplayResolver.Resolve(s4, n4);
+
+    Check(!s4.ClaudeReviewManifestReady && s4.ClaudeReviewManifestStale,
+        "DB07FR(4): same node+change package is STALE after fresh DB-M06", $"{s4.ClaudeReviewManifestReady}/{s4.ClaudeReviewManifestStale}");
+    Check(s4.ClaudeReviewStale, "DB07FR(5): same node+change Claude result is STALE after fresh DB-M06", s4.ClaudeReviewStale.ToString());
+    Check(n4.EnabledButtons.Contains("CREATE_CLAUDE_REVIEW_PACKAGE"), "DB07FR(6): CREATE CLAUDE REVIEW PACKAGE re-enabled after corrected verification", EnabledDesc(n4.EnabledButtons));
+    Check(!n4.EnabledButtons.Contains("COPY_FOR_CLAUDE") && !n4.EnabledButtons.Contains("RECORD_CLAUDE_RESULT"),
+        "DB07FR(7): COPY/RECORD disabled while the package is stale", EnabledDesc(n4.EnabledButtons));
+    var pkgRow = display.First(r => r.Key == "CLAUDE_REVIEW_PACKAGE");
+    var claudeRow = display.First(r => r.Key == "CLAUDE_REVIEW");
+    Check(pkgRow.Token != StageDisplayResolver.Pass && pkgRow.Token == StageDisplayResolver.Ready,
+        "DB07FR(4b): stale package never renders PASS (READY to regenerate)", $"{pkgRow.Token}");
+    Check(claudeRow.Token != StageDisplayResolver.Pass, "DB07FR(5b): stale review never renders PASS on the Claude stage", claudeRow.Token);
+    Check(n4.Instruction.Contains("Review this task in Claude", StringComparison.Ordinal), "DB07FR(6b): corrected delta awaits a FRESH review", n4.Instruction);
+
+    // (9) Historical evidence preserved: old package + old review remain on disk intact.
+    Check(File.Exists(Path.Combine(root, "tasks", "CLAUDE_REVIEW_PACKAGE.md")) && File.ReadAllText(Path.Combine(root, "tasks", "CLAUDE_REVIEW_PACKAGE.md")).Contains("Manifest ID: " + staleId),
+        "DB07FR(9): historical package preserved", "missing/changed");
+    Check(File.Exists(Path.Combine(root, "state", "claude-review.json")) && File.ReadAllText(Path.Combine(root, "state", "claude-review.json")).Contains(DB07_OLD),
+        "DB07FR(9b): historical Claude review preserved", "missing/changed");
+
+    // (10) Genericness: WI-12-0.4.1/CHG-FRESH-002 are our own identities (not the
+    // shared WI-07 fixture id); staleness is derived from the DB-M06 binding mismatch,
+    // never from matching a hard-coded node/change.
+
+    // (11) Read-only derive: evaluating state never creates/deletes a file, never
+    // touches a Nexus workbook.
+    var after = Directory.GetFiles(root, "*", SearchOption.AllDirectories)
+        .Select(p => Path.GetRelativePath(root, p)).OrderBy(x => x, StringComparer.Ordinal).ToArray();
+    Check(before.SequenceEqual(after), "DB07FR(11): derive is read-only — no file created/deleted", $"before {before.Length} after {after.Length}");
+    Check(!after.Any(p => p.EndsWith(".xlsx", StringComparison.OrdinalIgnoreCase) || p.Contains("Nexus", StringComparison.OrdinalIgnoreCase)),
+        "DB07FR(11b): no workbook/Nexus mutation during derive", string.Join(",", after));
+}
+
+// (5 again) A stale PASS (not just a stale FIX) must also be superseded: the corrected
+// delta returns to Claude rather than riding an old PASS toward completion.
+{
+    string root = NewRoot("fr-stalepass");
+    const string node = "WI-12-0.4.1";
+    const string change = "CHG-FRESH-003";     // SAME node+change
+    string staleId = ManId(node, change, DB07_OLD);
+    W(root, @"state/current-task.json",
+        "{\"nodeId\":\"" + node + "\",\"name\":\"Stale pass\",\"nodeType\":\"WorkItem\",\"phase\":\"P0\",\"layer\":\"App\","
+      + "\"changeId\":\"" + change + "\",\"status\":\"VERIFIED\",\"nextAllowedAction\":\"CLAUDE_REVIEW\","
+      + "\"dbM07\":{\"ready\":true,\"nodeId\":\"" + node + "\",\"changeId\":\"" + change + "\",\"manifestId\":\"" + staleId + "\",\"verifiedAtUtc\":\"" + DB07_OLD + "\"},"
+      + "\"selectedAt\":\"2026-09-04T17:00:00Z\"}");
+    W(root, @"state/verification.json", "{\"nodeId\":\"" + node + "\",\"changeId\":\"" + change + "\",\"primaryResult\":\"VERIFICATION_PASSED\",\"verifiedAtUtc\":\"" + DB07_NEW + "\"}");
+    W(root, @"state/claude-review.json", "{\"nodeId\":\"" + node + "\",\"changeId\":\"" + change + "\",\"decision\":\"PASS\",\"dbM09Required\":false,"
+      + "\"reviewedAgainstDbM06\":\"" + DB07_OLD + "\",\"reviewedManifestId\":\"" + staleId + "\",\"reviewedAt\":\"2026-09-04T13:10:00Z\"}");
+    W(root, @"tasks/CLAUDE_REVIEW_PACKAGE.md", "# Claude Review Manifest\n\nNode: " + node + "\nChange: " + change + "\nManifest ID: " + staleId);
+    W(root, @"tasks/CLAUDE_REVIEW_RESULT.md", "PASS\n\nNo blocking findings.");
+    var s5 = StateReader.Read(DevBridgeConfig.Load(root));
+    var n5 = NextActionEngine.Evaluate(s5);
+    Check(s5.ClaudeReviewStale, "DB07FR(5c): old PASS bound to previous DB-M06 is stale", s5.ClaudeReviewStale.ToString());
+    Check(n5.EnabledButtons.Contains("CREATE_CLAUDE_REVIEW_PACKAGE") && !n5.EnabledButtons.Contains("COPY_FOR_CLAUDE"),
+        "DB07FR(5d): stale PASS does not unlock COPY — fresh review required", EnabledDesc(n5.EnabledButtons));
+    Check(!n5.Instruction.Contains("PASS accepted", StringComparison.OrdinalIgnoreCase) && !n5.Instruction.Contains("governed completion", StringComparison.OrdinalIgnoreCase),
+        "DB07FR(5e): stale PASS is never honored toward completion", n5.Instruction);
+}
+
+// (8) A FRESH package generated against the LATEST DB-M06 restores currency: dbM07
+// stamp bound to DB07_NEW -> manifest CURRENT again, COPY/RECORD unlock, and the OLD
+// review stays historical (does not drag the cycle back onto the fix loop).
+{
+    string root = NewRoot("fr-regen");
+    const string node = "WI-12-0.4.1";
+    const string change = "CHG-FRESH-002";     // SAME node+change as the core correction scenario
+    string freshId = ManId(node, change, DB07_NEW);
+    W(root, @"state/current-task.json",
+        "{\"nodeId\":\"" + node + "\",\"name\":\"Correction task\",\"nodeType\":\"WorkItem\",\"phase\":\"P0\",\"layer\":\"App\","
+      + "\"changeId\":\"" + change + "\",\"status\":\"VERIFIED\",\"nextAllowedAction\":\"CLAUDE_REVIEW\","
+      + "\"dbM07\":{\"ready\":true,\"nodeId\":\"" + node + "\",\"changeId\":\"" + change + "\",\"manifestId\":\"" + freshId + "\",\"verifiedAtUtc\":\"" + DB07_NEW + "\"},"
+      + "\"selectedAt\":\"2026-09-05T01:40:00Z\"}");
+    W(root, @"state/verification.json", "{\"nodeId\":\"" + node + "\",\"changeId\":\"" + change + "\",\"primaryResult\":\"VERIFICATION_PASSED\",\"verifiedAtUtc\":\"" + DB07_NEW + "\"}");
+    // The OLD FIX review record is still on disk — it must now read as HISTORICAL and
+    // must NOT force the corrected delta back onto the fix loop.
+    W(root, @"state/claude-review.json", "{\"nodeId\":\"" + node + "\",\"changeId\":\"" + change + "\",\"decision\":\"FIX\",\"dbM09Required\":true,"
+      + "\"reviewedAgainstDbM06\":\"" + DB07_OLD + "\",\"reviewedManifestId\":\"" + ManId(node, change, DB07_OLD) + "\",\"reviewedAt\":\"2026-09-04T13:06:46Z\"}");
+    W(root, @"tasks/CLAUDE_REVIEW_PACKAGE.md", "# Claude Review Manifest\n\nNode: " + node + "\nChange: " + change + "\nManifest ID: " + freshId + "\nDB-M06 verified (utc): " + DB07_NEW);
+    W(root, @"tasks/REVIEW_PACKET.md", "cover pointer");
+    W(root, @"tasks/CLAUDE_REVIEW_RESULT.md", "FIX\nCLAUDE_FIX_REQUIRED");
+    var s8 = StateReader.Read(DevBridgeConfig.Load(root));
+    var n8 = NextActionEngine.Evaluate(s8);
+    Check(s8.ClaudeReviewManifestReady && !s8.ClaudeReviewManifestStale && s8.ClaudeReviewManifestId == freshId,
+        "DB07FR(8): fresh package binds to the LATEST DB-M06", $"{s8.ClaudeReviewManifestReady}/{s8.ClaudeReviewManifestId}");
+    Check(s8.ClaudeReviewStale, "DB07FR(8b): OLD review stays historical after regeneration", s8.ClaudeReviewStale.ToString());
+    Check(SetsEqual(n8.EnabledButtons, new[] { "COPY_FOR_CLAUDE", "RECORD_CLAUDE_RESULT", "OPEN_REVIEW_PACKET", "OPEN_VERIFICATION_REPORT", "OPEN_DETAIL" }),
+        "DB07FR(8c): fresh manifest unlocks COPY/RECORD (old FIX does not block)", $"got [{EnabledDesc(n8.EnabledButtons)}]");
+    Check(!n8.EnabledButtons.Contains("CREATE_CLAUDE_REVIEW_PACKAGE"), "DB07FR(8d): CREATE not re-offered for a current manifest", EnabledDesc(n8.EnabledButtons));
+    Check(!n8.EnabledButtons.Contains("COPY_FIX_CONTEXT") && !n8.EnabledButtons.Contains("RECONCILE_CORRECTION"),
+        "DB07FR(8e): historical FIX never re-arms the correction loop", EnabledDesc(n8.EnabledButtons));
+    Check(n8.Instruction.Contains("Review this task in Claude", StringComparison.Ordinal), "DB07FR(8f): corrected delta is ready for a FRESH Claude review", n8.Instruction);
 }
 
 // ==================================================================== report

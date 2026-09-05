@@ -83,10 +83,22 @@ public sealed class DevBridgeState
 
     // ---- DB-M07 Claude Review Manifest (new review model: Claude reads the ACTUAL
     // Nexus files). True only when current-task dbM07 carries a ready stamp for THIS
-    // node/change AND the manifest file exists — a legacy/stale REVIEW_PACKET.md from
-    // a previous cycle is never treated as the current manifest. ----
+    // node/change AND the manifest file exists AND that stamp is bound to the CURRENT
+    // applied DB-M06 verification (dbM07.verifiedAtUtc == verification verifiedAtUtc).
+    // A legacy/stale REVIEW_PACKET.md from a previous cycle is never the current
+    // manifest, and a package stamped against an OLDER DB-M06 verification (a previous
+    // correction cycle) is STALE even though node and change match. ----
     public bool ClaudeReviewManifestReady { get; init; }
     public string? ClaudeReviewManifestId { get; init; }
+    /// <summary>Positive proof that a stamped manifest for this node/change exists but
+    /// is NOT bound to the current DB-M06 verification — it belongs to an earlier
+    /// verification cycle and must be regenerated, never reused.</summary>
+    public bool ClaudeReviewManifestStale { get; init; }
+    /// <summary>Positive proof that the recorded Claude review (DB-M08) was bound to an
+    /// OLDER DB-M06 verification than the one now applied. A review recorded against the
+    /// previous cycle cannot satisfy DB-M07 for the corrected cycle. Positive proof only:
+    /// a legacy record with no binding field is never guessed stale.</summary>
+    public bool ClaudeReviewStale { get; init; }
     public M10CompletionEligibilityResult? M10Eligibility { get; init; }
     public RoadmapGuardVerdict? RoadmapGuard { get; init; }       // before/after protected fingerprint
     public M11ReviewRecommendation? M11Recommendation { get; init; }
