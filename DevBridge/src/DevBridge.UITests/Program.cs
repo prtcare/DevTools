@@ -401,7 +401,7 @@ internal static class Program
             "M10-05", $"roadmap fingerprint changed -> blocked ({fpState.M10Eligibility?.Token})");
 
         // =====================================================================
-        // J. M11 CALLABLE + ADVISORY + FIX POLICY + BASELINE + RETIREMENT
+        // J. M11 CALLABLE + ADVISORY + FIX POLICY + BASELINE (retirement lifecycle removed — Forge is permanent)
         // =====================================================================
         Check(OperatorCommandCatalog.Get("VALIDATE_WORKBOOK") is { Kind: OperatorCommandKind.Script }
               && OperatorCommandCatalog.Get("CREATE_CLAUDE_WORKBOOK_REVIEW_PACKAGE") is { Kind: OperatorCommandKind.Script },
@@ -438,12 +438,7 @@ internal static class Program
               && doneHuman.Instructions.Contains("never resets git", StringComparison.OrdinalIgnoreCase),
             "BASELINE-02", "real restart advisory present + never-auto wording");
 
-        string retireRoot = NewRoot("retired");
-        W(retireRoot, @"config/devbridge.json", "{\"retirement\":\"RETIRED\"}");
-        var vmRetired = new MainViewModel(DevBridgeConfig.Load(retireRoot));
-        Check(DevBridgeRetirement.FromString("RETIRED") == DevBridgeRetirementState.Retired
-              && vmRetired.RetirementText == "RETIRED",
-            "RETIRE-01", $"retirement state rendered ({vmRetired.RetirementText})");
+        // RETIRE-01 removed 2026-09-05 — retirement lifecycle deleted; Forge is permanent.
 
         var vmDone = new MainViewModel(DevBridgeConfig.Load(realDoneRoot));
         Check(doneState.PreDevBridgeBaseline.Present

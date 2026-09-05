@@ -374,7 +374,6 @@ public static class StateReader
             GitObserved = gitObserved,
             HumanGitState = gitGate,
             GitHumanGuidance = GitLifecycle.HumanGuidance(gitGate),
-            Retirement = cfg.Retirement,
             PreDevBridgeBaseline = preBaseline,
             HandoffValidation = handoff,
             ReviewPackageValidation = pkg,

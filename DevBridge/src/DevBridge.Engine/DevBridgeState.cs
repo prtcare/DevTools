@@ -75,7 +75,6 @@ public sealed class DevBridgeState
     public ObservedGitState? GitObserved { get; init; }
     public HumanGitGateState HumanGitState { get; init; } = HumanGitGateState.NotApplicable;
     public string? GitHumanGuidance { get; init; }
-    public DevBridgeRetirementState Retirement { get; init; } = DevBridgeRetirementState.ActiveTemporaryBridge;
     public PreDevBridgeBaselineState PreDevBridgeBaseline { get; init; } = PreDevBridgeBaselineState.Empty;
     public ChatGptHandoffValidationResult? HandoffValidation { get; init; }
     public bool HandoffReady => HandoffValidation?.IsReady ?? false;

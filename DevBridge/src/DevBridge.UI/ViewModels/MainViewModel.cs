@@ -293,8 +293,6 @@ public sealed class MainViewModel : ObservableObject
     private string _modeCaption = "";
     public string ModeCaption { get => _modeCaption; set => SetProperty(ref _modeCaption, value); }
 
-    private string _retirementText = "—";
-    public string RetirementText { get => _retirementText; set => SetProperty(ref _retirementText, value); }
 
     private string _humanGitStateText = "—";
     public string HumanGitStateText { get => _humanGitStateText; set => SetProperty(ref _humanGitStateText, value); }
@@ -559,13 +557,6 @@ public sealed class MainViewModel : ObservableObject
             ModeCaption = state.TrialMode
                 ? "TRIAL cycle — disposable evidence, stops at TRIAL_CYCLE_SAFE_STOP; never a real PR/merge."
                 : "REAL_NEXUS_DEVELOPMENT cycle — human-gated PR/merge required before governed completion.";
-            RetirementText = state.Retirement switch
-            {
-                DevBridgeRetirementState.ReadyForRealNexusSupport => "READY_FOR_REAL_NEXUS_SUPPORT",
-                DevBridgeRetirementState.RetirementEligible => "RETIREMENT_ELIGIBLE",
-                DevBridgeRetirementState.Retired => "RETIRED",
-                _ => "ACTIVE_TEMPORARY_BRIDGE",
-            };
             HumanGitStateText = GitLifecycle.ToToken(state.HumanGitState);
             HumanGitGuidanceText = GitLifecycle.HumanGuidance(state.HumanGitState);
             GitObservedText = state.GitObserved is { } g

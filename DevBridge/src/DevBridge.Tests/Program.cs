@@ -345,7 +345,7 @@ FakeScriptRunner Runner(params (string script, Func<string, ScriptRunOutcome> be
 // human merge + DB-M06 PASS + Claude PASS + preserved roadmap fingerprint unlock it.
 {
     string root = NewRoot("claudepass");
-    W(root, @"config/devbridge.json", "{\"mode\":\"REAL_NEXUS_DEVELOPMENT\",\"retirement\":\"ACTIVE_TEMPORARY_BRIDGE\"}");
+    W(root, @"config/devbridge.json", "{\"mode\":\"REAL_NEXUS_DEVELOPMENT\"}");
     W(root, @"state/current-task.json",
         "{\"nodeId\":\"WI-07-0.2.4\",\"name\":\"Test Task\",\"nodeType\":\"WorkItem\",\"phase\":\"P0\",\"layer\":\"App\","
       + "\"changeId\":\"CHG-20260830-027\",\"status\":\"READY_FOR_GOVERNED_COMPLETION\",\"nextAllowedAction\":\"RUN_GOVERNED_COMPLETION\","
@@ -375,7 +375,7 @@ FakeScriptRunner Runner(params (string script, Func<string, ScriptRunOutcome> be
 // ---- 11b. CLAUDE PASSED — TRIAL mode -> TRIAL_CYCLE_SAFE_STOP (no M10, no PR) --
 {
     string root = NewRoot("claudepasstrial");
-    W(root, @"config/devbridge.json", "{\"mode\":\"TRIAL\",\"retirement\":\"ACTIVE_TEMPORARY_BRIDGE\"}");
+    W(root, @"config/devbridge.json", "{\"mode\":\"TRIAL\"}");
     W(root, @"state/current-task.json",
         "{\"nodeId\":\"WI-07-0.2.4\",\"name\":\"Test Task\",\"nodeType\":\"WorkItem\",\"phase\":\"P0\",\"layer\":\"App\","
       + "\"changeId\":\"CHG-20260830-028b\",\"status\":\"CLAUDE_REVIEW_PASSED_TRIAL\",\"nextAllowedAction\":\"TRIAL_CYCLE_SAFE_STOP\","
@@ -942,7 +942,7 @@ Console.WriteLine("DB-GH01 governance properties covered: G1..G35");
 // ---- G3. Mode precedence: current-task overrides config ----------------------
 {
     string root = NewRoot("gh1-mode-precedence");
-    W(root, @"config/devbridge.json", "{\"mode\":\"REAL_NEXUS_DEVELOPMENT\",\"retirement\":\"ACTIVE_TEMPORARY_BRIDGE\"}");
+    W(root, @"config/devbridge.json", "{\"mode\":\"REAL_NEXUS_DEVELOPMENT\"}");
     W(root, @"state/current-task.json", "{\"nodeId\":\"WI-07-0.2.4\",\"name\":\"T\",\"nodeType\":\"WorkItem\",\"status\":\"RESERVED\",\"changeId\":\"CHG-20260831-001\",\"mode\":\"TRIAL\"}");
     var cfg = DevBridgeConfig.Load(root);
     var s = StateReader.Read(cfg);
@@ -952,7 +952,7 @@ Console.WriteLine("DB-GH01 governance properties covered: G1..G35");
 // ---- G4. Mode falls back to cycle trial evidence (dbM08/dbM06) ---------------
 {
     string root = NewRoot("gh1-mode-evidence");
-    W(root, @"config/devbridge.json", "{\"mode\":\"REAL_NEXUS_DEVELOPMENT\",\"retirement\":\"ACTIVE_TEMPORARY_BRIDGE\"}");
+    W(root, @"config/devbridge.json", "{\"mode\":\"REAL_NEXUS_DEVELOPMENT\"}");
     W(root, @"state/current-task.json", "{\"nodeId\":\"WI-07-0.2.4\",\"name\":\"T\",\"nodeType\":\"WorkItem\",\"status\":\"RESERVED\",\"changeId\":\"CHG-20260831-002\",\"dbM08\":{\"trialMode\":true}}");
     var cfg = DevBridgeConfig.Load(root);
     var s = StateReader.Read(cfg);
@@ -1223,14 +1223,8 @@ Console.WriteLine("DB-GH01 governance properties covered: G1..G35");
     Check(!e.Present && e.Workbook is null && e.Git is null, "GH1:G34 missing baseline -> empty", "not empty");
 }
 
-// ---- G35. Retirement lifecycle + fix-task rule + M11 advisory ---------------
+// ---- G35. Fix-task rule + M11 advisory (retirement lifecycle removed — Forge is permanent) ----
 {
-    bool ok = true; string bad = "";
-    foreach (DevBridgeRetirementState st in Enum.GetValues<DevBridgeRetirementState>())
-    {
-        if (DevBridgeRetirement.FromString(DevBridgeRetirement.ToToken(st)) != st) { ok = false; bad = st.ToString(); break; }
-    }
-    Check(ok && DevBridgeRetirement.FromString("??") == DevBridgeRetirementState.ActiveTemporaryBridge, "GH1:G35 retirement round-trip", ok ? "ok" : bad);
     Check(FixTaskPolicy.Classify(true) == FixAction.CorrectCurrentAttempt && FixTaskPolicy.Classify(false) == FixAction.NewFixTaskRequired,
         "GH1:G35 fix-task rule active vs completed", $"{FixTaskPolicy.Classify(true)}/{FixTaskPolicy.Classify(false)}");
     Check(FixTaskPolicy.Explain(FixAction.HumanGovernanceRequired).Contains("HUMAN_GOVERNANCE_REQUIRED", StringComparison.Ordinal),
@@ -1543,7 +1537,7 @@ Console.WriteLine("DB-M12.2 reusable lifecycle backend commands");
 // ---- T2. TRIAL safe-stop arms CLOSE TRIAL CYCLE; M10 stays not-applicable ----
 {
     string root = NewRoot("db124-safestop");
-    W(root, @"config/devbridge.json", "{\"mode\":\"TRIAL\",\"retirement\":\"ACTIVE_TEMPORARY_BRIDGE\"}");
+    W(root, @"config/devbridge.json", "{\"mode\":\"TRIAL\"}");
     W(root, @"state/current-task.json",
         "{\"nodeId\":\"WI-07-0.2.4\",\"name\":\"Trial task\",\"nodeType\":\"WorkItem\",\"phase\":\"P0\",\"layer\":\"App\","
       + "\"changeId\":\"CHG-T124-01\",\"status\":\"CLAUDE_REVIEW_PASSED_TRIAL\",\"nextAllowedAction\":\"TRIAL_CYCLE_SAFE_STOP\","
@@ -1565,7 +1559,7 @@ Console.WriteLine("DB-M12.2 reusable lifecycle backend commands");
 // ---- T3. TRIAL_CYCLE_CLOSED arms START NEXT CYCLE; completion stays blocked ----
 {
     string root = NewRoot("db124-closed");
-    W(root, @"config/devbridge.json", "{\"mode\":\"TRIAL\",\"retirement\":\"ACTIVE_TEMPORARY_BRIDGE\"}");
+    W(root, @"config/devbridge.json", "{\"mode\":\"TRIAL\"}");
     W(root, @"state/current-task.json",
         "{\"nodeId\":\"WI-07-0.2.4\",\"name\":\"Trial task\",\"nodeType\":\"WorkItem\",\"phase\":\"P0\",\"layer\":\"App\","
       + "\"changeId\":\"CHG-T124-01\",\"status\":\"TRIAL_CYCLE_CLOSED\",\"nextAllowedAction\":\"START_NEXT_CYCLE\","
@@ -1589,7 +1583,7 @@ Console.WriteLine("DB-M12.2 reusable lifecycle backend commands");
 // ---- T4. REAL mode: CLOSE_TRIAL_CYCLE prohibited (gate blocks before any script) ----
 {
     string root = NewRoot("db124-real");
-    W(root, @"config/devbridge.json", "{\"mode\":\"REAL_NEXUS_DEVELOPMENT\",\"retirement\":\"ACTIVE_TEMPORARY_BRIDGE\"}");
+    W(root, @"config/devbridge.json", "{\"mode\":\"REAL_NEXUS_DEVELOPMENT\"}");
     W(root, @"state/current-task.json",
         "{\"nodeId\":\"WI-07-0.2.4\",\"name\":\"Real task\",\"nodeType\":\"WorkItem\",\"phase\":\"P0\",\"layer\":\"App\","
       + "\"changeId\":\"CHG-R124-01\",\"status\":\"READY_FOR_GOVERNED_COMPLETION\",\"nextAllowedAction\":\"RUN_GOVERNED_COMPLETION\","
@@ -1607,7 +1601,7 @@ Console.WriteLine("DB-M12.2 reusable lifecycle backend commands");
 // ---- T5. stale expected state for CLOSE_TRIAL_CYCLE rejected before run ----
 {
     string root = NewRoot("db124-stale");
-    W(root, @"config/devbridge.json", "{\"mode\":\"TRIAL\",\"retirement\":\"ACTIVE_TEMPORARY_BRIDGE\"}");
+    W(root, @"config/devbridge.json", "{\"mode\":\"TRIAL\"}");
     WriteState(root, "CLAUDE_REVIEW_PASSED_TRIAL", "TRIAL_CYCLE_SAFE_STOP", "CHG-T124-02");
     var cfg = DevBridgeConfig.Load(root);
     var fake = Runner(("Close-TrialCycle.ps1", _ => Ok("DB24_OUTCOME: TRIAL_CYCLE_CLOSED\nDB24_RESULT_PASS: True")));
@@ -1621,7 +1615,7 @@ Console.WriteLine("DB-M12.2 reusable lifecycle backend commands");
 // ---- T6. writer serialization: CLOSE_TRIAL_CYCLE is a workbook writer ----
 {
     string root = NewRoot("db124-busy");
-    W(root, @"config/devbridge.json", "{\"mode\":\"TRIAL\",\"retirement\":\"ACTIVE_TEMPORARY_BRIDGE\"}");
+    W(root, @"config/devbridge.json", "{\"mode\":\"TRIAL\"}");
     WriteState(root, "CLAUDE_REVIEW_PASSED_TRIAL", "TRIAL_CYCLE_SAFE_STOP", "CHG-T124-03");
     var cfg = DevBridgeConfig.Load(root);
     var gate = WorkbookWriterGate.TryAcquire(cfg, "operator");
@@ -1640,7 +1634,7 @@ Console.WriteLine("DB-M12.2 reusable lifecycle backend commands");
 // ---- T7. state-first: fake closure that updates state to TRIAL_CYCLE_CLOSED succeeds ----
 {
     string root = NewRoot("db124-success");
-    W(root, @"config/devbridge.json", "{\"mode\":\"TRIAL\",\"retirement\":\"ACTIVE_TEMPORARY_BRIDGE\"}");
+    W(root, @"config/devbridge.json", "{\"mode\":\"TRIAL\"}");
     WriteState(root, "CLAUDE_REVIEW_PASSED_TRIAL", "TRIAL_CYCLE_SAFE_STOP", "CHG-T124-04");
     var cfg = DevBridgeConfig.Load(root);
     var fake = Runner(("Close-TrialCycle.ps1", _ => { WriteState(root, "TRIAL_CYCLE_CLOSED", "START_NEXT_CYCLE", "CHG-T124-04"); return Ok("DB24_OUTCOME: TRIAL_CYCLE_CLOSED\nDB24_RESULT_PASS: True"); }));
