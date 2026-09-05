@@ -33,9 +33,9 @@ internal static class Program
     // Valid 14-marker zero-context handoff — satisfies every ChatGptHandoffCheck
     // rule marker (matched case-insensitively).
     private const string ValidHandoff =
-        "CHATGPT HANDOFF — DevBridge temporary external scaffolding.\n" +
-        "Mode: TRIAL (disposable proving activity, not permanent Nexus development).\n" +
-        "This is temporary scaffolding for Nexus Phase 1/2 only; DevBridge will be retired.\n" +
+        "CHATGPT HANDOFF — Nexus Forge governance header.\n" +
+        "Mode: TRIAL (disposable proving activity, distinct from real Nexus development).\n" +
+        "Boundary: Nexus Forge is PERMANENT development-plane infrastructure and is not retired; its final purpose is stable, ongoing platform tooling.\n" +
         "Architecture: NOT Nexus — no Nexus architecture/contracts changes via DevBridge.\n" +
         "Roadmap protection: the roadmap is immutable; no structural edits are permitted.\n" +
         "Workbook authority: NEXUS_DEVELOPMENT_CONTROL.xlsx is the authoritative control record.\n" +

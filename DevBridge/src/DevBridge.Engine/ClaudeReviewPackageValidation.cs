@@ -10,7 +10,7 @@ namespace DevBridge.Engine;
 
 public enum ClaudeReviewPackageHeaderItem
 {
-    TemporaryBoundary,       // DevBridge is temporary external scaffolding
+    PermanentMandateBoundary, // Nexus Forge is permanent development-plane infrastructure, not temporary scaffolding
     TrialOrRealMode,         // explicit trial vs real
     ArchitectureIndependence,// review may not redesign Nexus architecture
     RoadmapImmutability,     // no roadmap redesign / structural edits
@@ -32,7 +32,7 @@ public static class ClaudeReviewPackageValidation
 
     private static readonly (ClaudeReviewPackageHeaderItem item, string[] markers)[] Rules =
     {
-        (ClaudeReviewPackageHeaderItem.TemporaryBoundary, new[] { "TEMPORARY", "external scaffolding", "retire" }),
+        (ClaudeReviewPackageHeaderItem.PermanentMandateBoundary, new[] { "PERMANENT", "development-plane infrastructure", "not retired" }),
         (ClaudeReviewPackageHeaderItem.TrialOrRealMode, new[] { "TRIAL", "REAL_NEXUS_DEVELOPMENT" }),
         (ClaudeReviewPackageHeaderItem.ArchitectureIndependence, new[] { "architecture", "NOT authorized to redesign" }),
         (ClaudeReviewPackageHeaderItem.RoadmapImmutability, new[] { "roadmap", "redesign", "immutable" }),

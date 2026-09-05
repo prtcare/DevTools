@@ -30,9 +30,19 @@ public sealed class ControlHealth
 
 public static class ControlHealthService
 {
-    public static ControlHealth Evaluate(DevBridgeConfig cfg)
+    /// <summary>Legacy entry point — evaluates the Foundation role via a fresh
+    /// ExcelDevelopmentControlProvider. Existing callers are unaffected; prefer the
+    /// role-aware overload below for new code (added 2026-09-05, Wave B continuation).</summary>
+    public static ControlHealth Evaluate(DevBridgeConfig cfg) =>
+        Evaluate(cfg, new ExcelDevelopmentControlProvider(cfg), DevelopmentControlRole.Foundation);
+
+    /// <summary>Role-aware evaluation via the provider boundary — does not assume Excel,
+    /// a physical filename, or a specific sheet count beyond what the provider reports
+    /// for that role.</summary>
+    public static ControlHealth Evaluate(DevBridgeConfig cfg, IDevelopmentControlProvider provider, DevelopmentControlRole role)
     {
-        var live = WorkbookLiveness.Probe(cfg.WorkbookPath);
+        var live = provider.ProbeLiveness(role);
+        int expectedSheets = provider.ExpectedSheetCount(role);
 
         // ---- backend consistency evidence ----
         string? consResult = null, consAt = null, mirrorGap = null;
@@ -75,17 +85,17 @@ public static class ControlHealthService
             openChanges ??= FindCount(sr, "sheet", "Active Changes", "issues");
         }
 
-        string workbookState = live.FileExists && live.Opens && live.SheetCount == WorkbookLiveness.ExpectedSheets ? "AVAILABLE" : "ERROR";
+        string workbookState = live.FileExists && live.Opens && (expectedSheets == 0 || live.SheetCount == expectedSheets) ? "AVAILABLE" : "ERROR";
         string evidenceNote = consAt is not null
             ? $"Counts and classifications are backend evidence, last validated against the workbook at {consAt} UTC."
             : "No workbook-consistency evidence found; counts unavailable.";
 
         return new ControlHealth
         {
-            WorkbookPath = cfg.WorkbookPath,
+            WorkbookPath = provider.GetWorkbookPath(role),
             WorkbookState = workbookState,
             SheetCount = live.SheetCount,
-            ExpectedSheets = WorkbookLiveness.ExpectedSheets,
+            ExpectedSheets = expectedSheets,
             WorkbookSha256 = live.Sha256,
             WorkbookError = live.Error,
             LastConsistencyResult = consResult,

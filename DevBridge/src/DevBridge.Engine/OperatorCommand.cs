@@ -399,7 +399,7 @@ public static class OperatorCommandCatalog
                 DisplayName = "Restore Real Nexus Baseline (Human)",
                 Kind = OperatorCommandKind.GuidedManual,
                 RequiredStates = new[] { "READY_FOR_GOVERNED_COMPLETION" },
-                Description = "DB-GH01 retirement/baseline: a HUMAN restores the real Nexus baseline.",
+                Description = "DB-GH01 restart/baseline: a HUMAN restores the real Nexus baseline.",
                 GuidedReason = "No automatic destructive restore is ever performed by DevBridge (no auto " +
                                "git reset --hard, no overwrite of the authoritative workbook, no deletion of " +
                                "trial source). Restoration is a human-gated action with no automatic entry point.",

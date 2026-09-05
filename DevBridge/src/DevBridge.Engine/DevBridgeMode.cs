@@ -1,7 +1,8 @@
 // DevBridgeMode.cs — explicit TRIAL vs REAL_NEXUS_DEVELOPMENT distinction
-// (DB-GH01). DevBridge is temporary external scaffolding; a trial cycle is
-// disposable evidence and never produces a real PR/merge. The mode is an
-// explicit field, never inferred from the file path.
+// (DB-GH01). Nexus Forge is permanent development-plane infrastructure, not
+// temporary scaffolding; a trial cycle is disposable evidence and never
+// produces a real PR/merge. The mode is an explicit field, never inferred
+// from the file path.
 //
 // Source of truth precedence (lowest -> highest):
 //   1. config/devbridge.json  "mode"        (default TRIAL — safe default)
