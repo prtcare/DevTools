@@ -29,8 +29,15 @@ namespace DevBridge.Engine;
 public static class OperatorCommandService
 {
     /// <summary>Execute one operator command against the live DevBridge state.</summary>
-    public static OperatorCommandResult Execute(DevBridgeConfig cfg, OperatorCommand cmd, IScriptProcessRunner runner, LifecycleCommandInput? input = null)
+    public static OperatorCommandResult Execute(DevBridgeConfig cfg, OperatorCommand cmd, IScriptProcessRunner runner, LifecycleCommandInput? input = null, IDevelopmentControlProvider? provider = null)
     {
+        // B03-1: runtime writer-lock access now goes through IDevelopmentControlProvider
+        // with an explicit role, never inferred. Today Forge orchestration only writes
+        // the Foundation workbook, so Foundation is the explicit role passed below — not
+        // a default silently baked into the provider. A caller that already resolved a
+        // provider (e.g. from a role-aware host) may pass it in; otherwise this wraps the
+        // same cfg the legacy call sites already pass, so behavior is unchanged.
+        var ctrlProvider = provider ?? new ExcelDevelopmentControlProvider(cfg);
         var started = DateTime.UtcNow;
         var prev = StateReader.Read(cfg);
         string prevStatus = Normalize(prev.Status);
@@ -89,7 +96,7 @@ public static class OperatorCommandService
         bool lockHeld = false;
         if (cmd.WritesWorkbook)
         {
-            var gate = WorkbookWriterGate.TryAcquire(cfg, input?.Actor ?? "operator");
+            var gate = ctrlProvider.TryAcquireWriterLock(DevelopmentControlRole.Foundation, input?.Actor ?? "operator");
             if (!gate.Acquired)
             {
                 return Build(cmd, prevStatus, prevStatus, prev.NextAllowedAction,
@@ -188,7 +195,7 @@ public static class OperatorCommandService
         }
         finally
         {
-            if (lockHeld) WorkbookWriterGate.Release(cfg);
+            if (lockHeld) ctrlProvider.ReleaseWriterLock(DevelopmentControlRole.Foundation);
         }
     }
 
@@ -301,8 +308,11 @@ public enum CommandAvailability
 
 public static class CommandAvailabilityEvaluator
 {
-    public static CommandAvailability Evaluate(DevBridgeConfig cfg, OperatorCommand cmd)
+    public static CommandAvailability Evaluate(DevBridgeConfig cfg, OperatorCommand cmd, IDevelopmentControlProvider? provider = null)
     {
+        // B03-1: same provider-boundary migration as OperatorCommandService.Execute above —
+        // explicit Foundation role, no silent inference, legacy behavior preserved.
+        var ctrlProvider = provider ?? new ExcelDevelopmentControlProvider(cfg);
         var s = StateReader.Read(cfg);
         string status = string.IsNullOrWhiteSpace(s.Status) ? "NO_TASK" : s.Status;
 
@@ -312,7 +322,7 @@ public static class CommandAvailabilityEvaluator
         if (cmd.RequiredStates.Length > 0 && !cmd.RequiredStates.Contains(status, StringComparer.Ordinal))
             return CommandAvailability.Blocked;
 
-        if (cmd.WritesWorkbook && WorkbookWriterGate.IsBusy(cfg))
+        if (cmd.WritesWorkbook && ctrlProvider.IsWriterBusy(DevelopmentControlRole.Foundation))
             return CommandAvailability.Busy;
 
         if (cmd.CommandId == "RUN_GOVERNED_COMPLETION" && s.TrialMode && s.TrialCycleSafeStop)

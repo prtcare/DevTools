@@ -1275,6 +1275,38 @@ Console.WriteLine("DB-GH01 governance properties covered: G1..G35");
         "G36-07", "legacy Evaluate(cfg) and role-aware Evaluate(cfg, provider, Foundation) agree — additive, not a behavior change");
 }
 
+// ---- G37. B03-1: OperatorCommandService / CommandAvailabilityEvaluator route through
+// IDevelopmentControlProvider with an explicit role — never inferred, legacy behavior
+// unchanged when no provider is supplied (2026-09-05). ----
+{
+    string g37Root = NewRoot("g37-provider-writer-lock");
+    WriteState(g37Root, "PREFLIGHTED", "RESERVE", "CHG-20260905-001");
+    var g37Cfg = DevBridgeConfig.Load(g37Root);
+    var recording = new RecordingDevelopmentControlProvider();
+    var writeCmd = OperatorCommandCatalog.Get("RESERVE_TASK")!;
+    var fake = new FakeScriptRunner();
+
+    OperatorCommandService.Execute(g37Cfg, writeCmd, fake, provider: recording);
+    Check(recording.AcquireCalls.Count == 1 && recording.AcquireCalls[0] == DevelopmentControlRole.Foundation,
+        "G37-01", $"TryAcquireWriterLock called exactly once with an explicit Foundation role ({string.Join(",", recording.AcquireCalls)})");
+    Check(recording.ReleaseCalls.Count == 1 && recording.ReleaseCalls[0] == DevelopmentControlRole.Foundation,
+        "G37-02", $"ReleaseWriterLock called exactly once with an explicit Foundation role ({string.Join(",", recording.ReleaseCalls)})");
+
+    var recording2 = new RecordingDevelopmentControlProvider { Busy = true };
+    var avail = CommandAvailabilityEvaluator.Evaluate(g37Cfg, writeCmd, recording2);
+    Check(avail == CommandAvailability.Busy && recording2.IsBusyCalls.Count == 1 && recording2.IsBusyCalls[0] == DevelopmentControlRole.Foundation,
+        "G37-03", $"IsWriterBusy(Foundation) drives Busy availability via the provider, explicit role ({avail}, {string.Join(",", recording2.IsBusyCalls)})");
+
+    // Omitting the provider parameter (every pre-existing call site in this suite and in
+    // MainViewModel) must still resolve to the real ExcelDevelopmentControlProvider wrapping
+    // the same cfg/WorkbookWriterGate — i.e. legacy behavior is unchanged, not silently
+    // switched to a different lock or role. Proven by the pre-existing DB-M12.2:N13
+    // WORKBOOK_WRITER_BUSY tests below still passing unmodified against the same gate.
+    var defaultAvail = CommandAvailabilityEvaluator.Evaluate(g37Cfg, writeCmd);
+    Check(defaultAvail == CommandAvailability.Available,
+        "G37-04", $"default (no injected provider) path still resolves via ExcelDevelopmentControlProvider -> real gate, unaffected by the recording fixtures above ({defaultAvail})");
+}
+
 // ==================================================================== DB-M12.2
 // REUSABLE LIFECYCLE BACKEND COMMANDS — one-command contract, availability
 // vocabulary, stale-state + writer-serialization guards, extended marker parsing,
@@ -2021,6 +2053,40 @@ Console.WriteLine($"PASSED : {pass}");
 Console.WriteLine($"FAILED : {fail}");
 Console.WriteLine(pass > 0 && fail == 0 ? "RESULT : ALL PASS" : "RESULT : FAILURES PRESENT");
 Environment.ExitCode = fail == 0 ? 0 : 1;
+
+// B03-1: minimal recording fake for IDevelopmentControlProvider, used only to prove
+// OperatorCommandService/CommandAvailabilityEvaluator call the provider with an explicit
+// role rather than inferring one. Every method not exercised by G37 throws, so an
+// accidental new call path is caught rather than silently no-op'd.
+sealed class RecordingDevelopmentControlProvider : IDevelopmentControlProvider
+{
+    public bool Busy { get; init; }
+    public List<DevelopmentControlRole> AcquireCalls { get; } = new();
+    public List<DevelopmentControlRole> ReleaseCalls { get; } = new();
+    public List<DevelopmentControlRole> IsBusyCalls { get; } = new();
+
+    public DevelopmentControlMode Mode => DevelopmentControlMode.V1SingleWorkbookCompatibility;
+    public bool IsRoleAvailable(DevelopmentControlRole role) => throw new NotSupportedException("not exercised by G37");
+    public string GetWorkbookPath(DevelopmentControlRole role) => throw new NotSupportedException("not exercised by G37");
+    public string GetDisplayName(DevelopmentControlRole role) => throw new NotSupportedException("not exercised by G37");
+    public WorkbookLivenessResult ProbeLiveness(DevelopmentControlRole role) => throw new NotSupportedException("not exercised by G37");
+    public int ExpectedSheetCount(DevelopmentControlRole role) => throw new NotSupportedException("not exercised by G37");
+    public DevelopmentControlLookupResult TryResolveId(string immutableId) => throw new NotSupportedException("not exercised by G37");
+
+    public (bool Acquired, string? Message) TryAcquireWriterLock(DevelopmentControlRole role, string? owner)
+    {
+        AcquireCalls.Add(role);
+        return (true, null);
+    }
+
+    public void ReleaseWriterLock(DevelopmentControlRole role) => ReleaseCalls.Add(role);
+
+    public bool IsWriterBusy(DevelopmentControlRole role)
+    {
+        IsBusyCalls.Add(role);
+        return Busy;
+    }
+}
 
 // Faked backend script runner for DB-M12.1 tests. Behaviors are keyed by script
 // basename; each scenario decides whether the "backend" writes state files, times

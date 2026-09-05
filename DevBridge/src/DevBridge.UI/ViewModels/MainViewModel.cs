@@ -20,6 +20,7 @@ namespace DevBridge.UI.ViewModels;
 public sealed class MainViewModel : ObservableObject
 {
     private readonly DevBridgeConfig _cfg;
+    private readonly IDevelopmentControlProvider _provider;
     private readonly Dispatcher _dispatcher;
     private readonly CommandConcurrencyGuard _commandGuard = new();
 
@@ -30,6 +31,11 @@ public sealed class MainViewModel : ObservableObject
     public MainViewModel(DevBridgeConfig cfg)
     {
         _cfg = cfg;
+        // B03-1/B03-2: the view model reads Foundation-role display/writer-busy state
+        // through the provider boundary rather than cfg/gate directly; constructed once
+        // per view model instance (Excel provider is a thin cfg wrapper, so this is not
+        // an observable behavior change from constructing it inline each call).
+        _provider = new ExcelDevelopmentControlProvider(cfg);
         _dispatcher = Application.Current?.Dispatcher ?? Dispatcher.CurrentDispatcher;
         RefreshCommand = new RelayCommand(_ => Refresh());
         ActionCommand = new RelayCommand(key => RunAction(key as string ?? ""));
@@ -604,7 +610,7 @@ public sealed class MainViewModel : ObservableObject
             // DB-M12.3 workbook health panel — read-only. The resolved historical
             // DB-M23 hash note is NEVER surfaced as an active corruption warning.
             WorkbookAuthorityText = WorkbookAuthorityStatus(_cfg);
-            WriterBusyText = WorkbookWriterGate.IsBusy(_cfg)
+            WriterBusyText = _provider.IsWriterBusy(DevelopmentControlRole.Foundation)
                 ? "BUSY — another writer holds the workbook lock"
                 : "IDLE";
             LastGovernedWriteText = state.CompletionWritten && state.CompletionWrittenAtUtc is not null
@@ -734,7 +740,7 @@ public sealed class MainViewModel : ObservableObject
         {
             var st = StateReader.Read(_cfg);
             var confirm = MessageBox.Show(
-                $"This operation will update the authoritative\n{_cfg.WorkbookDisplayName} workbook.\n\n" +
+                $"This operation will update the authoritative\n{_provider.GetDisplayName(DevelopmentControlRole.Foundation)} workbook.\n\n" +
                 $"Task: {st.TaskName ?? st.NodeId ?? "—"}\nNode: {st.NodeId ?? "—"}\nChange: {st.ChangeId ?? "—"}\n\nContinue?",
                 $"CONFIRM — {cmd.DisplayName}", MessageBoxButton.YesNo, MessageBoxImage.Warning);
             if (confirm != MessageBoxResult.Yes)
