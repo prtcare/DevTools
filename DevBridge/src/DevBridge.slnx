@@ -5,4 +5,6 @@
   <Project Path="DevBridge.UITests/DevBridge.UITests.csproj" />
   <Project Path="DevBridge.Workspace/DevBridge.Workspace.csproj" />
   <Project Path="DevBridge.Workspace.Tests/DevBridge.Workspace.Tests.csproj" />
+  <Project Path="DevBridge.Workspace.Locking/DevBridge.Workspace.Locking.csproj" />
+  <Project Path="DevBridge.Workspace.Locking.Tests/DevBridge.Workspace.Locking.Tests.csproj" />
 </Solution>

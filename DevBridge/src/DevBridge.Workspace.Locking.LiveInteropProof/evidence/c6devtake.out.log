@@ -1,0 +1,2 @@
+DEVRESERVE node=M-07-LIVE timeout=2s outcome=LOCK_TIMEOUT
+DEVRESERVE workbookUnchangedOnFailure=TRUE
