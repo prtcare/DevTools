@@ -3,4 +3,6 @@
   <Project Path="DevBridge.Tests/DevBridge.Tests.csproj" />
   <Project Path="DevBridge.UI/DevBridge.UI.csproj" />
   <Project Path="DevBridge.UITests/DevBridge.UITests.csproj" />
+  <Project Path="DevBridge.Workspace/DevBridge.Workspace.csproj" />
+  <Project Path="DevBridge.Workspace.Tests/DevBridge.Workspace.Tests.csproj" />
 </Solution>

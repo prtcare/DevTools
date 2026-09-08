@@ -15,10 +15,10 @@ namespace DevBridge.Engine;
 
 public enum ChatGptHandoffCheck
 {
-    TemporaryBoundaryPresent,     // DevBridge is temporary external scaffolding
+    PermanentMandateBoundaryPresent, // Forge is permanent development-plane infrastructure, not temporary scaffolding
     ModePresent,                  // explicit TRIAL vs REAL_NEXUS_DEVELOPMENT
     ArchitectureRulesPresent,     // no Nexus architecture/contracts change via DevBridge
-    DesignPhilosophyPresent,      // final purpose + retirement boundary
+    DesignPhilosophyPresent,      // final purpose + permanent development-plane role (no retirement lifecycle)
     RoadmapProtectionPresent,     // absolute roadmap immutability
     WorkbookAuthorityPresent,     // NEXUS_DEVELOPMENT_CONTROL.xlsx is the authoritative control record
     GitHumanGatePresent,          // git is a formal human-gated lifecycle
@@ -50,10 +50,10 @@ public static class ChatGptHandoffValidation
     // the same gate the script enforces.
     private static readonly (ChatGptHandoffCheck check, string[] markers)[] Rules =
     {
-        (ChatGptHandoffCheck.TemporaryBoundaryPresent, new[] { "TEMPORARY", "external scaffolding", "retire" }),
+        (ChatGptHandoffCheck.PermanentMandateBoundaryPresent, new[] { "PERMANENT", "development-plane infrastructure", "not retired" }),
         (ChatGptHandoffCheck.ModePresent, new[] { "TRIAL", "REAL_NEXUS_DEVELOPMENT" }),
         (ChatGptHandoffCheck.ArchitectureRulesPresent, new[] { "architecture", "NOT Nexus", "no architecture" }),
-        (ChatGptHandoffCheck.DesignPhilosophyPresent, new[] { "scaffolding", "Nexus Phase 1/2", "retire" }),
+        (ChatGptHandoffCheck.DesignPhilosophyPresent, new[] { "final purpose", "permanent", "Nexus Forge" }),
         (ChatGptHandoffCheck.RoadmapProtectionPresent, new[] { "roadmap", "immutable", "no structural" }),
         (ChatGptHandoffCheck.WorkbookAuthorityPresent, new[] { "NEXUS_DEVELOPMENT_CONTROL.xlsx", "authoritative" }),
         (ChatGptHandoffCheck.GitHumanGatePresent, new[] { "human", "PR", "merge", "gate" }),
