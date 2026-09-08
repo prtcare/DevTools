@@ -262,6 +262,18 @@ function Get-AiRoutingRecommendation {
     if ($null -eq $requestTs) { $requestTs = [datetime]::UtcNow }
     $requestTs = ConvertTo-AiUtc $requestTs
 
+    # --- Work Universe (role-scope) carried on the DB-M18 inputs, echoed additively --
+    # Lane G: the routing evidence echoes the Work Universe the caller attached to the
+    # Classification/ContextPackage. Foundation is the Forge default; Products is a
+    # recognized cross-scope role. This is an additive echo -- the router never
+    # re-derives or guesses a scope from a bare id (SP1-M14: bare ids are never an
+    # address; identical ids may exist in both roles).
+    $workUniverse = Get-ContractProperty $classification 'WorkUniverse' $null
+    if (-not $workUniverse) { $workUniverse = Get-ContractProperty $contextPackage 'WorkUniverse' $null }
+    if (-not $workUniverse) { $workUniverse = 'Foundation' }
+    $evidenceNodeAddress = Get-ContractProperty $classification 'NodeAddress' $null
+    if (-not $evidenceNodeAddress) { $evidenceNodeAddress = Get-ContractProperty $contextPackage 'NodeAddress' $null }
+
     $noWinner = [pscustomobject]@{ ProviderId = $null; ModelId = $null; ReasoningLevel = $null }
 
     # --- AUTO prohibited --------------------------------------------------------
@@ -275,6 +287,7 @@ function Get-AiRoutingRecommendation {
             Policy = $policy.PolicyId; RecommendationReason = 'AUTO execution mode is prohibited by DB-M19'
             DecisionTimestampUtc = $requestTs.ToString('o'); Mode = $execMode
             TargetCurrency = $targetCurrency; ProcessingTier = $processingTier; TimeBand = $timeBand
+            WorkUniverse = $workUniverse; NodeAddress = $evidenceNodeAddress
             Notes = 'DB-M19 refuses to auto-execute; no model is selected or invoked.'
         }
         return @{
@@ -545,6 +558,7 @@ function Get-AiRoutingRecommendation {
         TargetCurrency = $targetCurrency
         ProcessingTier = $processingTier
         TimeBand = $timeBand
+        WorkUniverse = $workUniverse; NodeAddress = $evidenceNodeAddress
         Notes = 'DB-M19 recommendation-only router: nothing was executed, invoked, or auto-advanced.'
     }
 
@@ -601,9 +615,13 @@ function New-DbM19RecommendationResult {
         -RoutingReason $reason -PolicyVersion '1.0.0' -ManualOverride $false `
         -DecisionTimestamp ($RequestTs.ToString('o'))
     $contextPackageId = $null; $contextPackageHash = $null
+    $wu = 'Foundation'; $wuNodeAddress = $null
     if ($null -ne $ContextPackage) {
         $contextPackageId = Get-ContractProperty $ContextPackage 'PackageId' $null
         $contextPackageHash = Get-ContractProperty $ContextPackage 'PackageHash' $null
+        $wu = Get-ContractProperty $ContextPackage 'WorkUniverse' $null
+        if (-not $wu) { $wu = 'Foundation' }
+        $wuNodeAddress = Get-ContractProperty $ContextPackage 'NodeAddress' $null
     } elseif ($null -ne $ContextBudget) {
         $contextPackageId = Get-ContractProperty $ContextBudget 'BudgetId' $null
     }
@@ -620,6 +638,7 @@ function New-DbM19RecommendationResult {
         TargetCurrency = $TargetCurrency
         ProcessingTier = $ProcessingTier
         TimeBand = $TimeBand
+        WorkUniverse = $wu; NodeAddress = $wuNodeAddress
         Notes = 'DB-M19 recommendation-only router: nothing was executed, invoked, or auto-advanced.'
     }
     return @{

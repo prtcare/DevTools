@@ -345,6 +345,45 @@ function Get-DbM181IsPreservedReference {
     return ($DependencyId -match '^REL-')
 }
 
+function Get-DbM181IsRoleScopedReference {
+    <#
+    .SYNOPSIS
+    True when a dependency/reference string is an explicit role-scoped DevelopmentControl
+    address ("Foundation:Id" or "Products:Id"). Such references are scope-bearing and are
+    preserved (never flagged invalid) so a later cross-scope handback is resolvable. Bare
+    governed ids are NOT role-scoped (no prefix inference).
+    #>
+    param([AllowNull()][string]$Reference)
+    if (-not $Reference) { return $false }
+    return (Test-DbM18NodeAddress -Address $Reference)
+}
+
+function Get-DbM181RoleOfReference {
+    <#
+    .SYNOPSIS
+    The explicit role token of a reference (Foundation | Products), or '' when the
+    reference is not role-scoped (bare governed ids carry no inferable role).
+    #>
+    param([AllowNull()][string]$Reference)
+    $role = Get-DbM18RoleOfNodeReference $Reference
+    if ($null -eq $role) { return '' }
+    return [string]$role
+}
+
+function Test-DbM181IsCrossScopeReference {
+    <#
+    .SYNOPSIS
+    True when the reference is role-scoped to a role OTHER than the current Work
+    Universe (the scope the caller belongs to; Foundation by default for Forge). A
+    Products-scoped reference seen from the Foundation universe is cross-scope.
+    #>
+    param([AllowNull()][string]$Reference, [AllowNull()][string]$WorkUniverse)
+    $role = Get-DbM181RoleOfReference $Reference
+    if (-not $role) { return $false }
+    $wu = Get-DbM18WorkUniverse $WorkUniverse
+    return ($role -ne $wu)
+}
+
 function Get-DbM181GuardedText {
     <#
     .SYNOPSIS
@@ -461,8 +500,8 @@ function Resolve-DependencyGraph {
         [void]$direct.Add([pscustomobject]@{
             DependencyId = $id; Type = [string]$type; State = [string]$dstate; Status = [string]$dstatus; Detail = [string]$detail
         })
-        if (-not (Get-DbM181IsNodeDependency $id) -and -not (Get-DbM181IsPreservedReference $id)) {
-            [void]$state.Invalid.Add([pscustomobject]@{ Reference = $id; Reason = 'Reference does not match the governed node pattern and is not a preserved D&B reference' })
+        if (-not (Get-DbM181IsNodeDependency $id) -and -not (Get-DbM181IsPreservedReference $id) -and -not (Get-DbM181IsRoleScopedReference $id)) {
+            [void]$state.Invalid.Add([pscustomobject]@{ Reference = $id; Reason = 'Reference does not match the governed node pattern and is not a preserved D&B or role-scoped reference' })
             continue
         }
         if (-not (Get-DbM181IsNodeDependency $id)) { continue }
@@ -1376,10 +1415,31 @@ function Build-DependencyDevelopmentContext {
 
     $taskId = [string](Get-ContractProperty $Task 'taskId' '')
     $nodeId = Get-DbM18First @((Get-ContractProperty $Task 'nodeId' $null), $taskId, '')
+
+    # --- Work Universe (role-scope) on the dependency context, additive (Lane G) --
+    # The Forge emits Foundation-scope dependency context by default; role-scoped
+    # dependencies from another role (Products) are surfaced as cross-scope references
+    # so a later cross-scope handback is resolvable. Output-only: PackageHash hashes
+    # ContextMetrics, so these additive fields do not change the fingerprint.
+    $workUniverse = Get-DbM18WorkUniverse (Get-ContractProperty $Task 'WorkUniverse' $null)
+    $nodeAddress = ConvertTo-DbM18NodeAddress -Role $workUniverse -Id $nodeId
+    $crossScope = New-Object System.Collections.ArrayList
+    foreach ($d in @($Graph.DirectDependencies)) {
+        $ref = [string](Get-ContractProperty $d 'DependencyId' '')
+        if (Test-DbM181IsCrossScopeReference -Reference $ref -WorkUniverse $workUniverse) {
+            $addr = ConvertFrom-DbM18NodeAddress -Address $ref
+            if ($null -ne $addr -and -not $crossScope.Contains($addr.Role + ':' + $addr.NodeId)) { [void]$crossScope.Add($addr.Role + ':' + $addr.NodeId) }
+        }
+    }
+
     return [pscustomobject]@{
         SchemaVersion          = 1
         ContextId              = 'DDC-' + $taskId
-        CurrentTask            = [pscustomobject]@{ TaskId = $taskId; NodeId = [string]$nodeId; ChangeId = [string](Get-ContractProperty $Task 'changeId' ''); Name = [string](Get-ContractProperty $Task 'name' '') }
+        CurrentTask            = [pscustomobject]@{ TaskId = $taskId; NodeId = [string]$nodeId; ChangeId = [string](Get-ContractProperty $Task 'changeId' ''); Name = [string](Get-ContractProperty $Task 'name' ''); WorkUniverse = $workUniverse; DevelopmentControlRole = $workUniverse; NodeAddress = $nodeAddress }
+        WorkUniverse           = $workUniverse
+        DevelopmentControlRole = $workUniverse
+        NodeAddress            = $nodeAddress
+        CrossScopeReferences   = @($crossScope.ToArray())
         DirectDependencies     = @($Graph.DirectDependencies)
         RelevantTransitiveDependencies = @($Graph.TransitiveDependencies)
         DeliveredSummary       = @($delivered.ToArray())

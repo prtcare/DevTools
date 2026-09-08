@@ -586,6 +586,63 @@ if (Test-Path -LiteralPath $regPath) {
 }
 
 # -----------------------------------------------------------------------------
+# S31  Work Universe (role-scope) context (Lane G)
+# -----------------------------------------------------------------------------
+# Proves the additive Work Universe semantics: V1 bare governed node ids default
+# to Foundation (the Forge's role, single-workbook compat); an explicit Products
+# role is honored; role-scoped references are recognized as addresses, bare ids
+# never are (SP1-M14); and the additive output keys do NOT change PackageHash
+# (the hashed payload is untouched).
+Write-Output "--- S31 Work Universe (role-scope) context ---"
+
+# Default: bare node id -> Foundation, canonical Foundation:<id> address.
+$cWU = Classify-DevBridgeTask -Task (New-TestTask -TaskId 'LG-1' -Name 'Lane G fixture' -Goal 'scope test') -ClassifiedAtUtc '2026-08-30T00:00:00Z'
+Assert-True ($cWU.WorkUniverse -eq 'Foundation') 'S31 bare node id defaults WorkUniverse Foundation'
+Assert-True ($cWU.DevelopmentControlRole -eq 'Foundation') 'S31 DevelopmentControlRole echoes Foundation'
+Assert-True ($cWU.NodeAddress -eq 'Foundation:LG-1') 'S31 bare node id -> canonical Foundation:<id> address'
+
+# Explicit Products role is honored on classification.
+$cWU2 = Classify-DevBridgeTask -Task (New-TestTask -TaskId 'LG-2' -Name 'Products scope' -Goal 'x') -DevelopmentControlRole 'Products' -ClassifiedAtUtc '2026-08-30T00:00:00Z'
+Assert-True ($cWU2.WorkUniverse -eq 'Products') 'S31 explicit Products role honored'
+Assert-True ($cWU2.NodeAddress -eq 'Products:LG-2') 'S31 explicit Products -> Products:<id> address'
+
+# Role-scoped node reference is honored verbatim (never guessed, never stripped).
+$cWU3 = Classify-DevBridgeTask -Task (New-TestTask -TaskId 'LG-3' -Name 'Scoped' -Goal 'x') -NodeId 'Products:WI-77' -ClassifiedAtUtc '2026-08-30T00:00:00Z'
+Assert-True ($cWU3.WorkUniverse -eq 'Products') 'S31 role-scoped nodeId honored'
+Assert-True ($cWU3.NodeId -eq 'Products:WI-77') 'S31 role-scoped nodeId preserved verbatim'
+Assert-True ($cWU3.NodeAddress -eq 'Products:WI-77') 'S31 role-scoped nodeId -> canonical address'
+
+# Work Universe vocabulary + address helpers.
+Assert-True (Test-DbM18DevelopmentControlRole 'Foundation') 'S31 helper accepts Foundation'
+Assert-True (Test-DbM18DevelopmentControlRole 'products') 'S31 helper is case-insensitive'
+Assert-True (-not (Test-DbM18DevelopmentControlRole 'Widgets')) 'S31 helper rejects unknown role'
+Assert-True ((Get-DbM18WorkUniverse 'products') -eq 'Products') 'S31 Get-DbM18WorkUniverse canonicalizes'
+Assert-True ((Get-DbM18WorkUniverse '') -eq 'Foundation') 'S31 Get-DbM18WorkUniverse defaults Foundation'
+$addr = ConvertFrom-DbM18NodeAddress -Address 'Products:WI-77'
+Assert-True ($null -ne $addr -and $addr.Role -eq 'Products' -and $addr.NodeId -eq 'WI-77') 'S31 ConvertFrom parses Role:Id'
+Assert-True ($null -eq (ConvertFrom-DbM18NodeAddress -Address 'WI-77')) 'S31 bare id is never an address'
+Assert-True (Test-DbM18NodeAddress 'Products:WI-77') 'S31 Test-DbM18NodeAddress recognizes scoped'
+Assert-True (-not (Test-DbM18NodeAddress 'WI-77')) 'S31 Test-DbM18NodeAddress rejects bare'
+Assert-True ((ConvertTo-DbM18NodeAddress -Role $null -Id 'WI-77') -eq 'Foundation:WI-77') 'S31 ConvertTo defaults Foundation'
+Assert-True ((ConvertTo-DbM18NodeAddress -Role 'products' -Id 'WI-77') -eq 'Products:WI-77') 'S31 ConvertTo canonicalizes role'
+
+# Context package: additive Work Universe output keys, package hash unchanged.
+$wuTask = New-TestTask -TaskId 'LG-PKG' -Name 'Package scope' -Goal 'x' -AcceptanceCriteria 'y' -Repositories @('DevBridge') -FilesGlobs @('src/**')
+$cWUP = Classify-DevBridgeTask -Task $wuTask -ClassifiedAtUtc '2026-08-30T00:00:00Z'
+$secsWU = Get-DbM18ContextSections -Task $wuTask
+$bWU = New-ContextBudget -TaskId 'LG-PKG' -AllowedInputTokens 20000 -Sections $secsWU
+$pkgWU1 = Build-ContextPackage -Task $wuTask -Classification $cWUP -Budget $bWU -Sections $secsWU -GeneratedAtUtc '2026-08-30T00:00:00Z'
+$pkgWU2 = Build-ContextPackage -Task $wuTask -Classification $cWUP -Budget $bWU -Sections $secsWU -DevelopmentControlRole 'Products' -GeneratedAtUtc '2026-08-30T00:00:00Z'
+Assert-True ($pkgWU1.Status -eq 'OK') 'S31 Work Universe package builds OK'
+Assert-True ($pkgWU1.WorkUniverse -eq 'Foundation' -and $pkgWU1.NodeAddress -eq 'Foundation:LG-PKG') 'S31 package defaults Foundation'
+Assert-True ($pkgWU2.WorkUniverse -eq 'Products' -and $pkgWU2.NodeAddress -eq 'Products:LG-PKG') 'S31 package honors explicit Products role'
+Assert-True ($pkgWU1.PackageHash -eq $pkgWU2.PackageHash) 'S31 additive WorkUniverse keys do NOT change PackageHash'
+$sumWU = Get-ContextPackageSummary -Package $pkgWU2
+Assert-True ($sumWU.WorkUniverse -eq 'Products' -and $sumWU.DevelopmentControlRole -eq 'Products' -and $sumWU.NodeAddress -eq 'Products:LG-PKG') 'S31 package summary carries Work Universe fields'
+$sumWUmd = Get-ContextPackageSummary -Package $pkgWU2 -AsMarkdown
+Assert-True ($sumWUmd -match 'Products:LG-PKG') 'S31 markdown summary renders the node address'
+
+# -----------------------------------------------------------------------------
 # Cleanup + summary
 # -----------------------------------------------------------------------------
 Remove-Item -LiteralPath $script:TempRoot -Recurse -Force -ErrorAction SilentlyContinue

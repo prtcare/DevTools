@@ -42,6 +42,111 @@ function Get-DbM18SchemaVersions {
 }
 
 # -----------------------------------------------------------------------------
+# Work Universe context vocabulary (P1-WAVE-04 Lane G, additive). Structural role
+# / scope awareness that mirrors the shared Nexus.DevelopmentControl.Contracts
+# DevelopmentControlRole { Foundation, Products } and the DevelopmentControlAddress
+# "Role:Id" form. The Forge is the Foundation role owner, so an unqualified
+# single-workbook id resolves to Foundation (V1 compat); Products is recognized as
+# a valid role token (cross-scope) but never guessed for a bare id (no prefix
+# inference). Helpers are defined here so ContextPackage.ps1 and DependencyLineage.ps1
+# (both dot-source this file transitively) share one vocabulary. No new resolver
+# module is created.
+# -----------------------------------------------------------------------------
+function Get-DbM18DevelopmentControlRoles {
+    return @('Foundation', 'Products')
+}
+
+function Get-DbM18WorkUniverseDefault {
+    return 'Foundation'
+}
+
+function Test-DbM18DevelopmentControlRole {
+    <#
+    .SYNOPSIS
+    True when the value is one of the shared DevelopmentControlRole tokens
+    (Foundation | Products), case-insensitive.
+    #>
+    param([AllowNull()][string]$Role)
+    if (-not $Role) { return $false }
+    foreach ($known in @(Get-DbM18DevelopmentControlRoles)) {
+        if ([string]::Equals($Role, $known, [System.StringComparison]::OrdinalIgnoreCase)) { return $true }
+    }
+    return $false
+}
+
+function Get-DbM18WorkUniverse {
+    <#
+    .SYNOPSIS
+    Canonical role-scope (Work Universe) name. Recognizes Foundation/Products
+    case-insensitively and returns the canonical Pascal spelling; anything absent
+    or unknown defaults to Foundation (the Forge's role, V1 single-workbook compat).
+    #>
+    param([AllowNull()][string]$Role)
+    foreach ($known in @(Get-DbM18DevelopmentControlRoles)) {
+        if ($Role -and [string]::Equals($Role, $known, [System.StringComparison]::OrdinalIgnoreCase)) { return $known }
+    }
+    return (Get-DbM18WorkUniverseDefault)
+}
+
+function ConvertFrom-DbM18NodeAddress {
+    <#
+    .SYNOPSIS
+    Parse a role-scoped DevelopmentControlAddress string "Role:Id" where Role is a
+    recognized role token (Foundation | Products). Returns @{ Role = <canonical>;
+    NodeId = <id> } or $null when the string is NOT a recognized role-scoped address
+    (a bare node id is the V1/unqualified form and is never an address here).
+    #>
+    param([AllowNull()][string]$Address)
+    if (-not $Address) { return $null }
+    $s = [string]$Address
+    $idx = $s.IndexOf(':')
+    if ($idx -le 0 -or $idx -ge ($s.Length - 1)) { return $null }
+    $roleRaw = $s.Substring(0, $idx)
+    if (-not (Test-DbM18DevelopmentControlRole -Role $roleRaw)) { return $null }
+    return [pscustomobject]@{ Role = (Get-DbM18WorkUniverse $roleRaw); NodeId = $s.Substring($idx + 1) }
+}
+
+function Test-DbM18NodeAddress {
+    <#
+    .SYNOPSIS
+    True when the string is a recognized role-scoped address ("Role:Id"). Used by the
+    context/lineage scripts to recognize scope-bearing references without guessing a
+    role for bare ids.
+    #>
+    param([AllowNull()][string]$Address)
+    return ($null -ne (ConvertFrom-DbM18NodeAddress -Address $Address))
+}
+
+function Get-DbM18RoleOfNodeReference {
+    <#
+    .SYNOPSIS
+    The role token of a reference when it is explicitly role-scoped; $null for a bare
+    id (never inferred from a prefix).
+    #>
+    param([AllowNull()][string]$Reference)
+    $addr = ConvertFrom-DbM18NodeAddress -Address $Reference
+    if ($null -eq $addr) { return $null }
+    return [string]$addr.Role
+}
+
+function ConvertTo-DbM18NodeAddress {
+    <#
+    .SYNOPSIS
+    Build the canonical role-scoped address "Role:Id" for a node id. An explicit role
+    wins; an already-role-scoped id is normalized to its canonical spelling; a bare id
+    under an absent role defaults to Foundation (V1 single-workbook compat). Returns
+    $null when no id is present.
+    #>
+    param([AllowNull()][string]$Role, [AllowNull()][string]$Id)
+    if (-not $Id) { return $null }
+    $role = Get-DbM18WorkUniverse $Role
+    $id = [string]$Id
+    $existing = ConvertFrom-DbM18NodeAddress -Address $id
+    if ($null -ne $existing) { return ($existing.Role + ':' + $existing.NodeId) }
+    return ($role + ':' + $id)
+}
+
+# -----------------------------------------------------------------------------
 # Token estimation (ONE consistent, approximate method for the whole package)
 # -----------------------------------------------------------------------------
 function Get-EstimatedTokenCount {
@@ -356,7 +461,8 @@ function Classify-DevBridgeTask {
         [AllowNull()][string]$Gate,
         [AllowNull()][string]$ExecutionMode = 'MANUAL',
         [AllowNull()][string]$ClassifiedAtUtc,
-        [AllowNull()][string]$ClassifierVersion = 'DB-M18.1.0'
+        [AllowNull()][string]$ClassifierVersion = 'DB-M18.1.0',
+        [AllowNull()][string]$DevelopmentControlRole
     )
     $task = $Task
     $taskId = Get-DbM18First @($TaskId, (Get-ContractProperty $task 'taskId' $null), (Get-ContractProperty $task 'nodeId' $null), 'UNKNOWN')
@@ -370,6 +476,24 @@ function Classify-DevBridgeTask {
     $nodeType    = [string](Get-ContractProperty $task 'nodeType' $null)
     $milestoneId = Get-DbM18First @((Get-ContractProperty $task 'milestoneId' $null), (Get-ContractProperty $task 'currentWorkNodeId' $null), (Get-ContractProperty $task 'parentNodeId' $null))
     $workItemId  = if ($nodeType -eq 'WorkItem') { $taskId } else { $null }
+
+    # --- Work Universe (role-scope) derivation, additive (Lane G) -------------
+    # V1 single-workbook compat: a bare governed node id belongs to the Forge's role
+    # (Foundation). An explicit -DevelopmentControlRole override wins; an already
+    # role-scoped node id is honored verbatim; Products is recognized as a valid
+    # role token (cross-scope) but never guessed for a bare id (no prefix inference).
+    $workUniverseRole = $DevelopmentControlRole
+    if (-not (Test-DbM18DevelopmentControlRole -Role $workUniverseRole)) {
+        $workUniverseRole = Get-DbM18RoleOfNodeReference $nodeId
+        if (-not (Test-DbM18DevelopmentControlRole -Role $workUniverseRole)) {
+            $workUniverseRole = Get-DbM18RoleOfNodeReference $taskId
+        }
+        if (-not (Test-DbM18DevelopmentControlRole -Role $workUniverseRole)) {
+            $workUniverseRole = (Get-DbM18WorkUniverseDefault)
+        }
+    }
+    $workUniverse = Get-DbM18WorkUniverse $workUniverseRole
+    $nodeAddress  = ConvertTo-DbM18NodeAddress -Role $workUniverse -Id $nodeId
 
     $sig = Get-DbM18TaskSignals -Task $task
     $signals = $sig.Signals
@@ -485,6 +609,9 @@ function Classify-DevBridgeTask {
         GoverningAdrs  = @($sig.GoverningAdrs)
         RiskField      = $sig.RiskField
         Gate           = $gate
+        WorkUniverse   = $workUniverse
+        DevelopmentControlRole = $workUniverse
+        NodeAddress    = $nodeAddress
     }
 
     $classifiedAt = if ($ClassifiedAtUtc) { $ClassifiedAtUtc } else { (Get-Date).ToUniversalTime().ToString('o') }
@@ -496,6 +623,9 @@ function Classify-DevBridgeTask {
         TaskId                     = $taskId
         NodeId                     = $nodeId
         ChangeId                   = $changeId
+        WorkUniverse               = $workUniverse
+        DevelopmentControlRole     = $workUniverse
+        NodeAddress                = $nodeAddress
         WorkItemId                 = $workItemId
         MilestoneId                = $milestoneId
         ClassifiedAtUtc            = $classifiedAt
