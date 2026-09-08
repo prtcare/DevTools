@@ -184,9 +184,9 @@ FakeScriptRunner Runner(params (string script, Func<string, ScriptRunOutcome> be
     string root = NewRoot("awaiting");
     W(root, @"state/current-task.json", StateJson("AWAITING_CHATGPT_PROMPT", "COPY_TO_CHATGPT", changeId: "CHG-20260830-020"));
     string validHandoff =
-        "CHATGPT HANDOFF — DevBridge temporary external scaffolding.\n" +
-        "Mode: TRIAL (disposable proving activity, not permanent Nexus development).\n" +
-        "This is temporary scaffolding for Nexus Phase 1/2 only; DevBridge will be retired.\n" +
+        "CHATGPT HANDOFF — Nexus Forge governance header.\n" +
+        "Mode: TRIAL (disposable proving activity, distinct from real Nexus development).\n" +
+        "Boundary: Nexus Forge is PERMANENT development-plane infrastructure and is not retired; its final purpose is stable, ongoing platform tooling.\n" +
         "Architecture: NOT Nexus — no Nexus architecture/contracts changes via DevBridge.\n" +
         "Roadmap protection: the roadmap is immutable; no structural edits are permitted.\n" +
         "Workbook authority: NEXUS_DEVELOPMENT_CONTROL.xlsx is the authoritative control record.\n" +
@@ -1168,7 +1168,7 @@ Console.WriteLine("DB-GH01 governance properties covered: G1..G35");
 // ---- G30. Handoff: complete 14-marker header -> READY ------------------------
 {
     string header =
-        "DEVELOPMENT HANDBOOK — DevBridge is TEMPORARY external scaffolding for Nexus Phase 1/2 and will retire. " +
+        "DEVELOPMENT HANDBOOK — Nexus Forge is PERMANENT development-plane infrastructure and is not retired; its final purpose is stable, ongoing platform tooling. " +
         "Mode: TRIAL / REAL_NEXUS_DEVELOPMENT. No architecture changes: this is NOT Nexus architecture and there is no architecture redesign. " +
         "The roadmap is immutable; no structural edits. NEXUS_DEVELOPMENT_CONTROL.xlsx is the authoritative control record. " +
         "Git is a formal human gate: a human owns PR and merge. DB-M08 Claude review gate applies. Task identity: node, task, change. " +
@@ -1190,7 +1190,7 @@ Console.WriteLine("DB-GH01 governance properties covered: G1..G35");
 // ---- G32. Review package: governance header present -> valid ----------------
 {
     string pkg =
-        "Claude review package — DevBridge is TEMPORARY external scaffolding and will retire. Mode TRIAL / REAL_NEXUS_DEVELOPMENT. " +
+        "Claude review package — Nexus Forge is PERMANENT development-plane infrastructure and is not retired. Mode TRIAL / REAL_NEXUS_DEVELOPMENT. " +
         "NOT authorized to redesign architecture. Roadmap immutable; no redesign. CORRECT_CURRENT_ATTEMPT vs NEW_FIX_TASK_REQUIRED. " +
         "Exact scope delta. Forbidden: must not modify the workbook; prohibited structural edits. PR/merge are human gates. " +
         "Decisions: PASS / GOVERNANCE_ISSUE / HUMAN_DECISION_REQUIRED.";
@@ -1233,6 +1233,78 @@ Console.WriteLine("DB-GH01 governance properties covered: G1..G35");
     var m11b = new M11ReviewRecommendation(true, false, null);
     Check(m11a.Token == "CLAUDE_WORKBOOK_REVIEW_RECOMMENDED" && m11b.Token == "NO_ADVISORY_REVIEW_RECOMMENDED",
         "GH1:G35 m11 advisory token", $"{m11a.Token}/{m11b.Token}");
+}
+
+// ---- G36. Two-workbook IDevelopmentControlProvider boundary (Wave B continuation, 2026-09-05) ----
+{
+    // No config file at all -> both roles unresolved -> V1 compatibility mode by definition
+    // (Foundation empty, Products empty is still "not yet two-workbook", not an error state).
+    string g36Root = NewRoot("g36-empty");
+    var g36Cfg = DevBridgeConfig.Load(g36Root);
+    var g36Provider = new ExcelDevelopmentControlProvider(g36Cfg);
+    Check(g36Provider.Mode == DevelopmentControlMode.V1SingleWorkbookCompatibility,
+        "G36-01", $"no workbooks configured -> V1 compatibility mode ({g36Provider.Mode})");
+    Check(!g36Provider.IsRoleAvailable(DevelopmentControlRole.Foundation) && !g36Provider.IsRoleAvailable(DevelopmentControlRole.Products),
+        "G36-02", "neither role available when nothing is configured/found");
+    Check(g36Provider.ExpectedSheetCount(DevelopmentControlRole.Foundation) == WorkbookLiveness.ExpectedSheets
+          && g36Provider.ExpectedSheetCount(DevelopmentControlRole.Products) == 0,
+        "G36-03", $"Foundation expects {WorkbookLiveness.ExpectedSheets} sheets (V1 schema); Products expects 0 (schema not yet defined)");
+    Check(g36Provider.GetDisplayName(DevelopmentControlRole.Foundation) == "NEXUS_FOUNDATION_DEVELOPMENT_CONTROL.xlsx"
+          && g36Provider.GetDisplayName(DevelopmentControlRole.Products) == "NEXUS_PRODUCTS_DEVELOPMENT_CONTROL.xlsx",
+        "G36-04", "role display-name fallback is the V2 two-workbook naming, even before either file exists");
+
+    var lookup = g36Provider.TryResolveId("WI-07-0.2.4");
+    Check(!lookup.Supported && lookup.Role is null && !string.IsNullOrWhiteSpace(lookup.Note),
+        "G36-05", "TryResolveId establishes the boundary but performs no real cross-workbook lookup yet (by design)");
+
+    // Explicit two-workbook config, neither file present on disk -> still V1 compatibility
+    // (Mode reflects what actually resolved, not what was merely requested).
+    string g36Cfg2Root = NewRoot("g36-configured-missing");
+    W(g36Cfg2Root, @"config/devbridge.json",
+        "{\"developmentControlWorkbooks\":{\"foundation\":\"C:\\\\nope\\\\NEXUS_FOUNDATION_DEVELOPMENT_CONTROL.xlsx\",\"products\":\"C:\\\\nope\\\\NEXUS_PRODUCTS_DEVELOPMENT_CONTROL.xlsx\"}}");
+    var g36Cfg2 = DevBridgeConfig.Load(g36Cfg2Root);
+    var g36Provider2 = new ExcelDevelopmentControlProvider(g36Cfg2);
+    Check(g36Provider2.Mode == DevelopmentControlMode.V1SingleWorkbookCompatibility,
+        "G36-06", $"configured-but-missing two-workbook paths -> still V1 compatibility, not a false V2 signal ({g36Provider2.Mode})");
+
+    // ControlHealthService's legacy single-arg entry point must still behave exactly as before
+    // (Foundation role, unchanged sheet-count expectation) — no observable change for existing callers.
+    var legacyHealth = ControlHealthService.Evaluate(g36Cfg);
+    var roleHealth = ControlHealthService.Evaluate(g36Cfg, g36Provider, DevelopmentControlRole.Foundation);
+    Check(legacyHealth.ExpectedSheets == roleHealth.ExpectedSheets && legacyHealth.WorkbookPath == roleHealth.WorkbookPath,
+        "G36-07", "legacy Evaluate(cfg) and role-aware Evaluate(cfg, provider, Foundation) agree — additive, not a behavior change");
+}
+
+// ---- G37. B03-1: OperatorCommandService / CommandAvailabilityEvaluator route through
+// IDevelopmentControlProvider with an explicit role — never inferred, legacy behavior
+// unchanged when no provider is supplied (2026-09-05). ----
+{
+    string g37Root = NewRoot("g37-provider-writer-lock");
+    WriteState(g37Root, "PREFLIGHTED", "RESERVE", "CHG-20260905-001");
+    var g37Cfg = DevBridgeConfig.Load(g37Root);
+    var recording = new RecordingDevelopmentControlProvider();
+    var writeCmd = OperatorCommandCatalog.Get("RESERVE_TASK")!;
+    var fake = new FakeScriptRunner();
+
+    OperatorCommandService.Execute(g37Cfg, writeCmd, fake, provider: recording);
+    Check(recording.AcquireCalls.Count == 1 && recording.AcquireCalls[0] == DevelopmentControlRole.Foundation,
+        "G37-01", $"TryAcquireWriterLock called exactly once with an explicit Foundation role ({string.Join(",", recording.AcquireCalls)})");
+    Check(recording.ReleaseCalls.Count == 1 && recording.ReleaseCalls[0] == DevelopmentControlRole.Foundation,
+        "G37-02", $"ReleaseWriterLock called exactly once with an explicit Foundation role ({string.Join(",", recording.ReleaseCalls)})");
+
+    var recording2 = new RecordingDevelopmentControlProvider { Busy = true };
+    var avail = CommandAvailabilityEvaluator.Evaluate(g37Cfg, writeCmd, recording2);
+    Check(avail == CommandAvailability.Busy && recording2.IsBusyCalls.Count == 1 && recording2.IsBusyCalls[0] == DevelopmentControlRole.Foundation,
+        "G37-03", $"IsWriterBusy(Foundation) drives Busy availability via the provider, explicit role ({avail}, {string.Join(",", recording2.IsBusyCalls)})");
+
+    // Omitting the provider parameter (every pre-existing call site in this suite and in
+    // MainViewModel) must still resolve to the real ExcelDevelopmentControlProvider wrapping
+    // the same cfg/WorkbookWriterGate — i.e. legacy behavior is unchanged, not silently
+    // switched to a different lock or role. Proven by the pre-existing DB-M12.2:N13
+    // WORKBOOK_WRITER_BUSY tests below still passing unmodified against the same gate.
+    var defaultAvail = CommandAvailabilityEvaluator.Evaluate(g37Cfg, writeCmd);
+    Check(defaultAvail == CommandAvailability.Available,
+        "G37-04", $"default (no injected provider) path still resolves via ExcelDevelopmentControlProvider -> real gate, unaffected by the recording fixtures above ({defaultAvail})");
 }
 
 // ==================================================================== DB-M12.2
@@ -1981,6 +2053,40 @@ Console.WriteLine($"PASSED : {pass}");
 Console.WriteLine($"FAILED : {fail}");
 Console.WriteLine(pass > 0 && fail == 0 ? "RESULT : ALL PASS" : "RESULT : FAILURES PRESENT");
 Environment.ExitCode = fail == 0 ? 0 : 1;
+
+// B03-1: minimal recording fake for IDevelopmentControlProvider, used only to prove
+// OperatorCommandService/CommandAvailabilityEvaluator call the provider with an explicit
+// role rather than inferring one. Every method not exercised by G37 throws, so an
+// accidental new call path is caught rather than silently no-op'd.
+sealed class RecordingDevelopmentControlProvider : IDevelopmentControlProvider
+{
+    public bool Busy { get; init; }
+    public List<DevelopmentControlRole> AcquireCalls { get; } = new();
+    public List<DevelopmentControlRole> ReleaseCalls { get; } = new();
+    public List<DevelopmentControlRole> IsBusyCalls { get; } = new();
+
+    public DevelopmentControlMode Mode => DevelopmentControlMode.V1SingleWorkbookCompatibility;
+    public bool IsRoleAvailable(DevelopmentControlRole role) => throw new NotSupportedException("not exercised by G37");
+    public string GetWorkbookPath(DevelopmentControlRole role) => throw new NotSupportedException("not exercised by G37");
+    public string GetDisplayName(DevelopmentControlRole role) => throw new NotSupportedException("not exercised by G37");
+    public WorkbookLivenessResult ProbeLiveness(DevelopmentControlRole role) => throw new NotSupportedException("not exercised by G37");
+    public int ExpectedSheetCount(DevelopmentControlRole role) => throw new NotSupportedException("not exercised by G37");
+    public DevelopmentControlLookupResult TryResolveId(string immutableId) => throw new NotSupportedException("not exercised by G37");
+
+    public (bool Acquired, string? Message) TryAcquireWriterLock(DevelopmentControlRole role, string? owner)
+    {
+        AcquireCalls.Add(role);
+        return (true, null);
+    }
+
+    public void ReleaseWriterLock(DevelopmentControlRole role) => ReleaseCalls.Add(role);
+
+    public bool IsWriterBusy(DevelopmentControlRole role)
+    {
+        IsBusyCalls.Add(role);
+        return Busy;
+    }
+}
 
 // Faked backend script runner for DB-M12.1 tests. Behaviors are keyed by script
 // basename; each scenario decides whether the "backend" writes state files, times
