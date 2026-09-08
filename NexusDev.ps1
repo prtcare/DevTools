@@ -11,7 +11,7 @@ $ErrorActionPreference = "Stop"
 
 $Root = Split-Path -Parent $MyInvocation.MyCommand.Path
 
-$DevToolsPath = "C:\Personal\DevTools"
+$DevToolsPath = "D:\NEXUS\Forge"
 
 $ConfigPath       = Join-Path $Root "config\layers.json"
 $LayerShellScript = Join-Path $DevToolsPath "LayerShell.ps1"
