@@ -756,7 +756,8 @@ function Build-ContextPackage {
         [AllowNull()][object[]]$Sections,
         [int]$ExcerptChars = 12000,
         [AllowNull()][string]$PackageId,
-        [AllowNull()][string]$GeneratedAtUtc
+        [AllowNull()][string]$GeneratedAtUtc,
+        [AllowNull()][string]$DevelopmentControlRole
     )
     if ($null -eq $Budget) { throw 'Build-ContextPackage: Budget is required' }
     $candidateSections = @()
@@ -766,6 +767,28 @@ function Build-ContextPackage {
     $taskId = Get-DbM18First @((Get-ContractProperty $Budget 'TaskId' $null), (Get-ContractProperty $Task 'taskId' $null), 'UNKNOWN')
     $nodeId = Get-DbM18First @((Get-ContractProperty $Budget 'NodeId' $null), (Get-ContractProperty $Task 'nodeId' $null), $taskId)
     $changeId = Get-DbM18First @((Get-ContractProperty $Budget 'ChangeId' $null), (Get-ContractProperty $Task 'changeId' $null))
+
+    # --- Work Universe (role-scope) derivation, additive (Lane G) -------------
+    # The context package carries the scope it belongs to. An explicit
+    # -DevelopmentControlRole override wins; otherwise the (already role-scoped)
+    # classification / task / budget id is honored; V1 bare ids default to
+    # Foundation (the Forge's role). Additive output keys only: the hashed payload
+    # is NOT extended, so existing PackageHash values are unchanged.
+    $workUniverseRole = $DevelopmentControlRole
+    if (-not (Test-DbM18DevelopmentControlRole -Role $workUniverseRole)) {
+        $workUniverseRole = Get-ContractProperty $Classification 'WorkUniverse' $null
+    }
+    if (-not (Test-DbM18DevelopmentControlRole -Role $workUniverseRole)) {
+        $workUniverseRole = Get-DbM18RoleOfNodeReference $nodeId
+    }
+    if (-not (Test-DbM18DevelopmentControlRole -Role $workUniverseRole)) {
+        $workUniverseRole = Get-DbM18RoleOfNodeReference $taskId
+    }
+    if (-not (Test-DbM18DevelopmentControlRole -Role $workUniverseRole)) {
+        $workUniverseRole = (Get-DbM18WorkUniverseDefault)
+    }
+    $workUniverse = Get-DbM18WorkUniverse $workUniverseRole
+    $nodeAddress  = ConvertTo-DbM18NodeAddress -Role $workUniverse -Id $nodeId
 
     $plan = @{}
     foreach ($bsec in @(Get-ContractProperty $Budget 'Sections' @())) {
@@ -881,6 +904,9 @@ function Build-ContextPackage {
         SecretWarnings        = @($warnings.ToArray())
         PackageHash           = $hash
         GeneratedAtUtc        = $gen
+        WorkUniverse          = $workUniverse
+        DevelopmentControlRole = $workUniverse
+        NodeAddress           = $nodeAddress
         Origin                = 'DB-M18 deterministic context packaging; sources are governed task state (read-only), never provider/history blobs'
     }
 }
@@ -983,6 +1009,9 @@ function Get-ContextPackageSummary {
         TaskId                 = Get-ContractProperty $Package 'TaskId' $null
         NodeId                 = Get-ContractProperty $Package 'NodeId' $null
         ChangeId               = Get-ContractProperty $Package 'ChangeId' $null
+        WorkUniverse           = Get-ContractProperty $Package 'WorkUniverse' $null
+        DevelopmentControlRole = Get-ContractProperty $Package 'DevelopmentControlRole' $null
+        NodeAddress            = Get-ContractProperty $Package 'NodeAddress' $null
         ClassificationId       = Get-ContractProperty $Package 'ClassificationId' $null
         BudgetId               = Get-ContractProperty $Package 'BudgetId' $null
         Status                 = Get-ContractProperty $Package 'Status' $null
@@ -1009,6 +1038,7 @@ function Get-ContextPackageSummary {
         $lines.Add('## Context Package Summary (DB-M18, deterministic)')
         $lines.Add("- Package: $($summary.PackageId)")
         $lines.Add("- Task: $($summary.TaskId)  |  Node: $($summary.NodeId)  |  Change: $($summary.ChangeId)")
+        $lines.Add("- Work Universe: $($summary.WorkUniverse)  |  Role: $($summary.DevelopmentControlRole)  |  Address: $($summary.NodeAddress)")
         $lines.Add("- Status: $($summary.Status)  |  Budget: $($summary.BudgetId)")
         if ($summary.FailureReason) { $lines.Add("- Failure: $($summary.FailureReason)") }
         $lines.Add("- Tokens: $($summary.SelectedContextTokens) selected / $($summary.EstimatedTotalTokens) estimated  |  Reserve: $($summary.ReservedOutputTokens)")

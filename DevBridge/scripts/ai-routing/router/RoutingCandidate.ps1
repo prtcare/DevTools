@@ -116,6 +116,8 @@ function New-RoutingDecisionEvidence {
         SchemaVersion        = 1
         RoutingRequestId     = if ($f.ContainsKey('RoutingRequestId')) { $f['RoutingRequestId'] } else { $null }
         TaskId               = if ($f.ContainsKey('TaskId')) { $f['TaskId'] } else { $null }
+        WorkUniverse         = if ($f.ContainsKey('WorkUniverse')) { $f['WorkUniverse'] } else { $null }
+        NodeAddress          = if ($f.ContainsKey('NodeAddress')) { $f['NodeAddress'] } else { $null }
         Status               = if ($f.ContainsKey('Status')) { $f['Status'] } else { $null }
         Policy               = if ($f.ContainsKey('Policy')) { $f['Policy'] } else { $null }
         EligibleCandidates   = if ($f.ContainsKey('EligibleCandidates')) { @($f['EligibleCandidates']) } else { @() }

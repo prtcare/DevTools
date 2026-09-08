@@ -521,6 +521,24 @@ Assert-True 'R49 DB-M12.2 regression (child suite) passes' 'regression' ($r49.ex
 $r50 = Invoke-ChildSuite (Join-Path $script:Root 'scripts\Test-DBM124TrialCycleClosure.ps1')
 Assert-True 'R50 DB-M12.4 regression (child suite) passes' 'regression' ($r50.exit -eq 0) ('exit=' + $r50.exit)
 
+# --- Lane G role-scope (Work Universe) references -------------------------------
+Write-Output '== Lane G role-scope references =='
+# SP1-M14/M16 semantics: a role-scoped dependency (Products:<id>) is a valid
+# DevelopmentControlAddress and must be preserved as a cross-scope reference --
+# never flagged Invalid, never treated as a missing node, never expanded. Bare
+# ids stay the V1/unqualified form (Foundation default, never an address).
+$lgTask = New-Task -TaskId 'W-LG-1' -ChangeId 'CHG-20260901-300' -Name 'Lane G cross-scope' -Goal 'Consume a Products deliverable' -Dependencies @(@{ dependencyId = 'Products:WI-701'; state = 'CLEAR' })
+$gLG = Resolve-DependencyGraph -Task $lgTask -TaskCatalog $script:Catalog -NowUtc $script:NowUtc
+Assert-True 'LG1 role-scoped reference not flagged Invalid' 'laneG' (@($gLG.InvalidReferences).Count -eq 0) ('invalid=' + @($gLG.InvalidReferences).Count)
+Assert-True 'LG2 role-scoped reference kept as direct dependency' 'laneG' (@($gLG.DirectDependencies).Count -eq 1 -and [string]$gLG.DirectDependencies[0].DependencyId -eq 'Products:WI-701') ('direct=' + @($gLG.DirectDependencies).Count)
+Assert-True 'LG3 role-scoped reference not reported missing (preserved, not expanded)' 'laneG' (@($gLG.MissingDependencies).Count -eq 0) ('missing=' + @($gLG.MissingDependencies).Count)
+Assert-True 'LG4 helper recognizes role-scoped reference' 'laneG' (Get-DbM181IsRoleScopedReference 'Products:WI-701') 'not recognized'
+Assert-True 'LG5 helper rejects bare id as an address' 'laneG' (-not (Get-DbM181IsRoleScopedReference 'WI-701')) 'bare treated as address'
+Assert-True 'LG6 role of a Products reference is Products' 'laneG' ((Get-DbM181RoleOfReference 'Products:WI-701') -eq 'Products') ('role=' + (Get-DbM181RoleOfReference 'Products:WI-701'))
+Assert-True 'LG7 Products reference in Foundation work is cross-scope' 'laneG' (Test-DbM181IsCrossScopeReference -Reference 'Products:WI-701' -WorkUniverse 'Foundation') 'not cross-scope'
+Assert-True 'LG8 same-role reference is not cross-scope' 'laneG' (-not (Test-DbM181IsCrossScopeReference -Reference 'Products:WI-701' -WorkUniverse 'Products')) 'same-role flagged cross-scope'
+Assert-True 'LG9 context carries Work Universe + no cross-scope refs for Foundation-only graph' 'laneG' ($ctxCore.WorkUniverse -eq 'Foundation' -and $ctxCore.DevelopmentControlRole -eq 'Foundation' -and $ctxCore.NodeAddress -eq 'Foundation:W-9.2' -and @($ctxCore.CrossScopeReferences).Count -eq 0) ('wu=' + $ctxCore.WorkUniverse + ' addr=' + $ctxCore.NodeAddress + ' x=' + @($ctxCore.CrossScopeReferences).Count)
+
 # --- Build 51 -------------------------------------------------------------------
 Write-Output '== Build (51) =='
 $sln = Join-Path $script:Root 'src\DevBridge.slnx'
