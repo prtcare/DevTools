@@ -1,0 +1,12 @@
+# Nexus SP1 Forge G2 hygiene (P1-WAVE-07, per SP1 05C §11 / W05D Decision 6)
+# Generated artifacts never land. Root .gitignore for the Forge (DevTools) repo.
+
+# .NET / VS build debris
+bin/
+obj/
+.vs/
+publish/
+
+# DevBridge runtime/selftest scratch
+logs/
+*.user
