@@ -724,7 +724,8 @@ if ($baselineRepos.Count -eq 0) {
 if (-not (@($baselineRepos | Where-Object { $_.isPrimary }).Count -gt 0)) {
     $baselineRepos[0].isPrimary = $true
 }
-$primaryRepo = @($baselineRepos | Where-Object { $_.isPrimary } | Select-Object -First 1)
+$primaryRepoIndex = 0
+for ($i = 0; $i -lt $baselineRepos.Count; $i++) { if ($baselineRepos[$i].isPrimary) { $primaryRepoIndex = $i; break } }
 
 # Snapshot every reserved repository + its reserved-scope hashes (pre-write).
 foreach ($br in $baselineRepos) {
@@ -740,6 +741,9 @@ foreach ($br in $baselineRepos) {
     # stable Object[] so every consumer can rely on .Count / foreach / @().
     $br.hashes = @(Get-RepoScopeHashes $brPath $snap @($ownedProjects))
 }
+# Index into $baselineRepos directly (not a piped/wrapped copy) so the mutations
+# made above (.snap / .hashes) are reliably visible on the primary repo entry.
+$primaryRepo = $baselineRepos[$primaryRepoIndex]
 
 # Primary (workbook-owner) pre-existing change record, kept for backward
 # compatibility on current-task.preExistingChanges and gitBaseline.preExistingChanges.
