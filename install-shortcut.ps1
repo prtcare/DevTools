@@ -1,4 +1,4 @@
-$target = 'C:\Personal\DevTools\NexusDev.ps1'
+$target = 'D:\NEXUS\Forge\NexusDev.ps1'
 $desktop = [Environment]::GetFolderPath('Desktop')
 $shortcutPath = Join-Path $desktop 'Nexus Development.lnk'
 
@@ -11,7 +11,7 @@ $shell = New-Object -ComObject WScript.Shell
 $shortcut = $shell.CreateShortcut($shortcutPath)
 $shortcut.TargetPath = 'powershell.exe'
 $shortcut.Arguments = "-ExecutionPolicy Bypass -WindowStyle Hidden -File `"$target`""
-$shortcut.WorkingDirectory = 'C:\Personal\DevTools'
+$shortcut.WorkingDirectory = 'D:\NEXUS\Forge'
 $shortcut.Description = 'Nexus Development Console'
 $shortcut.Save()
 

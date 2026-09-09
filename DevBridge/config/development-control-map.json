@@ -8,7 +8,7 @@
     "sourceAnalysis": "tasks/WORKBOOK_ANALYSIS.md",
 
     "workbook": {
-        "path": "C:\\Personal\\Nexus.Developer\\NEXUS_DEVELOPMENT_CONTROL.xlsx",
+        "path": "D:\\NEXUS\\Products\\Developer\\NEXUS_DEVELOPMENT_CONTROL.xlsx",
         "sha256Before": "E866D3C4D260031D3C067F4C9C272A497FD913AD7C8D0CBFD0BF42F76BCD2941",
         "isAuthoritative": true,
         "modificationPolicy": "READ-ONLY by DevBridge. Never redesign, never rename sheets, never rename columns, never add columns, never delete records. Update only through the write triggers defined per sheet and only after approved completion.",
