@@ -10,3 +10,11 @@ publish/
 # DevBridge runtime/selftest scratch
 logs/
 *.user
+
+# Worktree admin (governed worktrees live under here; keep the container out of
+# status noise without touching the worktrees themselves)
+.forge/
+
+# DevBridge scratch/temp and rolling workbook backups (regenerated, not source)
+DevBridge/temp/
+DevBridge/state/backups/
